@@ -34,6 +34,20 @@
 #include	"rds-blocksynchronizer.h"
 #include	"gui.h"
 
+const uint32_t rdsBlockSynchronizer::NUM_BITS_CRC		= 10;
+const uint32_t rdsBlockSynchronizer::NUM_BITS_BLOCK_PAYLOAD	= 16;
+const uint32_t rdsBlockSynchronizer::NUM_BITS_PER_BLOCK	= rdsBlockSynchronizer::NUM_BITS_CRC + rdsBlockSynchronizer::NUM_BITS_BLOCK_PAYLOAD;
+const uint32_t rdsBlockSynchronizer::OFFSET_WORD_BLOCK_A	= 0xFC;
+const uint32_t rdsBlockSynchronizer::OFFSET_WORD_BLOCK_B	= 0x198;
+const uint32_t rdsBlockSynchronizer::OFFSET_WORD_BLOCK_C1	= 0x168;
+const uint32_t rdsBlockSynchronizer::OFFSET_WORD_BLOCK_C2	= 0x350;
+const uint32_t rdsBlockSynchronizer::OFFSET_WORD_BLOCK_D	= 0x1B4;
+const uint32_t rdsBlockSynchronizer::CRC_POLY			= 0x5B9;
+const uint32_t rdsBlockSynchronizer::REMAINDER_POLY		= 0x31B;
+const uint32_t rdsBlockSynchronizer::NUM_BITS_BER_CALC_RESET	= 4000;
+
+const RDSGroup::RdsBlock rdsBlockSynchronizer::SYNC_END_BLOCK	= RDSGroup::BLOCK_C;
+
 	rdsBlockSynchronizer::rdsBlockSynchronizer (RadioInterface *RI) {
 	MyRadioInterface	= RI;
 	crcFecEnabled		= true; 

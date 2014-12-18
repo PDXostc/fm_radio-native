@@ -78,21 +78,20 @@ private:
 	uint32_t	getOffset		(RDSGroup::RdsBlock, bool);
 	bool		crcFecEnabled;
 
-	static const uint32_t NUM_BITS_CRC		= 10;
-	static const uint32_t NUM_BITS_BLOCK_PAYLOAD	= 16;
-	static const uint32_t NUM_BITS_PER_BLOCK	= NUM_BITS_CRC +
-	                                                NUM_BITS_BLOCK_PAYLOAD;
-	static const uint32_t OFFSET_WORD_BLOCK_A	= 0xFC;
-	static const uint32_t OFFSET_WORD_BLOCK_B	= 0x198;
-	static const uint32_t OFFSET_WORD_BLOCK_C1	= 0x168;
-	static const uint32_t OFFSET_WORD_BLOCK_C2	= 0x350;
-	static const uint32_t OFFSET_WORD_BLOCK_D	= 0x1B4;
+	static const uint32_t NUM_BITS_CRC;
+	static const uint32_t NUM_BITS_BLOCK_PAYLOAD;
+	static const uint32_t NUM_BITS_PER_BLOCK;
+	static const uint32_t OFFSET_WORD_BLOCK_A;
+	static const uint32_t OFFSET_WORD_BLOCK_B;
+	static const uint32_t OFFSET_WORD_BLOCK_C1;
+	static const uint32_t OFFSET_WORD_BLOCK_C2;
+	static const uint32_t OFFSET_WORD_BLOCK_D;
 //x^10 + x^8 + x^7 + x^5 + x^4 + x^3 + 1
-	static const uint32_t CRC_POLY			= 0x5B9;
-	static const uint32_t REMAINDER_POLY		= 0x31B;
-	static const uint32_t NUM_BITS_BER_CALC_RESET	= 4000;
+	static const uint32_t CRC_POLY;
+	static const uint32_t REMAINDER_POLY;
+	static const uint32_t NUM_BITS_BER_CALC_RESET;
 
-	static const RDSGroup::RdsBlock SYNC_END_BLOCK	= RDSGroup::BLOCK_C;
+	static const RDSGroup::RdsBlock SYNC_END_BLOCK;
 	
 	uint32_t	rdsBitstream;	// only interested in 26 bits
 	bool		rdsIsSynchronized;
