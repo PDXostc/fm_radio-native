@@ -1,0 +1,74 @@
+.topBarIcons {
+	position: absolute;
+	display: block;
+	top: 0;
+	width: 720px;
+	height: 85px;
+	z-index: 4;
+}
+
+.appIcon {
+	cursor: pointer;
+	background-position: center center;
+	background-repeat: no-repeat;
+	visibility: hidden;
+	line-height: 0;
+	width: 79px;
+	height: 84px;
+	display: inline-block;
+	border-right-width: 1px;
+	border-right-style: solid;
+	background-size: 90%;
+	-webkit-transition-timing-function: linear;
+	-webkit-transition: all 1s,background-image 0s;
+	
+	-moz-transition-timing-function: linear;
+	-moz-transition: all 1s,background-image 0s;
+	
+	-ms-transition-timing-function: linear;
+	-ms-transition:all 1s,background-image 0s;
+	
+	-o-transition-timing-function: linear;
+	-o-transition:all 1s,background-image 0s;
+}
+
+.appIconLast {
+	border: none;
+}
+
+.appIconNo {
+	background-image: url('images/icon_back_blue.png');
+}
+
+.appIconNo0 {
+	background-image: url('images/icon_maps_blue.png');
+}
+
+.appIconNo1 {
+	background-image: url('images/icon_fan_blue.png');
+}
+
+.appIconNo2 {
+	background-image: url('images/icon_music_blue.png');
+}
+
+.appIconNo3 {
+	background-image: url('images/icon_video_blue.png');
+}
+
+.appIconNo4 {
+	background-image: url('images/icon_phone_blue.png');
+}
+
+.appIconNo5 {
+	background-image: url('images/icon_social_blue.png');
+}
+
+.appIconNo6 {
+	background-image: url('images/icon_diagnostic_blue.png');
+}
+
+.appIconNo7 {
+	background-image: url('images/icon_settings_blue.png');
+	background-size: 65%;
+}

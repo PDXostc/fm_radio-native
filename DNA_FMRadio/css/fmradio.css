@@ -208,51 +208,16 @@ button.minus {
   height: 110px;
   margin: 90px auto;
 }
-
-.barAnalyzer {
-  position: absolute;
-  width: 33px;
-  height: 5px;
-  float: left;
-  margin-left: 5px;
+.eq{
+width:300px;
+height: 100px;
+outline:thin solid green;
 }
 
-.bar1Class {
-  left: 0;
-}
-
-.bar2Class {
-  left: 38px;
-}
-
-.bar3Class {
-  left: 76px;
-}
-
-.bar4Class {
-  left: 114px;
-}
-
-.bar5Class {
-  left: 152px;
-}
-
-.bar6Class {
-  left: 190px;
-}
-
-.bar7Class {
-  left: 228px;
-}
-
-.bar8Class {
-  left: 266px;
-}
-
-.bar9Class {
-  left: 304px;
-}
-
-.bar10Class {
-  left: 342px;
+.bar {
+    background-color: green;
+    width:7px;
+    height:15px;
+    display: inline-block;
+    vertical-align: bottom;
 }

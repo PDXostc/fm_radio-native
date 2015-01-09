@@ -1,0 +1,99 @@
+.noVolumeSlider, 
+.noVolumeSlider * {
+	-webkit-box-sizing: border-box;
+   	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	-webkit-user-select: none;
+   	-moz-user-select: none;
+	-ms-user-select: none;
+	display: block;
+	cursor: default;
+}
+.noVolumeSlider {
+	position: relative;
+}
+.noVolumeSlider a {
+	position: absolute;
+	z-index: 1;
+}
+.noVolumeSlider a:nth-child(2) {
+	background: inherit !important;
+}
+.noVolumeSlider.vertical a {
+	width: 100%;
+	bottom: 0;
+}
+.noVolumeSlider.horizontal a {
+	height: 100%;
+	right: 0;
+}
+@media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
+	.noVolumeSlider:before,
+	.TOUCH,
+	.noVolumeSlider div {
+		-ms-touch-action: none;
+	}
+	.noVolumeSlider:before {
+		display: block;
+		position: absolute;
+		width: 150%;
+		left: -25%;
+		height: 400%;
+		top: -150%;
+		content: "";
+		z-index: -1;
+	}
+	.noVolumeSlider.vertical:before {
+		width: 400%;
+		left: -150%;
+		height: 150%;
+		top: -25%;
+	}
+}
+.noVolumeSlider {
+	border-radius: 3px;
+}
+.noVolumeSlider.connect a,
+.noVolumeSlider.connect.lower {
+	background: transparent;	
+	
+}
+.noVolumeSlider,
+.noVolumeSlider.connect.lower a {
+	left:0;
+
+}
+/*.noVolumeSlider.disabled,
+.noVolumeSlider.disabled.connect.lower a {
+		
+}*/
+.noVolumeSlider div {
+	width:100px;
+	height: 100px;
+	border-radius: 3px;
+	background: #efefe7;
+		
+	left:100%;					
+}
+/*.noVolumeSlider.disabled div {
+		
+		
+}
+.noVolumeSlider.horizontal {
+		
+}*/
+.noVolumeSlider.horizontal div {
+	margin: -23px 0 0 -50px;
+}
+.noVolumeSlider{
+	width: 100%;
+	height: 100%;
+}
+
+.sliderStart{
+	position:absolute;
+	top: 25px;
+	left: -2px;
+	width: 2px;
+	height: 6px;
+}

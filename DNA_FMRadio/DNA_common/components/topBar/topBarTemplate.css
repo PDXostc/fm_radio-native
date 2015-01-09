@@ -1,0 +1,40 @@
+.top-bar-icons {
+	position: absolute;
+	display: block;
+	top: 0;
+	width: 720px;
+	height: 85px;
+	z-index: 4;
+	background-image: url('images/topbaricons/top_bar_icons_bg_blue.png');
+}
+
+.app-icon {
+	cursor: pointer;
+	background-position: center center;
+	background-repeat: no-repeat;
+	visibility: hidden;
+	line-height: 0;
+	width: 79px;
+	height: 84px;
+	display: inline-block;
+	border-right-width: 1px;
+	border-right-style: solid;
+	background-size: 90%;
+	-webkit-transition-timing-function: linear;
+	-webkit-transition: all 1s,background-image 0s;
+	
+	-moz-transition-timing-function: linear;
+	-moz-transition: all 1s,background-image 0s;
+	
+	-ms-transition-timing-function: linear;
+	-ms-transition:all 1s,background-image 0s;
+	
+	-o-transition-timing-function: linear;
+	-o-transition:all 1s,background-image 0s;
+}
+
+.app-icon:last-of-type {
+	border: none;
+}
+
+/* Set background-img url value with JS */

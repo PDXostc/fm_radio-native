@@ -1,0 +1,210 @@
+.library {
+	position: absolute;
+	left: 100%;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	/*z-index: 100;*/
+	-webkit-transition: 1s;
+}
+
+.libraryLeftPanel {
+	/*position: absolute;*/
+	/*top: 0;*/
+	/*left: 0;*/
+	width: 100px;
+	/*min-height: 1280px;*/
+	/*height: 100%;*/
+	background-repeat: no-repeat;
+	background-position: left top;
+}
+
+.libraryLeftControl {
+	margin-top: 164px;
+	width: 100px;
+	cursor: pointer;
+}
+
+.gridIcon {
+	width: 100px;
+	height: 110px;
+	background-repeat: no-repeat;
+	background-position: left top;
+}
+
+.listIcon {
+	width: 100px;
+	height: 110px;
+	background-repeat: no-repeat;
+	background-position: left top;
+}
+
+.searchIcon {
+	width: 100px;
+	height: 110px;
+	background-repeat: no-repeat;
+	background-position: left top;
+}
+
+#library-right-panel-top {
+	padding: 20px;
+}
+
+.libraryLeftPanel {
+	border-right: 1px solid rgba(178, 240, 255, .5);
+} 
+
+#library-right-panel-top,
+#libraryContent li:not(:last-child) {
+	border-bottom: 1px solid rgba(178, 240, 255, .5);
+}
+
+.libraryTopPanel {
+/*	margin: 0;
+	padding: 0;
+	margin-left: 50px;
+	height: 110px;
+	background-repeat: no-repeat;
+	background-position: left top;
+	z-index: 1;
+	overflow: hidden;*/
+}
+
+.libraryTopPanel .libraryTopPanelTitle {
+	position: absolute;
+	left: 57px;
+	top: 19px;
+	font-size: 0;
+}
+
+.closeLibraryButton {
+/*	position: absolute;
+	top: 25px;
+	right: 25px;*/
+	background-repeat: no-repeat;
+	background-position: left top;
+	width: 42px;
+	height: 42px;
+	/*z-index: 1;*/
+}
+
+.closeLibraryButton:before {
+	content: "\2715";
+}
+
+/*.closeLibraryButton:active {
+	position: absolute;
+	top: 26px;
+}*/
+
+.libraryTabs {
+	position: absolute;
+	left: 40px;
+	font-size: 0;
+	overflow-y: hidden;
+	overflow-x: scroll;
+	white-space: nowrap;
+	width: 550px;
+	height: 100%;
+	bottom: -10px;
+	padding-bottom: 10px;
+}
+
+.tabsWrapper {
+	position: absolute;
+	font-size: 0;
+	height: 100%;
+}
+
+.libraryTab {
+	float: left;
+	padding-top: 33px;
+	padding-left: 15px;
+	padding-right: 15px;
+	height: 77px;
+	max-width: 220px;
+	overflow: hidden;
+	white-space: nowrap;
+	cursor: pointer;
+	background-repeat: repeat-x;
+	background-position: center top;
+	text-transform: uppercase;
+}
+
+.libraryTabSelected {
+	background-repeat: no-repeat;
+}
+
+.libraryTabClear {
+	display: inline-block;
+	height: 110px;
+	width: 130px;
+	background-repeat: repeat-x;
+	background-position: center top;
+	position: absolute;
+	top: 0;
+	left: 640px;
+}
+
+.libraryTabInlineClear {
+	display: inline-block;
+	height: 110px;
+	max-width: 630px;
+	background-repeat: repeat-x;
+	background-position: center top;
+}
+
+.libraryTopSubPanel {
+	margin-top: -20px;
+	left: 76px;
+	padding-top: 20px;
+	height: 60px;
+	width: 645px;
+	margin-bottom: 20px;
+	z-index: 0;
+	text-transform: uppercase;
+}
+
+.closeLibrarySubPanelButton {
+	height: 43px;
+	background-repeat: no-repeat;
+	background-position: left top;
+	text-align: right;
+	padding: 0 15px 0 35px;
+	line-height: 43px !important;
+	display: block;
+	margin-left: 20px;
+	/*vertical-align: top;*/
+	cursor: pointer;
+	text-transform: uppercase;
+	position: absolute;
+	top: 20px;
+}
+
+.closeLibrarySubPanelButton:active {
+	top: 21px;
+}
+
+.libraryTopSubPanel .subPanelArea {
+	margin-top: -2px;
+	margin-left: 150px;
+	/*vertical-align: top;*/
+	display: block;
+	line-height: 0;
+	max-width: 470px;
+	overflow: hidden;
+	position: absolute;
+}
+
+ul#libraryContent {
+	list-style-type: none;
+	margin: 0; 
+}
+
+.libraryContent {
+	margin-left: 90px;
+	margin-right: 50px;
+	overflow-x: hidden;
+	overflow-y: auto;
+	/*-webkit-overflow-scrolling: touch;*/
+}

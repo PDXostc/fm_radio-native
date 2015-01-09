@@ -1,0 +1,50 @@
+#VCbarWrapper {
+	position: absolute;
+	left: 25px;
+	height: 100%;
+	display: block;
+}
+
+#VCinner {
+	position: absolute;
+	top: 30px;
+	height: 2px;
+}
+
+#VCcircle {
+	position: absolute;
+	top: -10px;
+	width: 80px;
+	height: 80px;
+}
+
+#VCline {
+	position: absolute;
+	top: 36px;
+	height: 1px;
+	width: 100%;
+}
+
+#VCouter {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: inherit;
+}
+
+#VCicon {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 37px;
+	height: 18px;
+	background-size: 37px 18px;
+	display: block;
+}
+.circleBase {
+	-webkit-border-radius: 999px;
+	border-radius: 999px;
+	behavior: url(PIE.htc);
+}

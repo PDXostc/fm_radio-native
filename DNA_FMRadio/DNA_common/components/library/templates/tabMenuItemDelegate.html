@@ -1,0 +1,12 @@
+{{foreach Tabs}}
+	{{if selected == true}}
+			<div onclick="{{:action}}" id="libraryTab{{:index}}" class="libraryTab libraryTabSelected fontSizeLarger fontWeightBold fontColorNormal fontColorSelected">
+				{{:text}}
+			</div>
+	{{else}}
+			<div onclick="{{:action}}" id="libraryTab{{:index}}" class="libraryTab fontSizeLarger fontWeightBold fontColorNormal">
+				{{:text}}
+			</div>
+	{{/if}}
+{{/foreach}}
+<div class="libraryTabInlineClear"></div>

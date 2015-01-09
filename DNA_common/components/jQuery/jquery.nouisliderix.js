@@ -1,3 +1,12 @@
+/*
+ * Copyright (c) 2014, Intel Corporation, Jaguar Land Rover
+ *
+ * This program is licensed under the terms and conditions of the
+ * Apache License, version 2.0.  The full text of the Apache License is at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ */
+
 /* noUiSlider 3.2.1 */
 (function ($) {
 
@@ -26,7 +35,7 @@
 				return (value * 100) / this._length(range);
 			},
 			is : function (range, value) {
-				return ((value * this._length(range)) / 100) + range[0];
+				return 100 - ((value * this._length(range)) / 100) + range[0];
 			},
 			_length : function (range) {
 				return (range[0] > range[1] ? range[0] - range[1] : range[1] - range[0]);
@@ -181,7 +190,7 @@
 						orientation = 1;
 					} else {
 						classes += "horizontal";
-						pos = 'left';
+						pos = 'right';
 						orientation = 0;
 					}
 
@@ -192,16 +201,16 @@
 					for (var i = 0; i < settings.handles; i++) {
 
 						handles[i] = slider.append(handlehtml).children(':last');
-						var setTo = percentage.to(settings.range, settings.start[i]);
+						var setTo = 100 - percentage.to(settings.range, settings.start[i]);
 						handles[i].css(pos, setTo + '%');
 						if (setTo == 100 && handles[i].is(':first-child')) {
 							handles[i].css('z-index', 2);
 						}
 
 						var bind = '.noUiSlider',
-						onEvent = (EVENT === 1 ? 'mousedown' : EVENT === 2 ? 'MSPointerDown' : EVENT === 3 ? 'mousedown' : 'touchstart') + bind + 'X',//added EVENT === 3 ? 'mousedown' to work on JLR touchscreen
-						moveEvent = (EVENT === 1 ? 'mousemove' : EVENT === 2 ? 'MSPointerMove' : EVENT === 3 ? 'mousemove' : 'touchmove') + bind,//added EVENT === 3 ? 'mousemove' to work on JLR touchscreen
-						offEvent = (EVENT === 1 ? 'mouseup' : EVENT === 2 ? 'MSPointerUp' : EVENT === 3 ? 'mouseup' :'touchend') + bind//added EVENT === 3 ? 'mouseup' to work on JLR touchscreen
+						onEvent = (EVENT === 1 ? 'mousedown' : EVENT === 2 ? 'MSPointerDown' : EVENT === 3 ? 'touchstart' : 'mousedown') + bind + 'X',//added EVENT === 3 ? 'mousedown' to work on JLR touchscreen
+						moveEvent = (EVENT === 1 ? 'mousemove' : EVENT === 2 ? 'MSPointerMove' : EVENT === 3 ? 'touchmove' : 'mousemove') + bind,//added EVENT === 3 ? 'mousemove' to work on JLR touchscreen
+						offEvent = (EVENT === 1 ? 'mouseup' : EVENT === 2 ? 'MSPointerUp' : EVENT === 3 ? 'touchend' :'mouseup') + bind//added EVENT === 3 ? 'mouseup' to work on JLR touchscreen
 
 						handles[i].find('div').on(onEvent, function (e) {
 
@@ -215,7 +224,7 @@
 
 								var handle = $(this).addClass('active').parent(),
 								unbind = handle.add($(document)).add('body'),
-								originalPosition = parseFloat(handle[0].style[pos]),
+								originalPosition = 100 - parseFloat(handle[0].style[pos]),
 								originalClick = client(e),
 								previousClick = originalClick,
 								previousProposal = false;
@@ -237,7 +246,7 @@
 										previousClick[0] != currentClick[0], previousClick[1] != currentClick[1]
 									],
 									proposal = originalPosition + ((currentClick[orientation] * 100) / (orientation ? slider.height() : slider.width()));
-									proposal = correct(proposal, slider, handle);
+									proposal = 100 - correct(proposal, slider, handle);
 
 									if (movement[orientation] && proposal != previousProposal) {
 										handle.css(pos, proposal + '%').data('input').val(percentage.is(settings.range, proposal).toFixed(res));
@@ -328,7 +337,7 @@
 
 						for (var i = 0; i < setup.handles.length; i++) {
 							if (val[i] != null) {
-								var proposal = correct(percentage.to(setup.settings.range, val[i]), $(this), setup.handles[i]);
+								var proposal = 100 - correct(percentage.to(setup.settings.range, val[i]), $(this), setup.handles[i]);
 								setup.handles[i].css(setup.pos, proposal + '%').data('input').val(percentage.is(setup.settings.range, proposal).toFixed(setup.res));
 							}
 						}

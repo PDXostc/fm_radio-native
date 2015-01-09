@@ -1,0 +1,54 @@
+#backgroundAudio {
+	background-image: url('images/musicplayer/bg_blue.png');
+}
+
+.previousBtn {
+	background-image: url('images/musicplayer/icon_previous_blue.png');
+}
+
+.previousBtnActive {
+	background-image:
+		url('images/musicplayer/icon_previous_enabled_blue.png');
+}
+
+.pauseBtn {
+	background-image: url('images/musicplayer/icon_pause_blue.png');
+}
+
+.nextBtn {
+	background-image: url('images/musicplayer/icon_next_blue.png');
+}
+
+.nextBtnActive {
+	background-image: url('images/musicplayer/icon_next_enabled_blue.png');
+}
+
+.shuffleBtn {
+	background-image: url('images/musicplayer/icon_shuffle_blue.png');
+}
+
+.repeatBtn {
+	background-image: url('images/musicplayer/icon_repeat_blue.png');
+}
+
+.playBtn {
+	background-image: url('images/musicplayer/icon_play_blue.png');
+}
+
+.shuffleBtnActive {
+	background-image:
+		url('images/musicplayer/icon_shuffle_enabled_blue.png');
+}
+
+.repeatBtnActive {
+	background-image: url('images/musicplayer/icon_repeat_enabled_blue.png');
+}
+
+.albumCarouselDescription {
+	background-image: url('images/musicplayer/grey_rectangle_blue.png');
+}
+
+.albumThumbnail {
+	background-image: url('images/musicplayer/cover_album_blue.png');
+	background-size: 100% 100%;
+}
