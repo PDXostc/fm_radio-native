@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<!--
+ * Copyright (c) 2014, Intel Corporation, Jaguar Land Rover
+ *
+ * This program is licensed under the terms and conditions of the
+ * Apache License, version 2.0.  The full text of the Apache License is at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+-->
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<title>FM RADIO</title>
+		<meta name="viewport" content="width=1080, height=1920, user-scalable=no" />
+
+		<link rel="stylesheet" href="./DNA_common/css/style.css"/>
+		<link rel="stylesheet" href="./css/fmradio.css"/>
+		<script type="text/javascript" src="./DNA_common/components/jQuery/jquery-1.8.2.js"></script>
+		<script type="text/javascript" src="./DNA_common/js/init.js"></script>
+
+		<script type="text/javascript">
+			includeJs("./js/spectrumAnalyzer.js">;
+
+			/*includeJs("./DNA_common/js/predefAppModel.js");
+			includeJs("./DNA_common/js/installedApps.js");
+			includeJs("./DNA_common/js/keyControl.js");
+			includeJs("./DNA_common/js/actionCatcher.js");
+			includeJs("./DNA_common/js/HomeScreenMain.js");*/
+			includeJs("./js/main.js");
+		</script>
+	</head>
+	<body>
+		<!-- Begin  #base -->
+		<div id="base">
+			<div id="topBar"></div>
+			<div id="app">	
+				<div id="clockElement"></div>
+				<!-- BEGIN APP SPECIFIC ELEMENTS -->
+	<div class="flex-fm-row">
+		<div class="small-title title-reflect">FM RADIO</div>
+<div id="station-id" class="dna-orange station-id-reflect" data-station-id-number="">103.7<span class="fm-designation">FM</span></div>
+<button type="button" class="cancel-sst">CANCEL...</button><!-- visibility:hidden when not utilized for seek/scan/tune -->
+<div class="seek-scan-tune-wrapper">
+				<button class="minus" type="button">-</button><span>SEEK</span><button type="button">+</button>
+				<button class="minus" type="button">-</button><span>SCAN</span><button type="button">+</button>
+				<button class="minus" type="button">-</button><span>TUNE</span><button type="button">+</button>
+</div>
+			<div id="spectAnalyzer" class="spectrumAnalyzer"><img src="images/spectrum-fake.png" alt=""></div>
+
+<div id="keypad-container" class="flex-parent shadowBck"><!-- flex parent for all presets-->
+<div class="preset-btn-row"><!-- flex parent for row of 3 numbers -->
+	<div id="num_1" class="digits first_position"><div class="contentFlexed fm-radio-box dna-orange" data-preset-1="">107</div></div>
+	<div id="num_2" class="digits second_position"><div class="contentFlexed fm-radio-box fm-gray" data-preset-2="">EMPTY</div></div>
+	<div id="num_3" class="digits third_position"><div class="contentFlexed fm-radio-box fm-gray" data-preset-3="">EMPTY</div></div>
+</div>
+
+
+<div class="preset-btn-row"><!-- flex parent for row of 3 numbers -->
+	<div id="num_4" class="digits first_position"><div class="contentFlexed fm-radio-box dna-orange" data-preset-4="">98.7</div></div>
+	<div id="num_5" class="digits second_position"><div class="contentFlexed fm-radio-box fm-gray" data-preset-5="">EMPTY</div></div>
+	<div id="num_6" class="digits third_position"><div class="contentFlexed fm-radio-box fm-gray" data-preset-6="">EMPTY</div></div>
+</div>
+
+<div class="preset-btn-row"><!-- flex parent for row of 3 numbers -->
+	<div id="num_7" class="digits first_position"><div class="contentFlexed fm-radio-box dna-orange" data-preset-7="">103.7</div></div>
+	<div id="num_8" class="digits second_position"><div class="contentFlexed fm-radio-box fm-gray" data-preset-8="">EMPTY</div></div>
+	<div id="num_9" class="digits third_position"><div class="contentFlexed fm-radio-box fm-gray" data-preset-9="">EMPTY</div></div>
+</div>
+
+</div>
+</div> <!-- wrapper for parent flex of content-->
+				<!-- END APP SPECIFIC ELEMENTS -->
+			</div>
+			<!--end of #app -->
+			<div id="bottomBar" class="bottomPanel bottomPanelImg"></div>
+		</div>
+		<!-- End #base -->
+	</body>
+</html>

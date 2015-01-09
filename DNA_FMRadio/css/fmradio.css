@@ -1,0 +1,258 @@
+@font-face {
+  font-family: letsGoDigital;
+  src: url(../fonts/letsGoDigital.ttf);
+  font-weight: 400;
+}
+
+body {
+}
+
+.fm-designation {
+  font-size: 7rem;
+}
+
+#keypad-container {
+  width: 925px;
+  height: 312px;
+  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  font-weight: bold;
+  margin: 0 8%;
+}
+
+.flex-container-fm {
+  display: flex;
+ /* or inline-flex */
+  justify-content: space-between;
+  flex-basis: 22%;
+}
+
+.digits {
+  display: flex;
+  /*justify-content:center;*/
+  margin-bottom: 20px;
+  flex-basis: 30%;
+}
+
+.contentFlexed {
+  flex: 1;
+  align-self: center;
+  text-align: center;
+}
+
+.contentFlexed span {
+  font-size: .5em;
+  display: block;
+}
+
+.first_position {
+  order: 1;
+}
+
+.second_position {
+  order: 2;
+}
+
+.third_position {
+  order: 3;
+}
+
+.flex-fm-row {
+  font-family: letsGoDigital;
+  flex-direction: row;
+  margin-top: 50px;
+}
+
+.fm-radio-box, .cancel-sst {
+  border: 1px solid #373636;
+  background-color: #202325;
+  padding: 5px;
+  font-family: letsGoDigital;
+  font-weight: 700;
+  font-size: 87px;
+  width: 235px;
+  height: 62px;
+  line-height: 62px;
+  text-align: center;
+  float: right;
+  margin: 0 10px;
+  -webkit-box-shadow: inset 5px -5px 9px 1px rgba(0, 0, 0, 0.5);
+  box-shadow: inset 5px -5px 9px 1px rgba(0, 0, 0, 0.59);
+}
+
+.cancel-sst {
+  background-color: #ee3225;
+  color: #fff;
+  opacity: .8;
+  float: none;
+  font-size: 6rem;
+  line-height: 0;
+  box-shadow: inset -1px -1px 22px 1px rgba(0, 0, 0, 0.5);
+  display: block;
+  margin: 0 auto 70px;
+}
+
+#seekControls {
+  width: 1020px;
+  padding: 5px;
+  font-family: "Droid Sans";
+  font-size: 57px;
+  font-weight: bold;
+  margin: 0 auto;
+}
+
+#seekControls div {
+  margin: 0 20px;
+}
+
+.tuneUp {
+  height: 63px;
+  width: 63px;
+  background: url('images/minus-plus-btn.png')no-repeat 0 0;
+  color: #ffd38c;
+  padding-right: 10px;
+  display: inline-block;
+}
+
+.tuneDown {
+  height: 63px;
+  width: 63px;
+  background: url('images/minus-plus-btn.png')no-repeat 0 -63pxcolor:#ffd38c;
+  padding-left: 10px;
+  display: inline-block;
+}
+
+.fm-gray {
+  color: #646667;
+}
+
+.dna-orange {
+  color: #fe9c00;
+}
+
+.title-reflect {
+  -webkit-box-reflect: below -18px -webkit-gradient(linear, left top, left bottom, from(transparent), to(rgba(250, 250, 225, 0.4) ) );
+}
+
+.station-id-reflect {
+  -webkit-box-reflect: below -211px -webkit-gradient(linear, left top, left bottom, from(transparent), color-stop(58%, transparent), to(white));
+}
+
+.small-title {
+  font-family: letsGoDigital;
+  font-size: 62px;
+  color: #c4c4c4;
+  text-align: center;
+  margin-top: 50px;
+}
+
+#station-id {
+  font-size: 386px;
+  line-height: 1.2;
+  text-align: center;
+  width: 1079px;
+  margin-bottom: 50px;
+}
+/* SCAN SEEK TUNE BUTTONS*/
+.seek-scan-tune-wrapper {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  font-family: sourceSansPro;
+  margin-bottom: 100px;
+}
+
+.seek-scan-tune-wrapper div {
+  display: flex;
+  flex-basis: 38%;
+}
+
+.seek-scan-tune-wrapper span {
+  color: #ffd38c;
+  font-size: 5rem;
+  font-weight: bold;
+}
+
+.seek-scan-tune-wrapper button {
+  background-color: #f7f7f7;
+  background-image: -webkit-linear-gradient(top, #0F0E0E, #737070);
+  color: #a7a7a7;
+  margin: 0 20px;
+  width: 7rem;
+  height: 7rem;
+  position: relative;
+  display: inline-block;
+  text-align: center;
+  line-height: 1;
+  font-weight: bold;
+  font-family: SourceSansPro, sans-serif;
+  font-size: 5.8rem;
+  border-radius: 50%;
+  border: none;
+  box-shadow: 0px 3px 8px #625E5E, inset 0px 2px 3px #807D7B;
+}
+
+button.minus {
+  line-height: 0;
+}
+
+.seek-scan-tune-wrapper button:active {
+  color: #fe9c00;
+}
+ 
+
+/* spectrum analyzer */
+.spectrumAnalyzer {
+  width: 292px;
+  height: 110px;
+  margin: 90px auto;
+}
+
+.barAnalyzer {
+  position: absolute;
+  width: 33px;
+  height: 5px;
+  float: left;
+  margin-left: 5px;
+}
+
+.bar1Class {
+  left: 0;
+}
+
+.bar2Class {
+  left: 38px;
+}
+
+.bar3Class {
+  left: 76px;
+}
+
+.bar4Class {
+  left: 114px;
+}
+
+.bar5Class {
+  left: 152px;
+}
+
+.bar6Class {
+  left: 190px;
+}
+
+.bar7Class {
+  left: 228px;
+}
+
+.bar8Class {
+  left: 266px;
+}
+
+.bar9Class {
+  left: 304px;
+}
+
+.bar10Class {
+  left: 342px;
+}
