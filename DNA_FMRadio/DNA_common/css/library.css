@@ -1,0 +1,59 @@
+.libraryLeftPanel {
+	background-image: url('images/library/bg_left_panel_blue.png');
+}
+
+.gridIcon {
+	background-image: url('images/library/bt_grid_blue.png');
+}
+
+.gridIconActive {
+	background-image: url('images/library/bt_grid_act_blue.png');
+}
+
+.gridIconDisabled {
+	background-image: url('images/library/bt_grid_blue_disabled.png');
+}
+
+.listIcon {
+	background-image: url('images/library/bt_list_blue.png');
+}
+
+.listIconActive {
+	background-image: url('images/library/bt_list_act_blue.png');
+}
+
+.listIconDisabled {
+	background-image: url('images/library/bt_list_blue_disabled.png');
+}
+
+.searchIcon {
+	background-image: url('images/library/bt_search_blue.png');
+}
+
+.searchIconActive {
+	background-image: url('images/library/bt_search_act_blue.png');
+}
+
+.searchIconDisabled {
+	background-image: url('images/library/bt_search_blue_disabled.png');
+}
+
+.closeLibraryButton {
+	background-image: url('images/library/bt_close_blue.png');
+}
+
+.libraryTopPanel {
+	background-image: url('images/library/bg_top_navi_blue.png');
+}
+
+.libraryTab, .libraryTabClear, .libraryTabInlineClear {
+	background-image: url('images/library/bg_top_navi_unselect1px_blue.png');
+}
+
+.libraryTabSelected {
+	background-image: url('images/library/bg_top_navi_select_blue.png');
+}
+
+.closeLibrarySubPanelButton {
+	background-image: url('images/library/bt_back_blue.png');
+}

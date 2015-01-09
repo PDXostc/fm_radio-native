@@ -1,0 +1,95 @@
+#bottomBar{
+	width: 1053px;
+	height: 139px;
+	position: fixed;
+	bottom: 1px;
+	left: 0;
+	z-index:10;
+	padding-left:25px;
+}
+#settingsicon{
+	margin-left:21px;
+	/*height:85px;*/
+	/*width:85px; */
+	margin-bottom: 10px;
+}
+#settingsMenu{
+	height: 800px;
+	width: 117px;
+	position: fixed;
+	bottom: 140px;
+	left: 0;
+	display:none;
+	border: 1px solid white;
+	box-shadow: 0 0 36px rgba(196, 196, 196, 1) inset;
+}
+#settingsMenu img{
+	border-bottom:1px solid white;
+}
+#bottomBarLogoImg{
+	width:400px;
+	height:100px;
+	margin: 16px 0 0 215px;
+}
+#volume{
+	float:right;
+	margin:50px 31px 0 0;
+}
+#volumeSlideCrop, #volumeKnob, #volumeSlider{
+	position:absolute;
+}
+#volumeChannel, #volumeIndicator2, #volumeKnob{
+	pointer-events: none;
+}
+#volume,#volumeSlider,#volumeSlideCrop{
+	width:210px;
+}
+#volumeChannel,#volumeSlider{
+	height:896px;
+}
+#volume{
+	height:60px;
+	background-image:url('../../../DNA_common/images/VolBckgrnd.png');
+}
+#volumeSlider{
+	display:none;
+	bottom:250px;
+	right:25px;
+	background-image:url('../../../DNA_common/images/VolSlideBckgrnd.png')
+}
+#VolLabel{
+	font-weight:bold;
+	font-size:32px;
+	margin-left:45px;
+	line-height:60px;
+	color:white !important;
+}
+#volumeSlideCrop{
+	height:60%;
+	bottom:6px;
+	overflow:hidden;
+}
+#volumeKnob{
+	left:30px;
+	top:282px;
+}
+#volumeKnob img{
+	width:100px;
+	margin: 25px 0 0 25px;
+}
+#volumeIndicator2{
+	width:209px;
+}
+#volumeCrop{
+	height:60px;
+	width:60%;
+	overflow:hidden;
+}
+.shadowSmall
+{	
+	border: 1px solid white;
+	background: rgba(0, 0, 0, 0.9);
+   -webkit-box-shadow: inset 0 0 20px rgb(179, 227, 255);
+   box-shadow:         inset 0 0 20px rgb(179, 227, 255);
+	
+}

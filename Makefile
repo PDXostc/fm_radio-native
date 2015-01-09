@@ -1,6 +1,6 @@
 app_list = DNA_HomeScreen DNA_HelloTizen
 extension_list = extension_common wkb_client_ext 
-TIZEN_IP=TizenNuc
+TIZEN_IP=TizenVTC
 #TIZEN_IP=192.168.6.11
 
 #to avoid typing a password for each scp or ssh command you need to copy

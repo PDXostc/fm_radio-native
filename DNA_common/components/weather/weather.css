@@ -1,0 +1,35 @@
+/*severe weather alert box*/
+div#weather_alert {
+	top: 100px;
+	left: 100px;
+	height: 1450px;
+	width: 880px;
+	position:absolute;
+	margin: auto;
+	background: -webkit-linear-gradient(top, #000 0%, #0b4166 100%);
+	border: 1px solid #FFF;
+	color: #fff;
+	-webkit-opacity: 0.8;	
+	-webkit-box-shadow: 0 0 90px rgba(255,255,255,0.4);
+	overflow-y: scroll;
+	overflow-x: hidden;
+	touch-action: pan-y;
+	z-index: 1000;
+}
+/*header text in severe weather alert*/
+div#weather_alert > h1	{
+	text-align: center;
+	font-weight: bold;
+	font-size: 3.5em;
+	text-transform: uppercase;
+}
+/* text inside alert must be large enough to be easily legible */
+div#weather_alert > p {
+	font-size: 2em;
+	color: #FFF;
+	padding: 5px 20px;
+}
+div#weather_alert > p.text {
+	font-size: 1.5em;
+	line-height: 1.5em;
+}

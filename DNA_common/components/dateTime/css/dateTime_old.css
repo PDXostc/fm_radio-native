@@ -1,0 +1,11 @@
+.clockElemnt {
+	position: absolute;
+	left: 515px;
+	top: 92px;
+}
+
+.dateElemnt {
+	position: absolute;
+	left: 25px;
+	top: 92px;
+}

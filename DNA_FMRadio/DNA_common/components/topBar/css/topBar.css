@@ -1,0 +1,237 @@
+
+/*body {
+	font-family: "Droid Sans", sans-serif;  *******this style in common.css******
+	background-color: rgb(0,0,0);
+}*/
+html {
+overflow: hidden;       
+}
+.clearBoth {
+	clear:both;
+}
+#topBar {
+	/*width: calc(100% - 2px);*/
+	height: 114px;
+	background: rgba(0, 0, 0, 0.8);
+	box-shadow: inset 0 0 43px rgba(178, 240, 255, 1);
+	border: 1px white solid;
+	/*position: fixed;*/
+	/*top: 0;*/
+	/*left: 0;*/
+	/*z-index:20;*/
+}
+.topTask{
+	height:114px;
+	width:114px;
+}
+.topTask img{
+	height:116px;
+	width:116px;
+	margin-top:-1px;
+	margin-left:-1px;
+}
+.topTask{
+	border-right:1px solid gray;
+	float:left;
+}
+#topTask0{
+	margin-left:135px;
+	border-left:1px solid gray;
+}
+#homeScreenIcon {
+	width:89px; 
+	height:89px;
+	position: absolute;
+	left:0;
+	top: 0;
+	margin: 10px 0 0 20px;	
+
+}
+.hexGridHeading{
+	padding:25px;
+	font-size:25px;
+	color:white;
+	background-color:gray;
+	z-index:2;
+	width:88%;
+	height:18px;
+	border:1px solid orange;
+	position:fixed;
+}
+.homeScrAppGridText{
+	white-space:nowrap;
+	line-height:18px;
+	font-size:20px;
+}
+.exitButton{
+	float:right;
+	margin-top:-12px;
+}
+#appGridIcon {
+	width:89px; 
+	height:89px;
+	position: absolute;
+	right:0;
+	top: 0;
+	margin: 10px 20px 0 0;
+}
+
+#hexGridView{
+	display:none;
+	position:absolute;
+	top:115px;
+	left:-1px;
+	padding:32px;
+	width:1016px;
+	height:1608px;
+	z-index:5;
+	font-size:20px;
+	background-color:rgba(0,0,0,1);
+	-webkit-mask: -webkit-gradient(linear, 0 1920, 0 1200,  from(rgba(0,0,0,0.5)), to(rgba(0,0,0,1)));
+	overflow-x:hidden;
+	overflow-y:scroll;
+	touch-action: pan-y;
+}
+
+	.HSAGWHeading{
+		text-transform:uppercase;
+		margin:0 0 47px 0;
+		color:white !important;
+		font-size:40px;
+	}
+	.homeScrAppGridFrame{
+		width:196px;
+		height:196px;
+		background-color:rgba(0,0,0,0.2);
+		float:left;
+		margin:3px;
+		text-align:center;
+	}
+	.homeScrAppImg{
+		width:200px;
+	}
+	.homeScrAppGridImg img{
+		margin-top:40px;
+		height:100px;
+	}
+	#hexGrid {
+		margin-top:100px;
+	}
+	.hexrow {
+		white-space: nowrap;
+		/*right/left margin set at (( width of child div x sin(30) ) / 2) makes a fairly tight fit; a 3px bottom seems to match*/
+		margin: 0 25px 3px; 
+	}
+	.hexrow > div {
+		/*width: 99px;
+		height: 173.2px; /* ( width x cos(30) ) x 2 */
+		/* For margin:
+		right/left = ( width x sin(30) ) makes no overlap 
+		right/left = (( width x sin(30) ) / 2) leaves a narrow separation
+		*/
+		margin: 20px -4px; 
+		position: relative;
+		background-image: url('../images/AppHex.png');
+		/*background-position: -50px 0px; /* -left position -1 x width x sin(30) */
+		background-repeat: no-repeat;
+		background-size: auto 100%;
+		color: white;
+		text-align: center;
+		display: inline-block;
+		vertical-align:middle;
+		line-height: 12px; /*equals height*/
+	}
+	.hexrow > div:nth-child(odd) {
+		top: -44.8px; /* -1 x( ( width x cos(30) / 2) + (hexrow bottom margin / 2)) */ 
+	}
+	.hexrow > div:nth-child(even) {
+		top: 73.3px; /* ( width x cos(30) / 2 ) */
+	}
+	.hexrow > div > div:first-of-type {
+		position: absolute;
+		width: 100%;
+		height: 100%; 
+		top: 0;
+		left: 0;
+		z-index: -1;
+		overflow: hidden;
+		background-image: inherit;
+		
+		-ms-transform:rotate(60deg); /* IE 9 */
+		-moz-transform:rotate(60deg); /* Firefox */
+		-webkit-transform:rotate(60deg); /* Safari and Chrome */
+		-o-transform:rotate(60deg); /* Opera */
+		transform:rotate(60deg);
+	}
+	.hexrow > div > div:first-of-type:before {
+		content: '';
+		position: absolute;
+		width: 200px; /* width of main + margin sizing */
+		height: 100%;
+		background-image: inherit;
+		background-position: 0 0;
+		background-repeat: no-repeat;
+		background-size: auto 100%;
+		bottom: 0;
+		left: 0;
+		z-index: 1;
+		
+		-ms-transform:rotate(-60deg) translate(-150px, 0); /* IE 9 */
+		-moz-transform:rotate(-60deg) translate(-150px, 0); /* Firefox */
+		-webkit-transform:rotate(-60deg) translate(-150px, 0); /* Safari and Chrome */
+		-o-transform:rotate(-60deg) translate(-150px, 0); /* Opera */
+		transform:rotate(-60deg) translate(-150px, 0);
+		
+		-ms-transform-origin: 0 0; /* IE 9 */
+		-webkit-transform-origin: 0 0; /* Safari and Chrome */
+		-moz-transform-origin: 0 0; /* Firefox */
+		-o-transform-origin: 0 0; /* Opera */
+		transform-origin: 0 0;
+	}
+	.hexrow > div > div:last-of-type {
+		content: '';
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		top: 0;
+		left: 0;
+		z-index: -2;
+		overflow: hidden;
+		background-image: inherit;
+		
+		-ms-transform:rotate(-60deg); /* IE 9 */
+		-moz-transform:rotate(-60deg); /* Firefox */
+		-webkit-transform:rotate(-60deg); /* Safari and Chrome */
+		-o-transform:rotate(-60deg); /* Opera */
+		transform:rotate(-60deg);
+	}
+	.hexrow > div > div:last-of-type:before {
+		content: '';
+		position: absolute;
+		width: 200px; /* starting width + margin sizing */
+		height: 100%;
+		background-image: inherit;
+		background-position: 0 0;
+		background-repeat: no-repeat;
+		background-size: auto 100%;
+		bottom: 0;
+		left: 0;
+		z-index: 1;
+		
+		/*translate properties are initial width (100px) and half height (173.2 / 2 = 86.6) */
+		-ms-transform:rotate(60deg) translate(100px, 86.6px); /* IE 9 */
+		-moz-transform:rotate(60deg) translate(100px, 86.6px); /* Firefox */
+		-webkit-transform:rotate(60deg) translate(100px, 86.6px); /* Safari and Chrome */
+		-o-transform:rotate(60deg) translate(100px, 86.6px); /* Opera */
+		transform:rotate(60deg) translate(100px, 86.6px);
+		
+		-ms-transform-origin: 100% 0; /* IE 9 */
+		-webkit-transform-origin: 100% 0; /* Safari and Chrome */
+		-moz-transform-origin: 100% 0; /* Firefox */
+		-o-transform-origin: 100% 0; /* Opera */
+		transform-origin: 100% 0;
+	}
+	.hexrow > div > span {
+		vertical-align: middle;
+		white-space:normal;
+	}

@@ -1,0 +1,11 @@
+#clockElement {
+	color: #C4C4C4;
+	display: flex;
+	justify-content: space-between;
+	padding: 20px 40px;
+}
+
+#dnaDate,
+#dnaTime {
+	font-size: 4rem;
+}
