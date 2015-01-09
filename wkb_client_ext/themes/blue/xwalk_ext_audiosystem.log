@@ -1,0 +1,2 @@
+Oct 17 13:34:41 [Debug] AudioSystemExtension::AudioSystemExtension():24: Initializing extension
+Oct 17 16:07:55 [Debug] virtual AudioSystemExtension::~AudioSystemExtension():30: Un-initializing extension

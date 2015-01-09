@@ -1,0 +1,203 @@
+
+/* these image styles copied from tabs.css DNA_common/css, need to move images and adjust file paths */
+.tabsCloseButton {
+	background-image: url('../images/tabs/bt_close_blue.png');
+}
+
+/* .tabsTopPanel {
+	background-image: url('../images/tabs/bg_top_navi_blue.png');
+} */
+
+.tabsTab, .tabsTabClear {
+	background-image: url('../images/tabs/bg_top_navi_unselect1px_blue.png');
+}
+
+.tabsTabSelected {
+	background-image: url('../images/tabs/bg_top_navi_select_blue.png');
+}
+
+.tabsCloseSubPanelButton {
+	background-image: url('../images/tabs/bt_back_blue.png');
+}
+/* end of styles copied from tabs.css in DNA_common/css */
+
+
+/* redundant with flex box 
+.tabs{
+	width:1080px !important;
+	height:1920px;
+}*/
+.tabs {
+	width: 100%;
+	height: 100%;
+	left: 0;
+	z-index: 20;
+	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
+	flex: none;
+}
+/* copied from css/tabs.css
+.tabsTopPanel {
+	background-image: url('../images/tabs/bg_top_navi_blue.png');
+}*/
+
+/* style copied from components/topBar/topBar.css */
+.tabsTopPanel{
+	background-size:1080px 110px;
+}
+.tabsTopPanel {
+	margin: 0;
+	padding: 0;
+	height: 110px;
+	background-repeat: no-repeat;
+	background-position: left top;
+	z-index: 1;
+	box-shadow: inset 0 0 70px rgba(178, 240, 255, 0.8);
+	border: 1px solid rgba(178, 240, 255, 1.0);
+}
+
+.tabsTopPanel .tabsTopPanelTitle {
+	position: absolute;
+	left: 30px;
+	top: 19px;
+	font-size: 0;
+}
+.tabsCloseButton {
+	background-image: url('../images/tabs/bt_close_blue.png');
+}
+/* style copied from components/topBar/topBar.css; delete once image style path is changed */
+.tabsCloseButton {
+	position: absolute;
+	top: 0;
+	right: 0;
+	background-repeat: no-repeat;
+	background-position: center;
+	width: 92px;
+	height: 92px;
+	z-index: 1;
+}
+
+.tabsCloseButton:active {
+	position: absolute;
+	top: 1px;
+}
+
+/* styles copied from components/topBar/topBar.css; is over-ridden 
+.tabsTabs{
+	width:1080px !important; */
+
+.tabsTab, .tabsTabClear {
+	background-image: url('../images/tabs/bg_top_navi_unselect1px_blue.png');
+}
+.tabsTabs {
+	position: absolute;
+	left: 15px;
+	width: 500px !important;
+	overflow: hidden;
+	white-space: nowrap;
+	margin-top: 10px;
+}
+
+.tabsTab {
+	float: left;
+	padding-top: 33px;
+	padding-left: 15px;
+	padding-right: 15px;
+	height: 77px;
+	max-width: 220px;
+	overflow: hidden;
+	white-space: nowrap;
+	cursor: pointer;
+	background-repeat: repeat-x;
+	background-position: center top;
+	text-transform: uppercase;
+}
+
+.tabsTabSelected {
+	background-repeat: no-repeat;
+}
+/* style copied from components/topBar/topBar.css; */
+.tabsTabClear{
+	width:870px !important;
+}
+.tabsTabClear {
+	display: inline-block;
+	height: 110px;
+	width: 500px;
+	background-repeat: repeat-x;
+	background-position: center top;
+}
+
+.tabsTabSelected {
+	/*background-image: url('../images/tabs/bg_top_navi_select_blue.png');*/
+}
+.tabsTabSelected {
+	background-repeat: no-repeat;
+}
+
+.tabsTopSubPanel {
+	margin-top: -20px;
+	margin-bottom: 20px;
+	padding-top: 20px;
+	height: 100px;
+	z-index: 0;	
+}
+
+/*.tabsCloseSubPanelButton {
+	background-image: url('../images/tabs/bt_back_blue.png');
+} */
+.tabsCloseSubPanelButton {
+	/*height: 43px;
+	background-repeat: no-repeat;
+	background-position: left top;
+	text-align: right;
+	padding: 0 15px 0 35px;
+	line-height: 43px !important; 
+	display: block;
+	margin-left: 20px;
+	/*vertical-align: top;*/
+	cursor: pointer;
+	text-transform: uppercase;
+	/*position: absolute;	*/	
+	width: 100px;
+	height: 100px;
+	float: left;
+	background-image: url('/DNA_common/components/settings/images/back.png');
+	background-repeat: no-repeat;
+	margin: 20px 20px 0 50px;
+}
+
+.tabsCloseSubPanelButton:active {
+	padding-top: 1px;
+}
+
+.tabsTopSubPanel .tabsSubPanelArea {
+	margin-top: 7px;
+	/* margin-left: 200px; */
+	/* vertical-align: top; */
+	display: inline-block;
+	/* line-height: 0; */
+	text-transform: uppercase;
+	max-width: 330px;
+	overflow: hidden;
+	/* position: relative; */
+	height: 100px;
+}
+
+.tabsContent {
+	margin-left: 20px;
+	margin-right: 20px;
+	overflow-x: hidden;
+	overflow-y: auto;
+	padding-right: 10px;
+}
+
+.tabsTopPanelTitleHint {
+	float: right;
+	bottom: 10px;
+	right: 34px;
+	z-index: 100;
+	position: absolute;
+	text-transform: uppercase;
+}

@@ -1,0 +1,86 @@
+<img id="settingsCarot" onclick="loadSettings();" src="./DNA_common/images/Settings_carot.png" width="120px" height="90px">
+<div id="settingsMenu">
+	<img id="settingsIconTabs" onclick="$('#settingsTabs').toggle();" src="./DNA_common/images/icongear.png" width="117px" height="117px">
+	<img id="settingsIconPage" onclick="$('#settingsPage').toggle();" src="./DNA_common/images/icongear.png" width="117px" height="117px">
+	<img id="settingBlu" src="./DNA_common/images/BluTooth_On.png" onclick="launchApplication('http://com.intel.tizen/settings');Settings.openSetting({id:'bluetooth'});">
+	<img id="settingNet" src="./DNA_common/images/WiFi_On.png" onclick="$('#settingsWifi').toggle();;">
+	<img id="settingTet" src="./DNA_common/images/Tether_Off.png" onclick="launchApplication('http://com.intel.tizen/settings');Settings.openSetting({id:'wifitethering'});">
+	<img id="settingRvi" src="./DNA_common/images/RVI_Icon.png" onclick="launchApplication('http://com.intel.tizen/settings');Settings.openSetting({id:'rvi'});">
+</div>
+
+<div id="settingsTabs" class="tabs pageBgColorNormalTransparent" style="display: none;"><!--may need to be display:flex-->
+	<div id="tabsTopPanel" class="tabsTopPanel">
+		<div class="tabsTopPanelTitle">
+			<div class="boxIconRectangleSmall bgColorTheme"></div>
+			<div class="boxIconCaptionSmall boxCaptionText">APPS</div>
+		</div>
+
+		<div class="tabsCloseButton" onclick="$(&quot;#settingsTabs&quot;).tabs(&quot;hidePage&quot;)"></div>
+
+		<div id="tabsTabsID" class="tabsTabs">	
+			<div onclick="$('#settingsTabs').tabs('tabsTabClick',0);" id="tabsTab0" class="tabsTab tabsTabSelected fontSizeLarger fontWeightBold fontColorNormal fontColorSelected">SETTINGS</div>
+			<div class="tabsTabClear"></div>
+		</div>
+	</div>
+	<div id="tabsTopSubPanel" class="tabsTopSubPanel" style="display: none;"><!--style="display:block;">
+
+	<!--insert/include component subheader -->	
+	<!--<div id="tabsCloseSubPanelButton" class="tabsCloseSubPanelButton"></div>
+		<div class="tabsSubPanelArea">
+			<div id="tabsTopSubPanelTitle">
+				<div class="boxIconRectangleSmall bgColorTheme"></div>
+				<div class="boxIconCaptionSmall boxCaptionText">SETTINGS</div>
+			</div>
+			<div id="tabsTopSubPanelSubtitle" class="componentHeader oneLineEllipsis">WIFI</div>
+			<div class="tabsTabClear">
+			</div>
+		</div>
+		<div id="wifiPowerButton" class="subPanelToggleButton subPanelToggleButtonWide" data-bind="with: Settings.Wifi.adapter, click: Settings.Wifi.togglePower">
+
+			<!-- wifi on/off button style here, hexagon slider instead of text -->
+			<div class="fontColorNormal fontSizeMedium fontWeightBold toggleButtonText" data-bind="text: Settings.Wifi.isPowered() ? 'TURN OFF' : 'TURN ON'">TURN ON</div>
+		</div>
+		<div id="loadingSpinnerWifi" class="loadingSpinnerWifi loading-container loading-container-small" style="display: none;">
+			<div class="loading loading-small"></div>
+		</div>-->
+	</div>
+	<div id="tabsTopSubPanel" class="tabsTopSubPanel bgColorDark" style="display: none;"></div>
+	<div id="tabsContent" class="tabsContent settingsContent" style="max-height: 1170px;">
+		<div id="settingsList" data-bind="template: { name: 'template-settings', foreach: Settings.settingsModel }">
+			<div class="settingElement fontSizeLarge fontWeightBold fontColorNormal borderColorTheme" data-bind="click: Settings.openSetting, text: name">Theme</div>
+			<div class="settingElement fontSizeLarge fontWeightBold fontColorNormal borderColorTheme" data-bind="click: Settings.openSetting, text: name">Wifi networks</div>
+			<div class="settingElement fontSizeLarge fontWeightBold fontColorNormal borderColorTheme" data-bind="click: Settings.openSetting, text: name">Wifi tethering</div>
+			<div class="settingElement fontSizeLarge fontWeightBold fontColorNormal borderColorTheme" data-bind="click: Settings.openSetting, text: name">Bluetooth</div>
+		</div>
+
+<!-- start of wifi tabsContent portion -->
+	<!--<div id="tabsContent" class="tabsContent wifiContent" style="max-height: 310px;">
+		<div id="wifiNetworksList" data-bind="template: { name: 'template-wifi', foreach: Settings.Wifi.networks }, style: { display: Settings.Wifi.isPowered() &amp;&amp; !Settings.Wifi.isTethering() ? 'block' : 'none' }" style="display: none;"></div>
+		<div style="text-align: center; display: none;" data-bind="style: { display: Settings.Wifi.isPowered() &amp;&amp; Settings.Wifi.isTethering() ? 'block' : 'none' }" class="fontColorNormal fontSizeMedium fontWeightBold">TETHERING IS ON</div>
+		<div class="buttonsArea">
+			<div id="wifiRefreshButton" class="wifiRefreshButton" data-bind="click: Settings.Wifi.scanNetwork, style: { display: Settings.Wifi.isPowered() &amp;&amp; !Settings.Wifi.isTethering() ? 'block' : 'none' }" style="display: none;">
+			</div>
+			<div id="addNetworkButton" class="addNetworkButton" data-bind="click: Settings.Wifi.showAddNetwork, style: { display: Settings.Wifi.isPowered() &amp;&amp; !Settings.Wifi.isTethering() ? 'block' : 'none' }" style="display: none;">
+			</div>
+		</div>
+	</div>-->
+	</div>
+	<div class="tabsTopPanelTitleHint fontSizeXXSmall fontWeightBold fontColorTheme">v. 0.5.0 rev. @revision@</div>
+</div>
+
+<!--<script type="text/html" id="template-settings">
+	<div class="settingElement fontSizeLarge fontWeightBold fontColorNormal borderColorTheme" data-bind='click: Settings.openSetting, text: name'></div>
+</script>--><!-- component template include/insert here -->
+
+<ul id="settingsPage" style="display: none;"></ul>
+<div id="settingsPageItem"><li><a>Name X</a></li></div>
+
+<div id="loadingSpinnerWrapper" class="loadingSpinnerWrapper" style="display: none;">
+	<div id="loadingSpinner" class="loadingSpinner pageBgColorNormalTransparent">
+		<div id="loadingSpinnerContent" class="loading-container">
+			<div id="loadingSpinnerImg" class="loading"></div>
+			<div id="loadingSpinnerText" class="loading-text fontSizeXXSmall fontWeightBold fontColorNormal">Turning off</div>
+		</div>
+	</div>
+</div>
+

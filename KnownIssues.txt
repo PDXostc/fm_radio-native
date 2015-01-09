@@ -1,0 +1,4 @@
+Known Issues
+=======================================================
+1.  No way to install a wgt file from an rpm for crosswalk
+Solution:  Wigits will be installed manually as the app user

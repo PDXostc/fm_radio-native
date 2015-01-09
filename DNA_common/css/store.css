@@ -1,0 +1,16 @@
+/* application store style*/
+.storeBackground {
+	background-image: url('images/store/bg_all.png');
+}
+
+.iconStarActive{
+	background-image: url('images/store/star_white.png');
+}
+
+.iconStarInActive{
+	background-image: url('images/store/star_grey.png');
+}
+
+.storePopAppInfo {
+	background-image: url('images/musicplayer/grey_rectangle_blue.png');
+}

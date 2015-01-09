@@ -1,0 +1,315 @@
+.componentHeader {
+	font-size: 62px;
+	color: #fff;
+	font-weight: bold;
+}
+.settingsContent .settingElement {
+	padding: 20px 0;
+	border-bottom-style: solid;
+	border-bottom-width: 2px;
+	overflow: hidden;
+	white-space: nowrap;
+	cursor: pointer;
+	text-transform: uppercase;
+}
+
+.themesContent {
+	line-height: 0;
+}
+
+.themesContent .themeElement {
+	width: 215px;
+	height: 215px;
+	display: inline-block;
+	margin-right: 7px;
+	margin-bottom: 10px;
+	cursor: pointer;
+}
+
+.themesContent .themeElement .themeImage {
+	width: 300px;
+	height: 300px;
+	background-size: 100% 100%;
+}
+
+.themesContent .themeElement .themeImage img {
+	width: 300px;
+	height: 300px;
+}
+
+.themesContent .themeElement .themeTitle {
+	position: relative;
+	padding-left: 10px;
+	padding-right: 10px;
+	line-height: 80px !important;
+	top: -80px;
+	left: 0;
+	height: 80px;
+	overflow: hidden;
+	text-align: center;
+	text-transform: uppercase;
+}
+
+.wifiElement {
+	padding: 20px 20px 20px 0;
+	border-bottom-style: solid;
+	border-bottom-width: 2px;
+	overflow: hidden;
+	white-space: nowrap;
+	cursor: pointer;
+	text-transform: uppercase;
+}
+
+.wifiElement .wifiElementInfoBox {
+	width: 495px;
+	display: block;
+	float: left;
+}
+
+.wifiElement .wifiElementSubtitle {
+	margin-top: 5px;
+	color: rgb(83, 181, 206);
+	font-weight: normal;
+}
+.wifiElement .wifiElementDescription {
+	color: rgb(83, 181, 206);
+	font-weight: normal;
+}
+.wifiElement .wifiElementMore {
+	color: rgb(83, 181, 206);
+	font-weight: normal;
+}
+.wifiElement .wifiElementButton {
+	display: block;
+	float: right;
+	width: 180px;
+	top: 26px;
+}
+/* green button color indicates connected, dark green per Richard */
+.connectGreen {
+	box-shadow: 0 0 2px 2px rgba(102, 210, 45, 1.0) inset;
+	border: 1px solid rgba(89, 255, 0, 1.0);
+}
+/* pale tone 'white' indicated not connected, white per Richard */
+.connectWhite {
+	box-shadow: inset 0 0 70px rgba(178, 240, 255, 0.8);
+	border: 1px solid rgba(255, 255, 255, 1.0);
+}
+
+.toggleButton {
+	width: 89px;
+	height: 43px;
+}
+
+.toggleButtonBackground {
+	width: 100%;
+	height: 100%;
+	opacity: 0.5;
+}
+
+.toggleButton .toggleButtonText {
+	position: relative;
+	text-align: center;
+	top: -43px;
+	line-height: 43px;
+}
+
+.subPanelToggleButton {
+	/* position: absolute;*/
+	margin-right: 50px;
+	float: right;
+	display:inline-block;
+	height: 100px;
+}
+
+.subPanelToggleButtonWide {
+	width: 200px;
+}
+
+.buttonsArea {
+	width: 100%;
+	margin-top: 20px;
+	min-height: 43px;
+}
+
+.wifiRefreshButton {
+	width: 80px;
+	height: 80px;
+	float: left;
+	background-image: url('/DNA_common/components/settings/images/refresh.png');
+	margin-left: 50px;
+	background-size: 80px 80px;
+}
+
+.addNetworkButton {
+	width: 80px;
+	height: 80px;
+	float: right;
+	background-image: url('/DNA_common/components/settings/images/plus.png');
+	margin-right: 60px;
+	background-size: 80px 80px;
+}
+
+.bluetoothRefreshButton {
+	width: 180px;
+	margin: 0 auto;
+}
+
+.wifiNetworkInfoElement {
+	padding: 10px 0;
+	overflow: hidden;
+	white-space: nowrap;
+	cursor: pointer;
+	text-transform: uppercase;
+}
+
+.networkConnectButton {
+	margin: 20px auto;
+	width: 200px;
+}
+
+.loadingSpinnerWifi {
+	position: absolute;
+	top: 33px;
+	right: 240px;
+}
+
+.loadingSpinnerBluetooth {
+	position: absolute;
+	top: 33px;
+	right: 240px;
+}
+
+.popupContainer {
+	position: absolute;
+	width: 300px;
+	height: 300px;
+	z-index: 999;
+	display: none;
+    top: 0;
+    left: 0;
+}
+
+.popupContainerWrapper {
+	width: 300px;
+	height: 300px;
+	display: -webkit-box;
+	-webkit-box-pack: center;
+	-webkit-box-align: center;
+}
+
+.popupWrapper {
+	border-width: 1px;
+	border-style: solid;
+}
+
+.popupHeader {
+	width: 400px;
+	height: 80px;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	display: -webkit-box;
+	-webkit-box-pack: center;
+	-webkit-box-align: center;
+	text-transform: uppercase;
+}
+
+.popupContent {
+	width: 400px;
+	min-height: 100px;
+}
+
+.popupContentContainer {
+	padding: 10px;
+}
+
+.popupContentContainerKey {
+	text-transform: uppercase;
+	display: block;
+}
+
+.popupContentContainerValue {
+	text-transform: uppercase;
+	display: block;
+}
+
+.popupInputBox {
+	margin-top: 10px;
+}
+
+.popupFooter {
+	width: 400px;
+	border-top-width: 1px;
+	border-top-style: solid;
+}
+
+.popupButton {
+	width: 185px;
+	height: 55px;
+	display: inline-block;
+	padding: 10px 0 10px 10px;
+}
+
+.popupButtonBackground {
+	width: 100%;
+	height: 100%;
+	opacity: 0.5;
+}
+
+.popupButton .popupButtonText {
+	position: relative;
+	text-align: center;
+	top: -55px;
+	line-height: 55px;
+}
+
+.contentContainer {
+	padding: 10px;
+}
+
+.contentContainerKey {
+	text-transform: uppercase;
+	display: inline-block;
+	width: 200px;
+}
+
+.contentContainerValue {
+	text-transform: uppercase;
+	display: inline-block;
+}
+
+.contentInputBox {
+	display: inline-block;
+}
+
+.inputBox .settingsInputWideInline {
+	width: 350px;
+}
+
+.inputBox .settingsInputSelectionWideInline {
+	width: 310px;
+}
+
+.wifiHandoverButton {
+	width: 300px;
+	margin: 0 auto;
+}
+
+.disabledArea {
+	width: 500px;
+	height: 500px;
+	position: absolute;
+	top: 0;
+	left: 0;
+	display: none;
+	z-index: 11;
+}
+
+.bluetoothPINCode {
+	float: left;
+	bottom: 10px;
+	left: 34px;
+	z-index: 100;
+	position: absolute;
+	text-transform: uppercase;
+}

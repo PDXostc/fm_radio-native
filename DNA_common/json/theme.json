@@ -1,0 +1,6 @@
+{
+	"id": "http://com.intel.tizen/coulomb.2012",
+        "version": "0.5.0",
+	"name": "Intel Coulomb 2012",
+	"type": "car"
+}

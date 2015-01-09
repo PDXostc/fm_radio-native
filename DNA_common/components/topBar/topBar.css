@@ -1,0 +1,316 @@
+.topBar {
+	position: absolute;
+	display: block;
+	width: 1078px;
+	height: 114px;
+	left: 0;
+	top: 0;
+	z-index: 4;
+		border: 1px solid white;
+	background: rgba(0, 0, 0, 0.8);
+   -webkit-box-shadow: inset 0 0 43px rgb(179, 227, 255);
+   box-shadow:         inset 0 0 43px rgb(179, 227, 255);
+}
+#topBar div{
+	width:112px;
+	height:112px;
+	float:left;
+	background-size:112px 112px;
+	margin-left:4px;
+}
+
+.appIcon {
+	cursor: pointer;
+	background-position: center center;
+	background-repeat: no-repeat;
+	line-height: 0;
+	width: 79px;
+	height: 84px;
+	display: inline-block;
+	border-right-width: 1px;
+	border-right-style: solid;
+	background-size: 90%;
+	-webkit-transition-timing-function: linear;
+	-webkit-transition: all 1s,background-image 0s;
+	
+	-moz-transition-timing-function: linear;
+	-moz-transition: all 1s,background-image 0s;
+	
+	-ms-transition-timing-function: linear;
+	-ms-transition:all 1s,background-image 0s;
+	
+	-o-transition-timing-function: linear;
+	-o-transition:all 1s,background-image 0s;
+}
+
+.appIconLast {
+	border: none;
+}
+
+.appIconNo {
+	background-image: url('images/icon_back_blue.png');
+}
+
+.appIconNo0 {
+	background-image: url('images/icon_maps_blue.png');
+}
+
+.appIconNo1 {
+	background-image: url('images/icon_fan_blue.png');
+}
+
+.appIconNo2 {
+	background-image: url('images/icon_music_blue.png');
+}
+
+.appIconNo3 {
+	background-image: url('images/icon_video_blue.png');
+}
+
+.appIconNo4 {
+	background-image: url('images/icon_phone_blue.png');
+}
+
+.appIconNo5 {
+	background-image: url('images/icon_social_blue.png');
+}
+
+.appIconNo6 {
+	background-image: url('images/icon_diagnostic_blue.png');
+}
+
+.appIconNo7 {
+	background-image: url('images/icon_apps_blue.png');
+	background-size: 65%;
+}
+
+#backicon{
+	position: absolute;
+	left:0;
+	top: 0;
+	margin: 20px 0 0 20px;
+}
+#gridicon{
+	float:right;
+	margin: 10px 20px 0 0;
+	height:85px;
+	width:85px;
+}
+.appIconNo7{
+	height:89px !important;
+	width:89px !important;
+	background-size:87px 87px !important;
+	margin-top:12px;
+}
+.homeScrAppGridImg{
+	position:absolute;
+	left:0px;
+	top:-20px;
+}
+.homeScrAppGridTitle{
+	position:relative;
+	top:40px;
+}
+.homeScrAppGridCategory{
+	display:none;
+}
+#closeApp{
+	bottom:0px;
+	border:0px !important;
+	position:absolute;
+}
+/* move to components/tabs.css, delete once image path is changed */
+	/* .tabs{
+		width:1080px !important;
+		height:1920px;
+	}
+	.tabsTabs{
+		width:1080px !important;
+	}
+	.tabsTabClear{
+		width:870px !important;
+	}
+	.tabsTopPanel{
+		background-size:1080px 110px;
+	}
+	.exitButton, .tabsCloseButton{
+		position:absolute;
+		top:0px;
+		right:0px;
+	} */
+	.tabsCloseButton{
+		margin-top:32px;
+		margin-right:72px;
+		width:42px !important;
+		height:42px !important;
+		background-image: url('../../../DNA_common/images/bt_close.png') !important;
+	}
+/* end of styles moved to components/tabs.css */	
+.exitButton {
+	position:absolute;
+	top:0px;
+	right:0px;
+} 
+	
+.shadowStd{	
+	border: 1px solid white;
+	background: rgba(0, 0, 0, 0.8);
+   -webkit-box-shadow: inset 0 0 43px rgb(179, 227, 255);
+   box-shadow:         inset 0 0 43px rgb(179, 227, 255);
+}
+	#homeScrAppGridView{
+		display:none;
+		position:absolute;
+		top:0px;
+		padding:32px;
+		width:1016px;
+		height:1854px;
+		z-index:5;
+		font-size:20px;
+		background-color:rgba(0,0,0,1);
+		-webkit-mask: -webkit-gradient(linear, 0 1920, 0 1200,  from(rgba(0,0,0,0.5)), to(rgba(0,0,0,1)));
+		overflow-x:hidden;
+		overflow-y:scroll;
+	}
+	.HSAGWHeading{
+		text-transform:uppercase;
+		margin:0 0 47px 0;
+		color:white !important;
+		font-size:40px;
+	}
+	.homeScrAppGridFrame{
+		width:196px;
+		height:196px;
+		background-color:rgba(0,0,0,0.2);
+		float:left;
+		margin:3px;
+		text-align:center;
+	}
+	.homeScrAppImg{
+		width:200px;
+	}
+	.homeScrAppGridImg img{
+		margin-top:40px;
+		height:100px;
+	}
+	#hexes {
+		margin-top:100px;
+	}
+	.hexrow {
+		white-space: nowrap;
+		/*right/left margin set at (( width of child div x sin(30) ) / 2) makes a fairly tight fit; a 3px bottom seems to match*/
+		margin: 0 25px 3px; 
+	}
+	.hexrow > div {
+		width: 99px;
+		height: 173.2px; /* ( width x cos(30) ) x 2 */
+		/* For margin:
+		right/left = ( width x sin(30) ) makes no overlap 
+		right/left = (( width x sin(30) ) / 2) leaves a narrow separation
+		*/
+		margin: 30px 43px; 
+		position: relative;
+		background-image: url('../../../DNA_common/images/AppHex.png');
+		background-position: -50px 0px; /* -left position -1 x width x sin(30) */
+		background-repeat: no-repeat;
+		background-size: auto 100%;
+		color: white;
+		text-align: center;
+		line-height: 173.2px; /*equals height*/
+		display: inline-block;
+		vertical-align:middle;
+	}
+	.hexrow > div:nth-child(odd) {
+		top: -44.8px; /* -1 x( ( width x cos(30) / 2) + (hexrow bottom margin / 2)) */ 
+	}
+	.hexrow > div:nth-child(even) {
+		top: 73.3px; /* ( width x cos(30) / 2 ) */
+	}
+	.hexrow > div > div:first-of-type {
+		position: absolute;
+		width: 100%;
+		height: 100%; 
+		top: 0;
+		left: 0;
+		z-index: -1;
+		overflow: hidden;
+		background-image: inherit;
+		
+		-ms-transform:rotate(60deg); /* IE 9 */
+		-moz-transform:rotate(60deg); /* Firefox */
+		-webkit-transform:rotate(60deg); /* Safari and Chrome */
+		-o-transform:rotate(60deg); /* Opera */
+		transform:rotate(60deg);
+	}
+	.hexrow > div > div:first-of-type:before {
+		content: '';
+		position: absolute;
+		width: 200px; /* width of main + margin sizing */
+		height: 100%;
+		background-image: inherit;
+		background-position: 0 0;
+		background-repeat: no-repeat;
+		background-size: auto 100%;
+		bottom: 0;
+		left: 0;
+		z-index: 1;
+		
+		-ms-transform:rotate(-60deg) translate(-150px, 0); /* IE 9 */
+		-moz-transform:rotate(-60deg) translate(-150px, 0); /* Firefox */
+		-webkit-transform:rotate(-60deg) translate(-150px, 0); /* Safari and Chrome */
+		-o-transform:rotate(-60deg) translate(-150px, 0); /* Opera */
+		transform:rotate(-60deg) translate(-150px, 0);
+		
+		-ms-transform-origin: 0 0; /* IE 9 */
+		-webkit-transform-origin: 0 0; /* Safari and Chrome */
+		-moz-transform-origin: 0 0; /* Firefox */
+		-o-transform-origin: 0 0; /* Opera */
+		transform-origin: 0 0;
+	}
+	.hexrow > div > div:last-of-type {
+		content: '';
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		top: 0;
+		left: 0;
+		z-index: -2;
+		overflow: hidden;
+		background-image: inherit;
+		
+		-ms-transform:rotate(-60deg); /* IE 9 */
+		-moz-transform:rotate(-60deg); /* Firefox */
+		-webkit-transform:rotate(-60deg); /* Safari and Chrome */
+		-o-transform:rotate(-60deg); /* Opera */
+		transform:rotate(-60deg);
+	}
+	.hexrow > div > div:last-of-type:before {
+		content: '';
+		position: absolute;
+		width: 200px; /* starting width + margin sizing */
+		height: 100%;
+		background-image: inherit;
+		background-position: 0 0;
+		background-repeat: no-repeat;
+		background-size: auto 100%;
+		bottom: 0;
+		left: 0;
+		z-index: 1;
+		
+		/*translate properties are initial width (100px) and half height (173.2 / 2 = 86.6) */
+		-ms-transform:rotate(60deg) translate(100px, 86.6px); /* IE 9 */
+		-moz-transform:rotate(60deg) translate(100px, 86.6px); /* Firefox */
+		-webkit-transform:rotate(60deg) translate(100px, 86.6px); /* Safari and Chrome */
+		-o-transform:rotate(60deg) translate(100px, 86.6px); /* Opera */
+		transform:rotate(60deg) translate(100px, 86.6px);
+		
+		-ms-transform-origin: 100% 0; /* IE 9 */
+		-webkit-transform-origin: 100% 0; /* Safari and Chrome */
+		-moz-transform-origin: 100% 0; /* Firefox */
+		-o-transform-origin: 100% 0; /* Opera */
+		transform-origin: 100% 0;
+	}
+	.hexrow > div > span {
+		vertical-align: middle;
+		white-space: normal; 
+	}

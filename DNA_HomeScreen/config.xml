@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<widget xmlns="http://www.w3.org/ns/widgets" xmlns:tizen="http://tizen.org/ns/widgets" id="http://yourdomain/DNA" version="1.0.0" height="1739" width="980" viewmodes="fullscreen">
+    <name>Home Screen</name>
+    <tizen:application id="JLRPOCX001.HomeScreen" package="JLRPOCX001" required_version="2.1"/>
+    <content src="index.html"/>
+    <icon src="icon.png"/>
+    <tizen:privilege name="http://tizen.org/privilege/application.launch"/>
+    <tizen:privilege name="http://tizen.org/privilege/filesystem.write"/>
+    <tizen:privilege name="http://tizen.org/privilege/filesystem.read"/>
+    <tizen:privilege name="http://tizen.org/privilege/content.read"/>
+    <feature name="http://tizen.org/feature/screen.size.all"/>
+    <tizen:setting screen-orientation="portrait" context-menu="enable" background-support="disable" encryption="disable" install-location="auto" hwkey-event="enable"/>
+</widget>

@@ -1,0 +1,268 @@
+html, body, iframe  {
+	margin:0;
+	padding:0;
+	border:0;
+	outline:0;
+	font-size:100%;
+	vertical-align:baseline;
+}                  
+body{
+	font-family: "Droid Sans", sans-serif;
+	background-color:black;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	display: flex;
+} 
+
+body, select, input, textarea {   color: #444; }
+
+html, #viewPort { overflow-y: hidden; }
+
+#head{
+margin-top:18px;
+}
+#overlay{
+	position:absolute;
+	top:80px;
+	width:1000px;
+	padding:40px;
+	align:center;
+	color:#FFFFFF;
+	font-weight:bold;
+	background:none;
+}
+.DNAfence{
+	margin-top:15px;
+}
+.DNAfence, .DNAtitle, .DNAtemp, .DNAwidget{
+	background:none;
+}
+#weather{
+	height:60px;
+	width:100px;
+	text-align:center;
+	display:inline-block;
+	vertical-align:middle;
+}
+#weather img{
+	margin-top:20px;
+}
+#overlay,#lefties,#righties{
+	height:0px;
+}
+#lefties{
+	float:left;
+}
+#righties{
+	float:right;
+	text-align:right;
+}
+#speedo,#condition{
+	color:#00BFF3;
+}
+#homeScrSpeed{
+	font-size:75px;
+	line-height:77px;
+	float:left;
+}
+#sector7SpeedUnits{
+	float:left;
+	margin-top:45px;
+	margin-left:10px;
+}
+#clock{
+	font-size:62px;
+	line-height:64px;
+}
+#date,#batteryStatus{
+	font-size:35px;
+	line-height:37px;
+}
+.keyboard{
+	display:none;
+}
+.DNAtemp{
+	font-size:45px;
+	line-height:47px;
+}
+.DNAtitle{
+	font-size:22px;
+	line-height:24px;
+}
+
+#Particle, #Particle2{
+	display:block;
+	position:relative;
+	margin-top:-25px;
+	z-index:-1;
+}
+#controls
+{
+	position:fixed;	
+	background-color:#EEEEEE;
+	border: 1px solid #E1E0AF;
+			z-index:60;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px
+}
+#controls .controlGroup, #controls .title, #controls .controlGroup *
+{
+	float:left;
+	clear:both;
+}
+#controls .slider 
+{
+	float:none;
+	margin-left: auto;
+	margin-right: auto;
+	clear:both;
+}
+#share {
+	background-color: #EEEEEA;
+	border: 1px solid #E1E0AF;
+	padding: 8px;
+	position: fixed;
+	right: 25px;
+	top: 25px;
+	z-index:60;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+}
+#btnShare
+{
+	float:left;
+}
+#canvasContainer
+{
+	height:1920px;
+	display:block; 
+	z-index:3;
+	background-color:#000;
+	text-align:center;
+}
+#controls .about
+{
+	margin: 0px 10px 10px;
+	font-size:1.2em;
+}
+#controls .about span, #controls .about
+{
+	float:right;
+}
+#controls .about a
+{
+	float:none;
+}
+#helpPanel
+{
+	margin-right: 10px;
+	margin-top: 10px;
+	float:right;
+	position: relative;
+	padding: 0 0 15px 5px;
+}
+#helpInfo {
+	width:250px; 
+	position:absolute; 
+	left: 10px; 
+	top: 0;
+	background: none repeat scroll 0 0 #FFFECF;
+	border: 1px solid;
+	padding:10px;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+}
+#helpPanel #helpInfo
+{
+	display:none;
+}
+#helpPanel:hover #helpInfo
+{
+	display:block;
+}
+#imgHelp
+{
+	width:16px;
+	height:16px;
+}
+
+.title h2, .title h4
+{
+	margin:2px 0px;
+}
+
+body {
+    margin: 0px auto;
+}
+
+header h1 {
+    font-size: 36px;
+    margin: 0px;
+}
+
+header h2 {
+    font-size: 18px;
+    margin: 0px;
+    color: #888;
+    font-style: italic;
+}
+
+nav ul {
+    list-style: none;
+    padding: 0px;
+    display: block;
+    clear: right;
+    background-color: #666;
+    padding-left: 4px;
+    height: 24px;
+}
+
+nav ul li {
+    display: inline;
+    padding: 0px 20px 5px 10px;
+    height: 24px;
+    border-right: 1px solid #ccc;
+}
+
+nav ul li a {
+    color: #EFD3D3;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+nav ul li a:hover {
+    color: #fff;
+}
+
+article > header h1 {
+    font-size: 20px;
+    margin-left: 14px;
+}
+
+article > header h1 a {
+    color: #993333;
+}
+
+article > header h1 img {
+    vertical-align:middle;
+}
+
+article > section header h1 {
+    font-size: 16px;
+}
+
+article p {
+    clear: both;
+}
+
+footer p {
+    text-align: center;
+    font-size: 12px;
+    color: #888;
+    margin-top: 24px;
+}

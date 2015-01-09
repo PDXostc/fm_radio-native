@@ -1,0 +1,21 @@
+/* Do not remove this comment, causes crashes on IVI */
+
+#VCicon {
+   background-image: url(./images/progressBar/icon_volume_blue.png);
+}
+
+#VCcircle {
+   background-image: url(./images/progressBar/handle_blue.png);
+}
+
+.noVolumeSlider div {
+	background:url("images/progressBar/handle_blue.png") no-repeat center center;
+}
+
+.noVolumeSlider.connect.lower a {
+	background:url("images/progressBar/progresbarbg.png") repeat-x left center;
+}
+
+.sliderStart{
+	background-image: url(./images/progressBar/progresbarbgstart.png);
+}

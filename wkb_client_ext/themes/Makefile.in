@@ -1,0 +1,24 @@
+
+OBJS=$(THEME)_1080.edj $(THEME)_720.edj $(THEME)_600.edj
+EDJE_CC=edje_cc
+DIR=`pwd`
+
+all: $(OBJS) 
+
+clean: 
+	rm -f $(OBJS)
+	rm -f *~
+
+install: $(OBJS)
+	$(foreach theme,$(OBJS), install -D $(theme) \
+		$(DESTDIR)$(PREFIX)/share/weekeyboard/$(theme);)
+	ls -l $(DESTDIR)$(PREFIX)/share/weekeyboard/
+
+$(THEME)_1080.edj: $(THEME)_1080.edc $(THEME).edc ../common.edc
+	$(EDJE_CC) -dd $(DIR) -id $(DIR)/images -fd $(DIR)/../fonts $< $@
+
+$(THEME)_720.edj: $(THEME)_720.edc $(THEME).edc ../common.edc
+	$(EDJE_CC) -dd $(DIR) -id $(DIR)/images -fd $(DIR)/../fonts $< $@
+
+$(THEME)_600.edj: $(THEME)_600.edc $(THEME).edc ../common.edc
+	$(EDJE_CC) -dd $(DIR) -id $(DIR)/images -fd $(DIR)/../fonts $< $@

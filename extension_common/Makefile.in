@@ -1,0 +1,17 @@
+
+CC=g++
+
+INCLUDE_PATH= \
+    -I../ \
+    -I../.. \
+    -I/usr/include/eldbus-1 \
+    -I/usr/include/eina-1 \
+    -I/usr/include/eina-1/eina \
+    -I/usr/include/ecore-1 \
+    -I/usr/include/efl-1 \
+    -I/usr/include/eo-1
+
+CFLAGS:=$(CFLAGS) \
+    -fPIC -Wall -std=c++11 \
+     $(INCLUDE_PATH)
+

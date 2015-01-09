@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<!--
+ * Copyright (c) 2014, Intel Corporation, Jaguar Land Rover
+ *
+ * This program is licensed under the terms and conditions of the
+ * Apache License, version 2.0.  The full text of the Apache License is at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+-->
+<html lang="en">
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" /><meta charset="utf-8">
+	<title>DNA Model using HTML5</title>
+	<meta name="viewport" content="width=1080, height=1920, user-scalable=no" />
+	<link rel="stylesheet" href="./css/style.css"/>
+	<script type="text/javascript" src="./DNA_common/components/jQuery/jquery-1.8.2.js"></script>
+
+	<link rel="stylesheet" href="./DNA_common/css/style.css"/>
+
+	<script type="text/javascript" src="./DNA_common/js/init.js"></script>
+	<script type="text/javascript">
+		includeJs("./js/predefAppModel.js");
+		includeJs("./js/installedApps.js");
+		includeJs("./js/keyControl.js");
+		includeJs("./js/actionCatcher.js");
+		includeJs("./js/main.js");
+	</script>
+
+	<script src="./DNA_common/js/jquery-ui.min.js"></script>
+	<link href="./DNA_common/css/jquery-ui.css" rel="stylesheet">
+	<meta content="DNA structure animation using HTML5, canvas, Javascript js." name="description">
+	<meta content="Kasen Lam, Steve Mattison" name="author">
+	<meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+	<link href="/favicon.ico" rel="shortcut icon">
+</head>
+
+<body data-twttr-rendered="true" style="height:1920px !important;width:1080px !important;">
+<div id="topBar"></div>
+	<div id="wrapper" class="wrapper">
+
+		<div id="viewPort">
+			<div id="main">
+				<div id="content">
+
+					<div id="canvasContainer">
+						<canvas height="1917" width="1080" id="dnaCanvas">
+							Sorry, your browser does not support the canvas element. You need to check this page in a browser that supports HTML5 canvas (like current version of Chrome, Opera, Firefox or Safari).
+						</canvas><br />
+					</div>
+
+				</div><!--content-->
+				<div id="overlay">
+					<div id="lefties" class="DNAfence">
+						<div id="fuel" class="DNAfence">
+							<div id="fuelTitle" class="DNAtitle">Fuel</div>
+							<div id="batteryStatus" class="DNAwidget">60%</div>
+						</div>
+						<div id="speedo" class="DNAfence">
+							<div id="homeScrSpeed" class="DNAwidget">45</div>
+							<div id="sector7SpeedUnits" class="DNAtitle">MPH</div>
+						</div>
+					</div>
+					<div id="righties" class="DNAfence">
+						<div id="temporal" class="DNAfence">
+							<div id="date" class="DNAwidget">7/7/2014</div>
+							<div id="clock" class="DNAwidget">9:22</div>
+						</div>
+						<div id="weatherInfo" class="DNAfence">
+							<div id="weatherStatus" class="DNAtemp">29&deg; C</div>
+							<div id="weatherLoc" class="DNAtitle">Portland OR</div>
+						</div>
+						<div id="condition" class="DNAfence">
+							<div id="tempTitle" class="DNAtitle">Int. Temp</div>
+							<div id="fanStatus" class="DNAtemp">18&deg; C</div>
+						</div>
+					</div>
+				</div><!--overlay-->
+			</div><!--main-->
+		</div> <!--viewport-->
+  
+		<header id="head">
+			<img style="display:none;" src="images/HomeHex.png" id="nucleotide">
+			<img src="images/Particle-Stream.gif" id="Particle">
+			<img src="images/Particle-Stream2.gif" id="Particle2">
+		</header>
+
+	</div>
+	<script src="js/dnaModel.js"></script>
+</body></html>

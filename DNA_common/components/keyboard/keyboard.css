@@ -1,0 +1,164 @@
+.keyboard
+    {
+        position:absolute;
+        bottom:0px;
+        width:100%;
+        height:36%;
+        display:none;
+        padding:10px;
+		z-index:1000;
+    }
+
+.key_button
+    {
+  border-radius: 6px;
+  border-style: solid;
+  border-width: 1px 1px 5px;
+  display: block;
+  height: 18%;
+  position: absolute;
+  text-decoration: none;
+  width: 8%;
+  color:#fff;
+  font-family: helvetica, arial, sans-serif;
+    }
+
+.key_character
+    {
+        position:absolute;
+        top: 0%;
+        left: 0%;
+        width:100%;
+        height:100%;
+    }
+
+.key_shifted
+    {
+        position:absolute;
+        top: 0%;
+        left: 0%;
+        width:100%;
+        height:100%;
+        display:none;
+    }
+
+.key_symbol
+    {
+        position:absolute;
+        top: 0%;
+        left: 0%;
+        width:100%;
+        height:100%;
+        display:none;
+    }
+
+.key_special_character
+    {
+        position:absolute;
+        width:100%;
+        height:100%;
+		border-radius: 3px;
+    }
+
+.key_big_character
+    {
+        position: absolute;
+        bottom: 6%;
+        left: 32%; 
+        font-size: 3em;
+    }
+
+.key_small_character
+    {
+        position: absolute;
+        right: 10%;
+        top: 4%;
+        opacity: .3;
+        font-size: 1.5em;
+    }
+
+.key_special_spacebar
+    {
+        width: 65%; 
+		border-radius: 3px;
+    }
+
+.key_special_capslock .key_alt_on, .key_special_capslock .key_shifted
+    { 
+	height:100%;
+    }
+	
+.key_special_symlock .key_special_symlock_off
+    {
+	height:100%;
+    }
+
+.key_special_symlock .key_special_symlock_on
+    {
+	height:100%;
+    }
+    
+.key_alt_on, .key_alt_off
+    {
+	height:100%;
+	width:100%;
+    }
+    
+/*blue*/
+.keyboard
+    {
+        background-color:#011a29;
+    }
+
+.key_button
+    {
+  background-image: -webkit-linear-gradient(bottom, rgb(1, 34, 54) 0%, rgb(1, 78, 122) 82%);
+  border-color: #50bdfc;
+  box-shadow: 1px -4px 6px 0 rgba(83, 192, 255, 0.38);
+    }
+
+.key_special_spacebar
+    {
+        background-image: url("images/space_bar_icon.png") no-repeat 50% 50%, -webkit-linear-gradient(bottom, rgb(9, 118, 181) 0%, rgb(31, 140, 203) 100%);
+    }
+
+.key_special_capslock
+    {
+	    background: url("images/shift_off_icon.png") no-repeat 50% 50%, -webkit-linear-gradient(bottom, rgb(9, 118, 181) 0%, rgb(31, 140, 203) 100%); 
+	}
+
+.key_special_capslock .key_shifted
+    {
+    background: url("images/shift_on_icon.png") no-repeat 50% 50%, -webkit-linear-gradient(bottom, rgb(9, 118, 181) 0%, rgb(31, 140, 203) 100%);
+    }
+    
+.key_special_capslock .key_symbol .key_alt_on
+    {
+    background: url("images/symbols_set2_icon.png") no-repeat 50% 50%, -webkit-linear-gradient(bottom, rgb(9, 118, 181) 0%, rgb(31, 140, 203) 100%);
+    }
+    
+.key_special_capslock .key_symbol
+    {
+    background: url("images/symbols_set1_icon.png") no-repeat 50% 50%, -webkit-linear-gradient(bottom, rgb(9, 118, 181) 0%, rgb(31, 140, 203) 100%);
+    }
+	
+.key_special_symlock .key_special_symlock_off
+    {
+    background: url("images/symbols_off_icon.png") no-repeat 50% 50%, -webkit-linear-gradient(bottom, rgb(9, 118, 181) 0%, rgb(31, 140, 203) 100%);
+    }
+
+.key_special_symlock .key_special_symlock_on
+    {
+    background: url("images/symbols_icon.png") no-repeat 50% 50%, -webkit-linear-gradient(bottom, rgb(9, 118, 181) 0%, rgb(31, 140, 203) 100%);
+    }
+	
+	
+.key_special_bksp
+    {
+    background: url("images/backspace_icon.png") no-repeat 50% 50%, -webkit-linear-gradient(bottom, rgb(9, 118, 181) 0%, rgb(31, 140, 203) 100%);
+    }
+
+.key_special_return
+    {
+	background: url("images/white_return.png") no-repeat 50% 50%, -webkit-linear-gradient(bottom, rgb(9, 118, 181) 0%, rgb(31, 140, 203) 100%);
+    }

@@ -1,0 +1,10 @@
+Instructions for import into commons...
+
+Commons is designed to take care of itself.  Every common import is reduced to 
+two files style.css and init.js.  You still need the apps specific includes.
+
+Note do not use files in common/css/car or common/css/user as these will 
+go away.  These are only provided to help smooth transistion of other apps.
+
+Also js/services will be going away as well.  All files will be moved to 
+a more approprate structor.  Note most of them should be there now.  
