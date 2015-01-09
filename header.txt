@@ -1,0 +1,20 @@
+/* Copyright (C) Jaguar Land Rover - All Rights Reserved
+ *
+ * Proprietary and confidential
+ * Unauthorized copying of this file, via any medium, is strictly prohibited
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY 
+ * KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
+ * PARTICULAR PURPOSE.
+ *
+ * Filename:		 filename.ext
+ * Version:              1.0
+ * Date:                 January 2014
+ * Project:              Widget incorporation
+ * Contributors:         FMRadio
+ *                       xxxxxxx
+ *
+ * Incoming Code:        xxxxxxx
+ *
+*/
