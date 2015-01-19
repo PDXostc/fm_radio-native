@@ -24,9 +24,7 @@ DEPENDPATH += . \
 	      ../src/fm \
 	      ../src/rds \
 	      ../src/various \
-	      ./dabstick \
-	      ./mirics-dongle \
-	      ./mirics-sdrplay
+	      ./dabstick
 	      
 INCLUDEPATH += . \
 	      ..\
@@ -42,9 +40,7 @@ INCLUDEPATH += . \
 	      ../src/fm \
 	      ../src/rds \
 	      ../src/various \
-	      ./dabstick \
-	      ./mirics-dongle \
-	      ./mirics-sdrplay
+	      ./dabstick
 
 # Input
 HEADERS += ./gui.h \
@@ -72,13 +68,7 @@ HEADERS += ./gui.h \
 	   ../includes/rds/rds-groupdecoder.h  \
 	   ./virtual-input.h \
 	   ./dabstick/dabstick-dll.h \
-	   ./dabstick/dongleselect.h \
-	   ./mirics-sdrplay/sdrplay.h \
-	   ./mirics-sdrplay/sdrplay-loader.h \
-	   ./sdrplay-worker.h \
-	   ./mirics-dongle/mirics-dongle.h \
-	   ./mirics-dongle/mirics-loader.h \
-	   ./mirics-dongle/mirics-worker.h 
+	   ./dabstick/dongleselect.h
 
 FORMS += ./sdrgui.ui 
 SOURCES += ./main.cpp \
@@ -103,13 +93,7 @@ SOURCES += ./main.cpp \
 	   ../src/rds/rds-groupdecoder.cpp \
 	   ./virtual-input.cpp \
 	   ./dabstick/dabstick-dll.cpp \
-	   ./dabstick/dongleselect.cpp \
-	   ./mirics-sdrplay/sdrplay.cpp \
-	   ./mirics-sdrplay/sdrplay-loader.cpp \
-	   ./mirics-sdrplay/sdrplay-worker.cpp \
-	   ./mirics-dongle/mirics-dongle.cpp \
-	   ./mirics-dongle/mirics-loader.cpp \
-	   ./mirics-dongle/mirics-worker.cpp 
+	   ./dabstick/dongleselect.cpp
 #
 #for W64 we use:
 #

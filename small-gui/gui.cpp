@@ -37,8 +37,6 @@
 #include	"audiosink.h"
 #include	"virtual-input.h"
 #include	"dabstick-dll.h"
-#include	"sdrplay.h"
-#include	"mirics-dongle.h"
 #include	"popup-keypad.h"
 
 #ifdef __MINGW32__
@@ -63,7 +61,6 @@ int16_t	delayTable [] = {1, 3, 5, 7, 9, 10, 15};
  *	is embedded in actions, initiated by gui buttons
  */
 	RadioInterface::RadioInterface (QSettings	*Si,
-	                                const char	*deviceName,
 	                                QWidget		*parent): QDialog (parent) {
 int16_t	i;
 QString h;
@@ -95,20 +92,7 @@ int32_t	startFreq;
 	   inputRate = 960000;
 	}
 
-	if (deviceName != NULL)
-	   fmDevice	= QString (deviceName);
-	else
-	   fmDevice	= fmSettings -> value ("device", "dongle"). toString ();
-
-	if ((fmDevice == "dabstick") || (fmDevice == "dabStick"))
-	   myRig = new dabstick_dll (inputRate, &success);
-	else
-	if ((fmDevice == "sdrPlay") || (fmDevice == "sdrplay"))
-	   myRig = new sdrplay (inputRate, &success);
-	else {
-	   fprintf (stderr, "Trying to load the dongle\n");
-	   myRig = new miricsDongle (inputRate, &success);
-	}
+	myRig = new dabstick_dll (inputRate, &success);
 	
 	if (!success) {
 	   QMessageBox::warning (this, tr ("sdr"),
@@ -285,7 +269,6 @@ void	RadioInterface::dumpControlState	(QSettings *s) {
 	   return;
 
 	s	-> setValue ("the_gain", gainSelector -> value ());
-	s	-> setValue ("device", fmDevice);
 	s	-> setValue ("frequency", myRig -> getVFOFrequency ());
 	s	-> setValue ("fm_increment",
 	                               fm_increment -> value ());

@@ -55,7 +55,6 @@ class RadioInterface: public QDialog,
 Q_OBJECT
 public:
 		RadioInterface		(QSettings	*,
-	                                 const char	*,
 	                                 QWidget *parent = NULL);
 		~RadioInterface		();
 
@@ -67,7 +66,6 @@ private:
 
 	keyPad		*mykeyPad;
 	QSettings	*fmSettings;
-	QString		fmDevice;
 	int32_t		inputRate;
 	int32_t		fmRate;
 	int32_t		workingRate;

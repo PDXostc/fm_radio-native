@@ -97,8 +97,6 @@ include_directories (
 	../src/rds
 	../src/various
 	./dabstick
-	./mirics-dongle
-	./mirics-sdrplay
 )
 
 set ( ${objectName}_HDRS
@@ -128,12 +126,7 @@ set ( ${objectName}_HDRS
 	   ./virtual-input.h
 	   ./dabstick/dabstick-dll.h 
 	   ./dabstick/dongleselect.h 
-	   ./mirics-sdrplay/sdrplay.h 
-	   ./mirics-sdrplay/sdrplay-loader.h 
 	   ./sdrplay-worker.h 
-	   ./mirics-dongle/mirics-dongle.h 
-	   ./mirics-dongle/mirics-loader.h 
-	   ./mirics-dongle/mirics-worker.h
 	)
 
 set ( ${objectName}_SRCS
@@ -160,12 +153,6 @@ set ( ${objectName}_SRCS
 	   ./virtual-input.cpp
 	   ./dabstick/dabstick-dll.cpp
 	   ./dabstick/dongleselect.cpp
-	   ./mirics-dongle/mirics-dongle.cpp
-	   ./mirics-dongle/mirics-worker.cpp
-	   ./mirics-dongle/mirics-loader.cpp
-	   ./mirics-sdrplay/sdrplay.cpp
-	   ./mirics-sdrplay/sdrplay-worker.cpp
-	   ./mirics-sdrplay/sdrplay-loader.cpp
 	)
 
 set (${objectName}_UIS ./sdrgui.ui )

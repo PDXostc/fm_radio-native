@@ -87,16 +87,12 @@ int32_t		opt;
  */
 QSettings	*ISettings;		/* .ini file	*/
 RadioInterface	*MyRadioInterface;
-const char *device	= NULL;
 char		*defaultInit	= (char *)alloca (512 * sizeof (char));
 
 	fullPathfor (DEFAULT_INI, defaultInit);
 
-	while ((opt = getopt (argc, argv, "D:")) != -1) {
+	while ((opt = getopt (argc, argv, "")) != -1) {
 	   switch (opt) {
-	      case 'D': device = optarg;
-	                break;
-
 	      default:
 	                break;
 	      }
@@ -111,7 +107,7 @@ char		*defaultInit	= (char *)alloca (512 * sizeof (char));
  *	instantiate
  */
 	QApplication a (argc, argv);
-	MyRadioInterface = new RadioInterface (ISettings, device);
+	MyRadioInterface = new RadioInterface (ISettings);
 	MyRadioInterface -> show ();
 	a. exec ();
 /*
