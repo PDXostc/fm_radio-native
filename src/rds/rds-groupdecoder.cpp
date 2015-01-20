@@ -41,6 +41,8 @@
 
 	rdsGroupDecoder::rdsGroupDecoder (RadioInterface *RI) {
 	MyRadioInterface	= RI;
+	// FIXME: Need new method of reporting RDS data
+	/*
 	connect (this, SIGNAL (setGroup (int)),
 	         MyRadioInterface, SLOT (setGroup (int)));
 	connect (this, SIGNAL (setPTYCode (int)),
@@ -61,6 +63,7 @@
 	         MyRadioInterface, SLOT (setMusicSpeechFlag (int)));
 	connect (this, SIGNAL (clearMusicSpeechFlag (void)),
 	         MyRadioInterface, SLOT (clearMusicSpeechFlag (void)));
+	*/
 	reset ();
 }
 
@@ -80,19 +83,21 @@ void	rdsGroupDecoder::reset (void) {
 	          NUM_OF_CHARS_RADIOTEXT * sizeof (char));
 	textABflag		= -1; // Not defined
 	textSegmentRegister	= 0;
-	clearRadioText		();
-	clearStationLabel	();
-	clearMusicSpeechFlag	();
-	setPTYCode		(0);
-	setPiCode		(0);
-	setAFDisplay		(0);
+	// FIXME: Signals needed
+	// clearRadioText		();
+	//clearStationLabel	();
+	//clearMusicSpeechFlag	();
+	//setPTYCode		(0);
+	//setPiCode		(0);
+	//setAFDisplay		(0);
 }
 
 bool rdsGroupDecoder::decode (RDSGroup *grp) {
 //	fprintf (stderr, "Got group %d\n", grp -> getGroupType ());
-	setGroup	(grp -> getGroupType ());
-	setPTYCode	(grp -> getProgrammeType ());
-	setPiCode	(grp -> getPiCode ());
+	// FIXME: Signals needed
+	//setGroup	(grp -> getGroupType ());
+	//setPTYCode	(grp -> getProgrammeType ());
+	//setPiCode	(grp -> getPiCode ());
 
 //	PI-code has changed -> new station received
 //	Reset the decoder
@@ -159,7 +164,8 @@ uint32_t charsforStationName	= grp -> getBlock_D () & 0xFFFF;
 	additionalFrequencies (grp -> getBlock_C ());
 
 //	Set Music/Speech flag
-	setMusicSpeechFlag ((grp -> getBlock_B () >> 3) & 1);
+	// FIXME: Signals needed
+	//setMusicSpeechFlag ((grp -> getBlock_B () >> 3) & 1);
 
 //	Fill DI code
 	m_grp1_diCode |= ((grp -> getBlock_B () >> 2) & 1) << segIndex;
@@ -170,7 +176,8 @@ void	rdsGroupDecoder::addtoStationLabel (uint32_t index,
 	stationLabel [2 * index] = (char)(name >> 8);
 	stationLabel [2 * index + 1] = (char)(name & 0xFF);
 
-	setStationLabel (stationLabel, STATION_LABEL_LENGTH);
+	// FIXME: Signals needed
+	//setStationLabel (stationLabel, STATION_LABEL_LENGTH);
 
 //	Reset segment counter on first segment
 	if (index == 0)
@@ -182,7 +189,8 @@ void	rdsGroupDecoder::addtoStationLabel (uint32_t index,
 //	check whether all segments are in
 	if ((int32_t)stationNameSegmentRegister + 1 ==
 	                     (1 << NUMBER_OF_NAME_SEGMENTS)) {
-	   setStationLabel (stationLabel, STATION_LABEL_LENGTH);
+	   // FIXME: Signals needed
+	   //setStationLabel (stationLabel, STATION_LABEL_LENGTH);
 	   stationNameSegmentRegister = 0;
 	}
 }
@@ -192,12 +200,14 @@ uint8_t af1 = blockContents >> 8;
 uint8_t af2 = blockContents & 0xFF;
 
 	if ((af1 > 1) && (af1 < 205)) {
-	   setAFDisplay (af1 * 100 + 87500);
+	   // FIXME: Signals needed
+	   //setAFDisplay (af1 * 100 + 87500);
 	}
 
 //	Check for range and add only VHF frequencies
 	if ((af1 != 250) && (af2 > 1) && (af1 < 205))  {
-	   setAFDisplay (af2 * 100 + 87500);
+	   // FIXME: Signals needed
+	   //setAFDisplay (af2 * 100 + 87500);
 	}
 }
 
@@ -212,13 +222,15 @@ uint16_t	i;
 	if (textABflag != new_txtABflag) {
 	   textABflag = new_txtABflag;
 //	If the textA/B has changed, we clear the old displayed message ...
-	   clearRadioText ();
+	   // FIXME: Signals needed
+	   //clearRadioText ();
 
 //	... and we check if we have received a continous stream of segments
 	   for (uint32_t i = 1; i < NUM_OF_FRAGMENTS; i++) {
 	      if ((1 << i) == (int32_t) textSegmentRegister + 1)  {
-	         setRadioText ((char *)textBuffer,
-	                               i * NUM_CHARS_PER_RTXT_SEGMENT);
+	         // FIXME: Signals needed
+	         //setRadioText ((char *)textBuffer,
+		 //                      i * NUM_CHARS_PER_RTXT_SEGMENT);
 	         return;
 	      }
 	   }
@@ -240,8 +252,9 @@ uint16_t	i;
 
 //	current segment is received (set bit in segment register to 1)
 	textSegmentRegister |= 1 << currentSegment;
-	setRadioText ((char *)textBuffer,
-	                              NUM_OF_CHARS_RADIOTEXT);
+	// FIXME: Signals needed
+	//setRadioText ((char *)textBuffer,
+	//                              NUM_OF_CHARS_RADIOTEXT);
 
 //	check for end of message
 	for (i = 0; i < 4; i ++)
@@ -251,8 +264,9 @@ uint16_t	i;
 // Check if all fragments are in or we had an end of message
 	if (endF ||
 	    (textSegmentRegister == (1 << NUM_OF_FRAGMENTS) - 1)) {
-	     setRadioText ((char *)textBuffer,
-	                              NUM_OF_CHARS_RADIOTEXT);
+	     // FIXME: Signals needed
+	     //setRadioText ((char *)textBuffer,
+	     //                         NUM_OF_CHARS_RADIOTEXT);
 	     textSegmentRegister = 0;
 	     memset (textBuffer, ' ',
 	          NUM_OF_CHARS_RADIOTEXT * sizeof (char));

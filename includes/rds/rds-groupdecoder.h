@@ -36,14 +36,12 @@
 #ifndef	__RDS_GROUP_DECODER
 #define	__RDS_GROUP_DECODER
 
-#include	<QObject>
 #include	"fm-constants.h"
 #include	"rds-group.h"
 
 class	RadioInterface;
 
-class	rdsGroupDecoder : public QObject {
-Q_OBJECT
+class	rdsGroupDecoder {
 public:
 	rdsGroupDecoder		(RadioInterface *);
 	~rdsGroupDecoder	(void);
@@ -85,7 +83,7 @@ private:
 	uint32_t textSegmentRegister;
 	int32_t  textABflag;
 	char   textBuffer [NUM_OF_CHARS_RADIOTEXT];
-signals:
+	//signals:
 	void	setGroup		(int);
 	void	setPTYCode		(int);
 	void	setMusicSpeechFlag	(int);

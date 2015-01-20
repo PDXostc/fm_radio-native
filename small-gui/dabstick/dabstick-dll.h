@@ -29,11 +29,9 @@
 #define	_DABSTICK
 
 #include	"fm-constants.h"
-#include	<QObject>
 #include	"ringbuffer.h"
 #include	"fir-filters.h"
 #include	"virtual-input.h"
-#include	"dongleselect.h"
 
 class	dll_driver;
 //
@@ -94,7 +92,6 @@ public:
 	struct rtlsdr_dev	*device;
 	int32_t		sampleCounter;
 private:
-	dongleSelect	*dongleSelector;
 	int32_t		rateIn;
 	int32_t		deviceCount;
 	HINSTANCE	Handle;

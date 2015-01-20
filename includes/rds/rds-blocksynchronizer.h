@@ -38,11 +38,9 @@
 
 #include	"fm-constants.h"
 #include	"rds-group.h"
-#include	<QObject>
 class	RadioInterface;
 
-class	rdsBlockSynchronizer: public QObject {
-Q_OBJECT
+class	rdsBlockSynchronizer {
 public:
 		rdsBlockSynchronizer	(RadioInterface *);
 		~rdsBlockSynchronizer	(void);
@@ -102,7 +100,7 @@ private:
 	uint16_t	rdsNumofSyncErrors;
 	uint16_t	rdsNumofCRCErrors;
 	uint16_t	rdsNumofBitErrors;
-signals:
+	//signals:
 	void		setRDSisSynchronized	(bool);
 	void		setbitErrorRate		(double);
 };

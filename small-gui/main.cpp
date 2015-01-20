@@ -26,14 +26,11 @@
  *
  *	Main program
  */
-#include	<Qt>
-#include	<QApplication>
-#include	<QSettings>
 #include	<unistd.h>
-#include	<QDir>
 #include	"fm-constants.h"
 #include	"gui.h"
 
+/*
 void	fullPathfor (const char *v, char *out) {
 int16_t	i;
 QString	homeDir;
@@ -67,6 +64,7 @@ QString	homeDir;
 	    out [i + 4] = 0;
 	}
 }
+*/
 
 bool	fileExists (char *v) {
 FILE *f;
@@ -81,43 +79,10 @@ FILE *f;
 #define	DEFAULT_INI	".jsdr-fm-mini.ini"
 
 int	main (int argc, char **argv) {
-int32_t		opt;
-/*
- *	The default values
- */
-QSettings	*ISettings;		/* .ini file	*/
 RadioInterface	*MyRadioInterface;
-char		*defaultInit	= (char *)alloca (512 * sizeof (char));
 
-	fullPathfor (DEFAULT_INI, defaultInit);
-
-	while ((opt = getopt (argc, argv, "")) != -1) {
-	   switch (opt) {
-	      default:
-	                break;
-	      }
-	}
-
-/*
- *	... and the settings of the "environment"
- */
-	ISettings	= new QSettings (defaultInit, QSettings::IniFormat);
-/*
- *	Before we connect control to the gui, we have to
- *	instantiate
- */
-	QApplication a (argc, argv);
-	MyRadioInterface = new RadioInterface (ISettings);
-	MyRadioInterface -> show ();
-	a. exec ();
-/*
- *	done:
- */
-	fflush (stdout);
-	fflush (stderr);
-	qDebug ("It is done\n");
-//	MyRadioInterface	-> ~RadioInterface ();
-	ISettings	-> ~QSettings ();
-	exit (1);
+	MyRadioInterface = new RadioInterface;
+	delete MyRadioInterface;
+	exit (0);
 }
 

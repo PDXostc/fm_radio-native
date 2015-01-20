@@ -32,9 +32,11 @@
  */
 
 
-#include	<QThread>
 #include	"rtl-sdr.h"
 #include	"dabstick-dll.h"
+#include        <pthread.h>
+#include        <sstream>
+#include        <stdexcept>
 
 #ifdef	__MINGW32__
 #define	GETPROCADDRESS	GetProcAddress
@@ -65,9 +67,10 @@ int32_t	tmp;
 //	for handling the events in libusb, we need a controlthread
 //	whose sole purpose is to process the rtlsdr_read_async function
 //	from the lib.
-class	dll_driver : public QThread {
+class	dll_driver {
 private:
 	dabstick_dll	*theStick;
+	pthread_t        thread;
 public:
 
 	dll_driver (dabstick_dll *d) {
@@ -79,7 +82,21 @@ public:
 	}
 
 private:
-virtual void	run (void) {
+        void	start (void) {
+		int err = pthread_create(&thread, NULL, &dll_driver::c_run, this);
+		if (err != 0) {
+			std::ostringstream strm;
+			strm << "error creating dabstick thread: "
+			     << strerror(err);
+
+			throw std::runtime_error(strm.str());
+		}
+	}
+	void    c_run (void * userdata) {
+		dll_driver *drv = static_cast<dll_driver *>(userdata);
+		drv->run();
+	} 
+        void	run (void) {
 	(theStick -> rtlsdr_read_async) (theStick -> device,
 	                          (rtlsdr_read_async_cb_t)&RTLSDRCallBack,
 	                          (void *)theStick,
@@ -131,15 +148,6 @@ int16_t	i;
 	}
 
 	deviceIndex = 0;	// default
-	if (deviceCount > 1) {
-	   dongleSelector	= new dongleSelect ();
-	   for (deviceIndex = 0; deviceIndex < deviceCount; deviceIndex ++) {
-	      dongleSelector ->
-	           addtoDongleList (rtlsdr_get_device_name (deviceIndex));
-	   }
-	   deviceIndex = dongleSelector -> QDialog::exec ();
-	   delete dongleSelector;
-	}
 //
 //	OK, now open the hardware
 	r			= this -> rtlsdr_open (&device, deviceIndex);
@@ -239,8 +247,11 @@ void	dabstick_dll::stopReader		(void) {
 
 	this -> rtlsdr_cancel_async (device);
 	if (workerHandle != NULL) {
+		// FIXME: Join thread
+		/*
 	   while (!workerHandle -> isFinished ()) 
 	      usleep (100);
+		*/
 
 	   delete	workerHandle;
 	}

@@ -39,7 +39,6 @@
 #ifndef	__RDS_DECODER
 #define	__RDS_DECODER
 
-#include	<QObject>
 #include	"fm-constants.h"
 #include	"rds-group.h"
 #include	"rds-blocksynchronizer.h"
@@ -50,8 +49,7 @@
 
 class	RadioInterface;
 
-class	rdsDecoder : public QObject {
-Q_OBJECT
+class	rdsDecoder {
 public:
 		rdsDecoder (RadioInterface *, int32_t, SinCos *);
 		~rdsDecoder (void);
@@ -95,7 +93,7 @@ private:
 	DSPFLOAT		*syncBuffer;
 	int16_t			p;
 	void			synchronizeOnBitClk	(DSPFLOAT *, int16_t);
-signals:
+	//signals:
 	void			setCRCErrors		(int);
 	void			setSyncErrors		(int);
 	void			setbitErrorRate		(int);

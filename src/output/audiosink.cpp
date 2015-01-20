@@ -25,12 +25,10 @@
  */
 
 #include	"audiosink.h"
-#include	<QDebug>
 /*
  *	The class is the sink for the data generated
  */
 	audioSink::audioSink	(int32_t rate) {
-int32_t	i;
 
 	this	-> CardRate	= rate;
 
@@ -45,11 +43,6 @@ int32_t	i;
 	}
 
 	portAudio	= true;
-	qDebug ("Hostapis: %d\n", Pa_GetHostApiCount ());
-
-	for (i = 0; i < Pa_GetHostApiCount (); i ++)
-	   qDebug ("Api %d is %s\n", i, Pa_GetHostApiInfo (i) -> name);
-
 	numofDevices	= Pa_GetDeviceCount ();
 	ostream		= NULL;
 	dumpFile	= NULL;
@@ -117,7 +110,6 @@ PaError err;
 	      );
 
 	if (err != paNoError) {
-	   qDebug ("Open ostream error\n");
 	   return false;
 	}
 	paCallbackReturn = paContinue;
@@ -186,7 +178,7 @@ uint32_t	i;
 
 	if (statusFlags & (paOutputUnderflow|paOutputOverflow)) {
 	    const std::string runtype(statusFlags&paOutputUnderflow ? "Under" : "Over");
-	    qDebug("%srun flag in PA callback", runtype.c_str());
+	    //qDebug("%srun flag in PA callback", runtype.c_str());
 	}
 
 	if (ud -> paCallbackReturn == paContinue) {

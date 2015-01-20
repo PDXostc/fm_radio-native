@@ -81,11 +81,6 @@
 	thePad		-> addButton (clearButton, 103);
 	thePad		-> addButton (correctButton, 104);
 	theDisplay	-> display (0);
-	connect (thePad, SIGNAL (buttonClicked (int)),
-	         this, SLOT (collectData (int)));
-	connect (this, SIGNAL (newFrequency (int)),
-	         mr, SLOT (newFrequency (int)));
-//
 //	initially the keypad is not visible,
 	panel		= 0;
 	shown		= false;

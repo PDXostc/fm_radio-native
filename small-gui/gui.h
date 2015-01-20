@@ -28,12 +28,6 @@
 #ifndef __GUI
 #define __GUI
 
-#include	<QDialog>
-#include	<QInputDialog>
-#include	"ui_sdrgui.h"
-#include	<QTimer>
-#include	<QQueue>
-#include	<QWheelEvent>
 #include	<sndfile.h>
 #include	"fm-constants.h"
 #include	"ringbuffer.h"
@@ -41,7 +35,6 @@
 #include	"fir-filters.h"
 class	keyPad;
 
-class	QSettings;
 class	fmProcessor;
 class	rdsDecoder;
 class	audioSink;
@@ -50,22 +43,16 @@ class	virtualInput;
  *	The main gui object. It inherits from
  *	QDialog and the generated form
  */
-class RadioInterface: public QDialog,
-		      private Ui_elektorSDR {
-Q_OBJECT
+class RadioInterface {
 public:
-		RadioInterface		(QSettings	*,
-	                                 QWidget *parent = NULL);
+		RadioInterface		();
 		~RadioInterface		();
 
 private:
 	bool		doInit;
 	int16_t		outputDevice;
 	void		localConnects		(void);
-	void		dumpControlState	(QSettings *);
 
-	keyPad		*mykeyPad;
-	QSettings	*fmSettings;
 	int32_t		inputRate;
 	int32_t		fmRate;
 	int32_t		workingRate;
@@ -78,28 +65,22 @@ private:
 	uint8_t		HFviewMode;
 	uint8_t		inputMode;
 
-	void		restoreGUIsettings	(QSettings *);
 	void		setDetectorScreen	(int16_t);
 
 	int32_t		mapIncrement		(int32_t);
 	int32_t		IncrementInterval	(int16_t);
 	void		setTuner		(int32_t);
-	void		Display			(int32_t);
-	QTimer		*keyTimer;
-	QTimer		*autoIncrementTimer;
 	int16_t		IncrementIndex;
 	int32_t		autoIncrement_amount;
 	int32_t		fmIncrement;
 	int32_t		minLoopFrequency;
 	int32_t		maxLoopFrequency;
 	
-	void		set_incrementFlag	(int16_t);
 	void		stopIncrementing	(void);
 	int32_t		get_Increment_for	(int16_t);
 
 	int32_t		Panel;
 	int16_t		CurrentRig;
-	QTimer		*displayTimer;
 
 	bool		audioDumping;
 	SNDFILE		*audiofilePointer;
@@ -108,8 +89,6 @@ private:
 	rdsDecoder	*myRdsDecoder;
 	int8_t		rdsModus;
 
-	QString		RadioText;
-	QString		StationLabel;
 	void		IncrementFrequency	(int32_t);
 
 	int32_t		currentPIcode;
@@ -125,26 +104,24 @@ private:
  *	The private slots link the GUI elements
  *	to the GUI code
  */
-private slots:
+private:
 	void	setStart		(void);
-	void	updateTimeDisplay	(void);
 	void	clickPause		(void);
 	void	setGainSelector		(int);
 
 	void	setAttenuation		(int);
 
-	void	handle_freqButton	(void);
 	void	setStreamOutSelector	(int);
 	void	abortSystem		(int);
 	void	TerminateProcess	(void);
 	void	setVolume		(int);
-	void	set_audioDump		(void);
+	void	set_audioDump		(const std::string &);
 
-	void	setfmMode		(const QString &);
-	void	setfmRdsSelector	(const QString &);
-	void	setfmDecoder		(const QString &);
-	void	setfmChannelSelector	(const QString &);
-	void	setfmDeemphasis		(const QString &);
+	void	setfmMode		(const std::string &);
+	void	setfmRdsSelector	(const std::string &);
+	void	setfmDecoder		(const std::string &);
+	void	setfmChannelSelector	(const std::string &);
+	void	setfmDeemphasis		(const std::string &);
 
 	void	autoIncrement_timeout	(void);
 	void	autoIncrementButton	(void);
@@ -155,13 +132,13 @@ private slots:
 	void	IncrementButton		(void);
 	void	DecrementButton		(void);
 
-	bool	setupSoundOut		(QComboBox *, audioSink *,
+	bool	setupSoundOut		(audioSink *,
 	                                 int32_t, int16_t *);
 	void	set_squelchValue	(int);
 	void	set_squelchMode		(void);
 	void	set_plusOne		(void);
 	void	set_minusOne		(void);
-public slots:
+public:
 	void	newFrequency		(int);
 	void	setCRCErrors		(int);
 	void	setSyncErrors		(int);
@@ -173,7 +150,6 @@ public slots:
 	void	setStationLabel		(char *, int);
 	void	clearRadioText		(void);
 	void	setRadioText		(char *, int);
-	void	setAFDisplay		(int);
 	void	setRDSisSynchronized	(bool);
 	void	setMusicSpeechFlag	(int);
 	void	clearMusicSpeechFlag	(void);

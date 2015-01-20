@@ -32,8 +32,6 @@
 
 #include	<stdint.h>
 #include	"fm-constants.h"
-#include	<QObject>
-#include	<QDialog>
 
 #define	NIX		0100
 #define	MIRICS_STICK	0101
@@ -46,7 +44,7 @@
 
 #define	someStick(x)	((x) & 03)
 
-class	virtualInput: public QObject {
+class	virtualInput {
 public:
 			virtualInput 	(void);
 virtual			~virtualInput 	(void);

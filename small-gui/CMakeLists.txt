@@ -1,8 +1,8 @@
 cmake_minimum_required( VERSION 2.6 )
-set ( CMAKE_BUILD_TYPE Release )
+#set ( CMAKE_BUILD_TYPE Release )
 set (objectName sdr-j-fm-mini-0.98)
 add_definitions ( -Wall -DSMALL_GUI )
-find_package (Qt4 REQUIRED)
+#find_package (Qt4 REQUIRED)
 find_library (DYNAMIC_LOAD dl)
 if(NOT(DYNAMIC_LOAD))
 message(FATAL_ERROR "please install -ldl")
@@ -78,10 +78,9 @@ else(NOT(PTHREADS))
 set (extraLibs ${extraLibs} ${PTHREADS})
 endif(NOT(PTHREADS))
 
-include ( ${QT_USE_FILE} )
+#include ( ${QT_USE_FILE} )
 include_directories (
 	${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}
-	${QT_QTCORE_INCLUDE_DIR} ${QT_QTGUI_INCLUDE_DIR}
 	.
 	..
 	../includes
@@ -101,7 +100,6 @@ include_directories (
 
 set ( ${objectName}_HDRS
 	   ./gui.h
-	   ./popup-keypad.h
 	   ../includes/fm-constants.h
 	   ../includes/various/squelchClass.h
            ../includes/various/fft.h
@@ -125,14 +123,12 @@ set ( ${objectName}_HDRS
 	   ../includes/rds/rds-groupdecoder.h 
 	   ./virtual-input.h
 	   ./dabstick/dabstick-dll.h 
-	   ./dabstick/dongleselect.h 
 	   ./sdrplay-worker.h 
 	)
 
 set ( ${objectName}_SRCS
 	   ./main.cpp
 	   ./gui.cpp
-	   ./popup-keypad.cpp
            ../src/various/fft.cpp
 	   ../src/various/oscillator.cpp
 	   ../src/various/pllC.cpp
@@ -152,11 +148,10 @@ set ( ${objectName}_SRCS
 	   ../src/rds/rds-groupdecoder.cpp
 	   ./virtual-input.cpp
 	   ./dabstick/dabstick-dll.cpp
-	   ./dabstick/dongleselect.cpp
 	)
 
-set (${objectName}_UIS ./sdrgui.ui )
-QT4_WRAP_UI(UIS ${${objectName}_UIS})
+#set (${objectName}_UIS ./sdrgui.ui )
+#QT4_WRAP_UI(UIS ${${objectName}_UIS})
 
 set ( ${objectName}_MOCS
 	./gui.h
@@ -165,11 +160,10 @@ set ( ${objectName}_MOCS
 	../includes/rds/rds-blocksynchronizer.h
 	../includes/rds/rds-decoder.h
 	../includes/fm/fm-processor.h
-	./dabstick/dongleselect.h
 	)
 
 include_directories (${FFTW_INCLUDE_DIRS} ${SAMPLERATE_INCLUDE_DIRS} ${PORTAUDIO_INCLUDE_DIRS} ${SNDFILES_INCLUDE_DIRS})
-QT4_WRAP_CPP(MOCS ${${objectName}_MOCS})
-add_executable ( ${objectName} ${${objectName}_SRCS} ${UIS} ${RSCS} ${TRS} ${MOCS} )
-target_link_libraries (${objectName}  ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${FFTW_LIBRARIES} ${extraLibs} ${SAMPLERATE_LIBRARIES} )
+#QT4_WRAP_CPP(MOCS ${${objectName}_MOCS})
+add_executable ( ${objectName} ${${objectName}_SRCS} ${RSCS} ${TRS} )
+target_link_libraries (${objectName}  ${FFTW_LIBRARIES} ${extraLibs} ${SAMPLERATE_LIBRARIES} )
 INSTALL(TARGETS ${objectName} RUNTIME DESTINATION /usr/local/bin)

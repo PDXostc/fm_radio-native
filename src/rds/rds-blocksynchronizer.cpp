@@ -53,17 +53,22 @@ const RDSGroup::RdsBlock rdsBlockSynchronizer::SYNC_END_BLOCK	= RDSGroup::BLOCK_
 	crcFecEnabled		= true; 
 	
 	this -> reset ();
+	// FIXME: Need new method of signaling RDS data
+	/*
 	connect (this, SIGNAL (setRDSisSynchronized (bool)),
 	         MyRadioInterface, SLOT (setRDSisSynchronized (bool)));
 	connect (this, SIGNAL (setbitErrorRate (double)),
 	         MyRadioInterface, SLOT (setbitErrorRate (double)));
+	*/
 }
 
 	rdsBlockSynchronizer::~rdsBlockSynchronizer (void) {
+	  /*
 	disconnect (this, SIGNAL (setRDSisSynchronized (bool)),
 	            MyRadioInterface, SLOT (setRDSisSynchronized (bool)));
 	disconnect (this, SIGNAL (setbitErrorRate (double)),
 	            MyRadioInterface, SLOT (setbitErrorRate (double)));
+	  */
 }
 
 void	rdsBlockSynchronizer::setFecEnabled (bool b) {
@@ -81,7 +86,8 @@ void	rdsBlockSynchronizer::reset	(void) {
 
 	resetCRCErrorCounter	();
 	resetResyncErrorCounter	();
-	setRDSisSynchronized	(false);
+	// FIXME: Signals needed
+	//setRDSisSynchronized	(false);
 }
 
 void	rdsBlockSynchronizer::setNextBlock	(void) {
@@ -112,7 +118,8 @@ DSPFLOAT	rdsBlockSynchronizer::getBitErrorRate	(void) {
 void	rdsBlockSynchronizer::resync	(void) {
 	rdsCurrentBlock		= RDSGroup::BLOCK_A;
 	rdsIsSynchronized	= false;
-	setRDSisSynchronized (false);
+	// FIXME: Signals needed
+	//setRDSisSynchronized (false);
 	rdsBitsinBlock		= 0;
 }
 
@@ -174,7 +181,8 @@ uint32_t	syndrome	= 0;
 
 //	calc BER
 	rdsbitErrorRate	= (DSPFLOAT)rdsNumofBitErrors / rdsBitsProcessed;
-	setbitErrorRate (rdsbitErrorRate);
+	// FIXME: Signals needed
+	// setbitErrorRate (rdsbitErrorRate);
 	if (rdsBitsProcessed >= NUM_BITS_BER_CALC_RESET) {
 	   rdsNumofBitErrors = 0;
 	   rdsBitsProcessed = 0;
@@ -343,7 +351,8 @@ uint32_t	syndrome	= 0;
 //	if we are here, we reached the end block and
 //	are synchronized, show it to the world
 	rdsIsSynchronized	= true;
-	setRDSisSynchronized	(true);
+	// FIXME: Signals needed
+	//setRDSisSynchronized	(true);
 //
 //	check to see whether sync was successful
 	SyncResult result = (rdsCurrentBlock == RDSGroup::BLOCK_D)?

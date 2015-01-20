@@ -153,8 +153,9 @@
 	ykm1			= 0;
 	alpha			= 1.0 / (fmRate / (1000000.0 / 50.0 + 1));
 
-	connect (this, SIGNAL (scanresult (void)),
-	         myRadioInterface, SLOT (scanresult (void)));
+	// FIXME: Need new method for scanning
+	//connect (this, SIGNAL (scanresult (void)),
+	//myRadioInterface, SLOT (scanresult (void)));
 	squelchValue		= 0;
 	old_squelchValue	= 0;
 
@@ -177,10 +178,16 @@
 	delete fmAudioFilter;
 }
 
+void	fmProcessor::start	(void) {
+}
+
 void	fmProcessor::stop	(void) {
 	running	= false;
+	// FIXME: Join the thread
+	/*
 	while (!isFinished ())
 	   usleep (100);
+	*/
 }
 
 DSPFLOAT	fmProcessor::get_pilotStrength	(void) {
@@ -299,7 +306,7 @@ int16_t		audioIndex	= 0;
 //	we need x samples more than we have, before going on,
 //	so with an inputRate "inputRate"
 //	we wait (note that we need 64 bit computation
-	      msleep (5);	// should be enough
+	      usleep (5000);	// should be enough
 	      x =  bufferSize - myRig -> Samples ();
 	   }
 
@@ -338,7 +345,8 @@ int16_t		audioIndex	= 0;
 	                               this -> thresHold) {
 	               fprintf (stderr, "signal found %f %f\n",
 	                        get_db (signal, 256), get_db (Noise, 256));
-	               scanresult ();
+		       // FIXME: New signal
+	               //scanresult ();
 	            }
 	         }
 	         continue;	// no signal processing!!!!

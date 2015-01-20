@@ -28,8 +28,6 @@
 #ifndef	__FM_PROCESSOR
 #define	__FM_PROCESSOR
 
-#include	<QThread>
-#include	<QObject>
 #include	<sndfile.h>
 #include	"fm-constants.h"
 #include	"fir-filters.h"
@@ -49,8 +47,7 @@ class		rdsDecoder;
 class		audioSink;
 class		newConverter;
 
-class	fmProcessor:public QThread {
-Q_OBJECT
+class	fmProcessor {
 public:
 			fmProcessor (
 				     virtualInput	*,
@@ -99,7 +96,8 @@ public:
 
 	void		set_squelchValue	(int16_t);
 private:
-virtual	void		run		(void);
+        void		start		(void);
+	void		run		(void);
 	virtualInput	*myRig;
 	RadioInterface	*myRadioInterface;
 	audioSink	*theSink;
@@ -229,7 +227,7 @@ virtual	void		run		(void);
 	      
 	pilotRecovery	*pilotRecover;
 
-signals:
+	//signals:
 	void		setPLLisLocked		(bool);
 	void		hfBufferLoaded		(int, int);
 	void		lfBufferLoaded		(int);

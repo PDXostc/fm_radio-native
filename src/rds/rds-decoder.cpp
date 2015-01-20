@@ -106,10 +106,12 @@ int16_t	length;
 
 	my_rdsGroupDecoder	= new rdsGroupDecoder	(MyRadioInterface);
 
+	/*
 	connect (this, SIGNAL (setCRCErrors (int)),
 		 MyRadioInterface, SLOT (setCRCErrors (int)));
 	connect (this, SIGNAL (setSyncErrors (int)),
 		 MyRadioInterface, SLOT (setSyncErrors (int)));
+	*/
 }
 
 	rdsDecoder::~rdsDecoder (void) {
@@ -219,12 +221,14 @@ void	rdsDecoder::processBit (bool bit) {
 
 	   case rdsBlockSynchronizer::RDS_NO_SYNC:
 //	      resync if the last sync failed
-	      setSyncErrors (my_rdsBlockSync -> getNumSyncErrors ());
+		   // FIXME: Signals needed
+		   //setSyncErrors (my_rdsBlockSync -> getNumSyncErrors ());
 	      my_rdsBlockSync -> resync ();
 	      break;
 
 	   case rdsBlockSynchronizer::RDS_NO_CRC:
-	      setCRCErrors (my_rdsBlockSync -> getNumCRCErrors ());
+		   // FIXME: Signals needed
+		   //setCRCErrors (my_rdsBlockSync -> getNumCRCErrors ());
 	      my_rdsBlockSync -> resync ();
 	      break;
 
