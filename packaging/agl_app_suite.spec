@@ -1,4 +1,4 @@
-Name:       agl_app_suite	
+Name:       agl_app_suite
 Summary:    A collection of IVI software
 Version:    0.0.1
 Release:    1

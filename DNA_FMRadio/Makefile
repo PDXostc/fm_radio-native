@@ -14,7 +14,7 @@ endif
 wgtPkg: clean
 	cp -rf ../DNA_common .
 	zip -r $(PROJECT).wgt $(WRT_FILES)
-	
+
 config:
 	scp setup/weston.ini root@$(TIZEN_IP):/etc/xdg/weston/
 

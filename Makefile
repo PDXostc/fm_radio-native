@@ -1,14 +1,14 @@
 app_list = DNA_HomeScreen DNA_HelloTizen DNA_FMRadio
-extension_list = extension_common wkb_client_ext 
+extension_list = extension_common wkb_client_ext
 #TIZEN_IP=TizenVTC
 TIZEN_IP=192.168.1.103
 
 #to avoid typing a password for each scp or ssh command you need to copy
-#your public key over 
+#your public key over
 #
 # ssh-copy-id app@TizenNuc
 #
-# This command will require your password and then you will be able to 
+# This command will require your password and then you will be able to
 # use ssh and scp without a password from that user.
 
 all: apps extensions
@@ -23,7 +23,7 @@ apps:
 extensions:
 	$(foreach extension,$(extension_list), make -C $(extension);)
 
-deploy: deploy_apps 
+deploy: deploy_apps
 
 deploy_apps:
 	$(foreach app,$(app_list), make -C $(app) deploy TIZEN_IP=$(TIZEN_IP);)
@@ -51,7 +51,7 @@ clean_apps:
 	cd Leap && make clean
 	#cd GestureGame && make clean
 
-clean_extensions: 
+clean_extensions:
 	$(foreach extension,$(extension_list), make -C $(extension) clean;)
 
 install:
