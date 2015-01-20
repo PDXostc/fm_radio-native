@@ -1,7 +1,7 @@
 app_list = DNA_HomeScreen DNA_HelloTizen
 extension_list = extension_common wkb_client_ext 
-TIZEN_IP=TizenVTC
-#TIZEN_IP=192.168.6.11
+#TIZEN_IP=TizenVTC
+TIZEN_IP=192.168.1.103
 
 #to avoid typing a password for each scp or ssh command you need to copy
 #your public key over 
@@ -55,5 +55,5 @@ clean_extensions:
 	$(foreach extension,$(extension_list), make -C $(extension) clean;)
 
 install:
-	cd HomeScreen && make install
+	$(foreach app,$(app_list), cd $(app) && make install && cd ..;)
 
