@@ -18,24 +18,43 @@ BuildRequires:  pkgconfig(ecore-evas)
 BuildRequires:  pkgconfig(edje)
 BuildRequires:  pkgconfig(efreet)
 BuildRequires:  pkgconfig(eldbus)
+BuildRequires:  pkgconfig(glib-2.0)
+BuildRequires:  pkgconfig(dbus-1)
+BuildRequires:  pkgconfig(dbus-glib-1)
 
 Requires:       ibus
 Requires:       ibus-hangul
 Requires:       ibus-libpinyin
 
 
-#%global plugin_list extension_common BoilerPlateExtension most wkb_client_ext
-%global plugin_list extension_common BoilerPlateExtension wkb_client_ext
+#%global plugin_list extension_common BoilerPlateExtension wkb_client_ext FMRadioService
+%global plugin_list extension_common FMRadioService
 
 %description
 A collection of IVI software
 
 %prep
-
 %setup -q -n %{name}-%{version}
+# Support for GNU autotools-style build systems
+for plugin in %{plugin_list}; do
+	cd ${plugin}
+	if [ -f autogen.sh ]; then
+		./autogen.sh
+	fi
+    cd ..
+done
+
 
 %build
 for plugin in %{plugin_list}; do
+# Support for GNU autotools-style build systems
+	for plugin in %{plugin_list}; do
+		cd ${plugin}
+		if [ -f configure ]; then
+		 ./configure --prefix=%{_prefix}
+		fi
+		cd ..
+	done
     make -C ${plugin}
 done
 
