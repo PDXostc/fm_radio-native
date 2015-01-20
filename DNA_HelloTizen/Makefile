@@ -6,9 +6,9 @@ PACKAGE = $(PROJECT)-$(VERSION)
 
 SEND := ~/send
 
+# TIZEN_IP must be exported from the env if set to anything else than NUC
 ifndef TIZEN_IP
-#TIZEN_IP=TizenNuc
-TIZEN_IP=192.168.1.103
+TIZEN_IP=TizenNuc
 endif
 
 wgtPkg: clean

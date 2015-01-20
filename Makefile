@@ -1,7 +1,10 @@
 app_list = DNA_HomeScreen DNA_HelloTizen DNA_FMRadio
 extension_list = extension_common wkb_client_ext
-#TIZEN_IP=TizenVTC
-TIZEN_IP=192.168.1.103
+
+# TIZEN_IP must be exported from the env if set to anything else than NUC
+ifndef TIZEN_IP
+TIZEN_IP=TizenNuc
+endif
 
 #to avoid typing a password for each scp or ssh command you need to copy
 #your public key over
