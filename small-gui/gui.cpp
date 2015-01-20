@@ -53,7 +53,6 @@ int16_t	delayTable [] = {1, 3, 5, 7, 9, 10, 15};
  *	is embedded in actions, initiated by gui buttons
  */
 	RadioInterface::RadioInterface (): myFMprocessor(0) {
-int16_t	i;
 std::string h;
 bool	success;
 int32_t	startFreq;
@@ -91,17 +90,6 @@ int32_t	startFreq;
 
 	myFMprocessor		= NULL;
 	our_audioSink		= new audioSink (this -> audioRate);
-	outTable		= new int16_t
-	                             [our_audioSink -> numberofDevices () + 1];
-	for (i = 0; i < our_audioSink -> numberofDevices (); i ++)
-	   outTable [i] = -1;
-
-	if (!setupSoundOut (our_audioSink,
-	                    this -> audioRate,
-	                    outTable)) {
-	   fprintf (stderr, "Cannot open any output device\n");
-	   abortSystem (33);
-	}
 
 //
 	audioDumping		= false;
@@ -124,9 +112,7 @@ int32_t	startFreq;
 	                                    fmRate,
 	                                    this -> audioRate,
 	                                    thresHold);
-//
-	myFMprocessor		-> set_squelchMode (squelchMode);
-
+	setStart();
 }
 
 	RadioInterface::~RadioInterface () {
@@ -449,44 +435,6 @@ int8_t	decoder	= 0;
 	   decoder = fm_Demodulator::FM5DECODER;
 
 	myFMprocessor	-> setFMdecoder (decoder);
-}
-
-//
-//
-//	do not forget that ocnt starts with 1, due
-//	to Qt list conventions
-bool	RadioInterface::setupSoundOut (audioSink	*our_audioSink,
-	                               int32_t		cardRate,
-	                               int16_t		*table) {
-uint16_t	ocnt	= 1;
-uint16_t	i;
-
-	for (i = 0; i < our_audioSink -> numberofDevices (); i ++) {
-	   const char *so =
-	             our_audioSink -> outputChannelwithRate (i, cardRate);
-
-	   if (so != NULL) {
-	      table [ocnt] = i;
-	      ocnt ++;
-	   }
-	}
-	return ocnt > 1;
-}
-
-void	RadioInterface::setStreamOutSelector (int idx) {
-	if (idx == 0)
-	   return;
-
-	outputDevice = outTable [idx];
-	if (!our_audioSink -> isValidDevice (outputDevice)) 
-	   return;
-
-	our_audioSink	-> stop	();
-	if (!our_audioSink -> selectDevice (outputDevice)) {
-	   return;
-	}
-
-	our_audioSink	-> restart ();
 }
 
 ////////////////////////////////////////////////////////////////////

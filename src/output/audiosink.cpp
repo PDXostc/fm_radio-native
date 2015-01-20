@@ -25,6 +25,8 @@
  */
 
 #include	"audiosink.h"
+#include	<stdexcept>
+#include	<iostream>
 /*
  *	The class is the sink for the data generated
  */
@@ -46,6 +48,32 @@
 	numofDevices	= Pa_GetDeviceCount ();
 	ostream		= NULL;
 	dumpFile	= NULL;
+
+	// select device
+	bool selected = false;
+	for (int16_t i = 0; i < numofDevices; ++i) {
+		const char *name = outputChannelwithRate(i, rate);
+		if (!name)
+			continue;
+
+		if (!isValidDevice(i))
+			continue;
+
+		if (std::string(name) != std::string("default"))
+			continue;
+
+		if (!selectDevice(i))
+			continue;
+
+		selected = true;
+		std::cout << "Selected audio output `" << name << "'" << std::endl;
+		
+		restart();
+		break;
+	}
+
+	if (!selected)
+		throw std::runtime_error("could not start audio output");
 }
 
 	audioSink::~audioSink	(void) {
@@ -156,6 +184,15 @@ PaStreamParameters *outputParameters =
 	return Pa_IsFormatSupported (NULL, outputParameters, Rate) ==
 	                                          paFormatIsSupported;
 }
+static std::string now()
+{
+  time_t t( time(NULL) );
+  struct tm *nw( localtime(&t) );
+
+  char str[32];
+  strftime(str, sizeof(str), "%F %T", nw);
+  return str;
+}
 /*
  * 	... and the callback
  */
@@ -184,6 +221,8 @@ uint32_t	i;
 	if (ud -> paCallbackReturn == paContinue) {
 	   outB = (reinterpret_cast <audioSink *>(userData)) -> _O_Buffer;
 	   actualSize = outB -> getDataFromBuffer (outp, 2 * framesPerBuffer);
+	   //std::cerr << now() << " read " << actualSize
+	   //<< " samples from ringbuffer" << std::endl;
 	   for (i = actualSize; i < 2 * framesPerBuffer; i ++)
 	      outp [i] = 0;
 	}
@@ -219,6 +258,9 @@ int32_t	available = _O_Buffer -> GetRingBufferWriteAvailable ();
 	   buffer [2 * i] = real (V [i]);
 	   buffer [2 * i + 1] = imag (V [i]);
 	}
+
+	//std::cerr << now() << " writing 2*" << n << " samples to ringbuffer with "
+	//<< available << " available space" << std::endl;
 
 	if (dumpFile != NULL)
 	   sf_writef_float (dumpFile, buffer, n);

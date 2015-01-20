@@ -34,9 +34,10 @@
 
 #include	"rtl-sdr.h"
 #include	"dabstick-dll.h"
-#include        <pthread.h>
-#include        <sstream>
-#include        <stdexcept>
+#include	<pthread.h>
+#include	<sstream>
+#include	<stdexcept>
+#include	<iostream>
 
 #ifdef	__MINGW32__
 #define	GETPROCADDRESS	GetProcAddress
@@ -79,9 +80,19 @@ public:
 	}
 
 	~dll_driver (void) {
+		int err = pthread_join(thread, NULL);
+		if (err != 0) {
+			std::cerr << "warning: could not join processor thread: "
+				  << strerror(err) << std::endl;
+		} 
 	}
 
 private:
+	static void* c_run (void * userdata) {
+		dll_driver *drv = static_cast<dll_driver *>(userdata);
+		drv->run();
+		return NULL;
+	}
         void	start (void) {
 		int err = pthread_create(&thread, NULL, &dll_driver::c_run, this);
 		if (err != 0) {
@@ -92,10 +103,6 @@ private:
 			throw std::runtime_error(strm.str());
 		}
 	}
-	void    c_run (void * userdata) {
-		dll_driver *drv = static_cast<dll_driver *>(userdata);
-		drv->run();
-	} 
         void	run (void) {
 	(theStick -> rtlsdr_read_async) (theStick -> device,
 	                          (rtlsdr_read_async_cb_t)&RTLSDRCallBack,
@@ -117,7 +124,7 @@ int16_t	i;
 	libraryLoaded			= false;
 	open				= false;
 	_I_Buffer			= NULL;
-	lastFrequency			= KHz (94700);	// just a dummy
+	lastFrequency			= KHz (96700);	// just a dummy
 	this	-> sampleCounter	= 0;
 	this	-> vfoOffset		= 0;
 	gains				= NULL;
@@ -175,7 +182,10 @@ int16_t	i;
 	for (i = gainsCount; i > 0; i--)
 		fprintf(stderr, "%.1f ", gains [i - 1] / 10.0);
 	rtlsdr_set_tuner_gain_mode (device, 1);
-	rtlsdr_set_tuner_gain (device, gains [gainsCount / 2]);
+	
+	rtlsdr_set_tuner_gain (device, gains [gainsCount-1]);
+	fprintf(stderr, "\nSet gain to %f\n", gains [gainsCount-1] / 10.0);
+
 
 	_I_Buffer		= new RingBuffer<uint8_t>(1024 * 1024);
 	workerHandle		= NULL;
@@ -220,7 +230,7 @@ bool	dabstick_dll::legalFrequency (int32_t f) {
 }
 
 int32_t	dabstick_dll::defaultFrequency	(void) {
-	return Khz (94700);
+	return Khz (96700);
 }
 
 //

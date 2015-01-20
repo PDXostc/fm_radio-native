@@ -59,8 +59,6 @@ private:
 	int32_t		audioRate;
 	audioSink	*our_audioSink;
 	virtualInput	*myRig;
-	int16_t		*outTable;
-	int16_t		numberofDevices;
 
 	uint8_t		HFviewMode;
 	uint8_t		inputMode;

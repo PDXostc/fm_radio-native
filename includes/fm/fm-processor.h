@@ -96,8 +96,10 @@ public:
 
 	void		set_squelchValue	(int16_t);
 private:
+        static void *   c_run (void * userdata);
         void		start		(void);
 	void		run		(void);
+        pthread_t       thread;
 	virtualInput	*myRig;
 	RadioInterface	*myRadioInterface;
 	audioSink	*theSink;

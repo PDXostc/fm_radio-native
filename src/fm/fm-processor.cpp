@@ -34,6 +34,8 @@
 #include	"sincos.h"
 #include	"virtual-input.h"
 #include	"newconverter.h"
+#include	<stdexcept>
+#include	<iostream>
 
 #define	AUDIO_FREQ_DEV_PROPORTION 0.85f
 #define	PILOT_FREQUENCY		19000
@@ -74,12 +76,14 @@
  */
 	this	-> fmModus		= FM_STEREO;
 	this	-> selector		= S_STEREO;
-	this	-> Volume		= 1.0;
+	this	-> Gain			= 50;
+	this	-> Volume		= 10;
 	this	-> inputMode		= IandQ;
 #define	RDS_DECIMATOR	8
 	this	-> myRdsDecoder		= new rdsDecoder (myRadioInterface,
 	                                                  fmRate / RDS_DECIMATOR,
 	                                                  mySinCos);
+	this	-> rdsModus		= rdsDecoder::RDS2;
 /*
  *	averagePeakLevel and audioGain are set
  *	prior to calling the processFM method
@@ -156,11 +160,14 @@
 	// FIXME: Need new method for scanning
 	//connect (this, SIGNAL (scanresult (void)),
 	//myRadioInterface, SLOT (scanresult (void)));
-	squelchValue		= 0;
+	squelchValue		= 50;
 	old_squelchValue	= 0;
 
 	theConverter		= 0;
 	myCount			= 0;
+
+	setDeemphasis(50);
+
 	start ();
 }
 
@@ -178,16 +185,30 @@
 	delete fmAudioFilter;
 }
 
+void *  fmProcessor::c_run (void * userdata) {
+	fmProcessor *proc = static_cast<fmProcessor *>(userdata);
+	proc->run();
+	return NULL;
+}
+
 void	fmProcessor::start	(void) {
+	int err = pthread_create(&thread, NULL, &fmProcessor::c_run, this);
+	if (err != 0) {
+		std::ostringstream strm;
+		strm << "error creating processor thread: "
+		     << strerror(err);
+
+		throw std::runtime_error(strm.str());
+	}
 }
 
 void	fmProcessor::stop	(void) {
 	running	= false;
-	// FIXME: Join the thread
-	/*
-	while (!isFinished ())
-	   usleep (100);
-	*/
+	int err = pthread_join(thread, NULL);
+	if (err != 0) {
+		std::cerr << "warning: could not join processor thread: "
+			  << strerror(err) << std::endl;
+	} 
 }
 
 DSPFLOAT	fmProcessor::get_pilotStrength	(void) {
@@ -204,6 +225,7 @@ DSPFLOAT	fmProcessor::get_rdsStrength	(void) {
 
 DSPFLOAT	fmProcessor::get_noiseStrength	(void) {
 	if (running)
+
 	   return fm_Levels	-> getNoiseStrength ();
 	return 0.0;
 }
@@ -279,6 +301,15 @@ void	fmProcessor::stopScanning	(void) {
 //
 //	In this variant, we have a separate thread for the
 //	fm processing
+static std::string now()
+{
+  time_t t( time(NULL) );
+  struct tm *nw( localtime(&t) );
+
+  char str[32];
+  strftime(str, sizeof(str), "%F %T", nw);
+  return str;
+}
 
 void	fmProcessor::run (void) {
 DSPCOMPLEX	result;
@@ -320,6 +351,9 @@ int16_t		audioIndex	= 0;
 	
 	   bufferSize = a =
 	            myRig -> getSamples (dataBuffer, bufferSize, inputMode);
+
+	   //std::cerr << now() << " got " << bufferSize << " samples from dongle" << std::endl;
+
 //
 //	Here we really start
 //

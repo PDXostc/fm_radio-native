@@ -76,12 +76,11 @@ FILE *f;
 	return true;
 }
 
-#define	DEFAULT_INI	".jsdr-fm-mini.ini"
-
 int	main (int argc, char **argv) {
 RadioInterface	*MyRadioInterface;
 
 	MyRadioInterface = new RadioInterface;
+	while (1) sleep (10);
 	delete MyRadioInterface;
 	exit (0);
 }
