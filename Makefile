@@ -1,4 +1,4 @@
-app_list = DNA_HomeScreen DNA_HelloTizen
+app_list = DNA_HomeScreen DNA_HelloTizen DNA_FMRadio
 extension_list = extension_common wkb_client_ext 
 #TIZEN_IP=TizenVTC
 TIZEN_IP=192.168.1.103
@@ -38,7 +38,7 @@ deploy_extensions:
 	$(foreach extension,$(extension_list), make -C $(extension) deploy TIZEN_IP=$(TIZEN_IP);)
 
 run:
-	ssh app@$(TIZEN_IP) "export DBUS_SESSION_BUS_ADDRESS='unix:path=/run/user/5000/dbus/user_bus_socket' && xwalkctl | egrep -e 'Home Screen' | awk '{print $1}' | xargs --no-run-if-empty xwalk-launcher -d"
+	ssh app@$(TIZEN_IP) "export DBUS_SESSION_BUS_ADDRESS='unix:path=/run/user/5000/dbus/user_bus_socket' && xwalkctl | egrep -e 'FMRADIO' | awk '{print $1}' | xargs --no-run-if-empty xwalk-launcher"
 
 clean: clean_apps clean_extensions
 
