@@ -47,13 +47,21 @@ done
 
 
 %build
+echo "**********************************"
+echo "**********************************"
+echo "PREFIX=%{_prefix}"
+echo "BUILDROOT=%{buildroot}"
+echo "LIBDIR=%{_libdir}"
+echo "DATADIR=%{_datadir}"
+echo "**********************************"
+echo "**********************************"
 for plugin in %{plugin_list}; do
 # Support for GNU autotools-style build systems
 	for plugin in %{plugin_list}; do
 		cd ${plugin}
 		if [ -f configure ]; then
 		 # We have to install inside gbs buildroot jail! 
-		 ./configure --prefix=%{buildroot}/%{_prefix}
+		 ./configure --prefix=%{_prefix}
 		fi
 		cd ..
 	done
