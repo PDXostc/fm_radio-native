@@ -22,16 +22,11 @@
 #ifndef __GST_SDRJFM_SRC_H__
 #define __GST_SDRJFM_SRC_H__
 
+
 #include <gst/gst.h>
 #include <gst/audio/gstaudiosrc.h>
 
-G_BEGIN_DECLS
-
-#define GST_TYPE_SDRJFM_SRC           (gst_sdrjfm_src_get_type())
-#define GST_SDRJFM_SRC(obj)           (G_TYPE_CHECK_INSTANCE_CAST((obj),GST_TYPE_SDRJFM_SRC,GstSdrjfmSrc))
-#define GST_SDRJFM_SRC_CLASS(klass)   (G_TYPE_CHECK_CLASS_CAST((klass),GST_TYPE_SDRJFM_SRC,GstSdrjfmSrcClass))
-#define GST_IS_SDRJFM_SRC(obj)        (G_TYPE_CHECK_INSTANCE_TYPE((obj),GST_TYPE_SDRJFM_SRC))
-#define GST_IS_SDRJFM_SRC_CLASS(klas) (G_TYPE_CHECK_CLASS_TYPE((klass),GST_TYPE_SDRJFM_SRC))
+#include <gui.h>
 
 typedef struct _GstSdrjfmSrc GstSdrjfmSrc;
 typedef struct _GstSdrjfmSrcClass GstSdrjfmSrcClass;
@@ -39,17 +34,26 @@ typedef struct _GstSdrjfmSrcClass GstSdrjfmSrcClass;
 struct _GstSdrjfmSrc {
   GstAudioSrc    src;
 
+  gint frequency;
+
+  RadioInterface *radio;
 };
 
 struct _GstSdrjfmSrcClass {
   GstAudioSrcClass parent_class;
 
-  gint frequency;
-
 };
+
+extern "C" {
+
+#define GST_TYPE_SDRJFM_SRC           (gst_sdrjfm_src_get_type())
+#define GST_SDRJFM_SRC(obj)           (G_TYPE_CHECK_INSTANCE_CAST((obj),GST_TYPE_SDRJFM_SRC,GstSdrjfmSrc))
+#define GST_SDRJFM_SRC_CLASS(klass)   (G_TYPE_CHECK_CLASS_CAST((klass),GST_TYPE_SDRJFM_SRC,GstSdrjfmSrcClass))
+#define GST_IS_SDRJFM_SRC(obj)        (G_TYPE_CHECK_INSTANCE_TYPE((obj),GST_TYPE_SDRJFM_SRC))
+#define GST_IS_SDRJFM_SRC_CLASS(klas) (G_TYPE_CHECK_CLASS_TYPE((klass),GST_TYPE_SDRJFM_SRC))
 
 GType gst_sdrjfm_src_get_type(void);
 
-G_END_DECLS
+}
 
 #endif /* __GST_SDRJFM_SRC_H__ */

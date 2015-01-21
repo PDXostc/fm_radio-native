@@ -23,6 +23,8 @@
 
 #include "gstsdrjfmsrc.h"
 
+extern "C" {
+
 GST_DEBUG_CATEGORY (sdrjfm_debug);
 
 static gboolean
@@ -42,3 +44,5 @@ GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
     sdrjfm,
     "SDR-J FM support for GStreamer",
     plugin_init, VERSION, "GPL", "sdrjfm", "http://www.collabora.com");
+
+}

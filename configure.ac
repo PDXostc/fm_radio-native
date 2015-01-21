@@ -7,7 +7,7 @@ dnl required versions of gstreamer and plugins-base
 GST_REQUIRED=1.0.0
 GSTPB_REQUIRED=1.0.0
 
-AC_CONFIG_SRCDIR([src/gstsdrjfm.c])
+AC_CONFIG_SRCDIR([src/gstsdrjfm.cpp])
 AC_CONFIG_HEADERS([config.h])
 
 dnl required version of automake
@@ -22,7 +22,6 @@ m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])],
    AC_SUBST(AM_DEFAULT_VERBOSITY)])
 
 dnl check for tools (compiler etc.)
-AC_PROG_CC
 AC_PROG_CXX
 
 dnl required version of libtool
@@ -53,7 +52,7 @@ PKG_CHECK_MODULES(GST, [
   ])
 ])
 
-dnl need libstlsdr to capture
+dnl need librtlsdr to capture
 PKG_CHECK_MODULES(RS, [
   librtlsdr
 ], [
@@ -62,6 +61,30 @@ PKG_CHECK_MODULES(RS, [
 ], [
   AC_MSG_ERROR([
       You need to install development package of RTL SDR library.
+  ])
+])
+
+dnl need samplerate for sample rate conversion
+PKG_CHECK_MODULES(SR, [
+  samplerate
+], [
+  AC_SUBST(SR_CFLAGS)
+  AC_SUBST(SR_LIBS)
+], [
+  AC_MSG_ERROR([
+      You need samplerate library.
+  ])
+])
+
+dnl not sure what SDR-J needs fftw for but it does need it
+PKG_CHECK_MODULES(FFTW, [
+  fftw3f
+], [
+  AC_SUBST(FFTW_CFLAGS)
+  AC_SUBST(FFTW_LIBS)
+], [
+  AC_MSG_ERROR([
+      You need the single-precision FFTW library, fftw3f.
   ])
 ])
 

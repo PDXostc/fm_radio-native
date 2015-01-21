@@ -56,29 +56,26 @@ enum
   PROP_FREQUENCY
 };
 
-/* signals and args */
-enum
-{
-};
-
 #define gst_sdrjfm_src_parent_class parent_class
+
+extern "C" {
 G_DEFINE_TYPE (GstSdrjfmSrc, gst_sdrjfm_src, GST_TYPE_AUDIO_SRC);
+}
 
 static GstStaticPadTemplate sdrjfmsrc_src_factory = GST_STATIC_PAD_TEMPLATE ("src",
     GST_PAD_SRC,
     GST_PAD_ALWAYS,
     GST_STATIC_CAPS ("audio/x-raw, "
-        "format = (string) " GST_AUDIO_NE(S16) ", "
+        "format = (string) " GST_AUDIO_NE(F32) ", "
         "layout = (string) interleaved, "
         "rate = (int) 44100, "
         "channels = (int) 2; ")
     );
 
-static guint signals[LAST_SIGNAL] = { 0 };
-
 static void
 gst_sdrjfm_src_set_frequency (GstSdrjfmSrc *self, gint frequency)
 {
+  
 }
 
 static gint
@@ -129,25 +126,33 @@ gst_sdrjfm_src_get_property (GObject * object, guint prop_id,
 static gboolean
 gst_sdrjfm_src_open (GstAudioSrc * asrc)
 {
-  GstSdrjfmSrc *self = GST_SDRJFM_SRC (asrc);
+  return TRUE;
 }
 
 static gboolean
 gst_sdrjfm_src_close (GstAudioSrc * asrc)
 {
-  GstSdrjfmSrc *self = GST_SDRJFM_SRC (asrc);
+  return TRUE;
 }
 
 static gboolean
 gst_sdrjfm_src_prepare (GstAudioSrc * asrc, GstAudioRingBufferSpec * spec)
 {
   GstSdrjfmSrc *self = GST_SDRJFM_SRC (asrc);
+  self->radio = new RadioInterface;
+
+  return TRUE;
 }
 
 static gboolean
 gst_sdrjfm_src_unprepare (GstAudioSrc * asrc)
 {
   GstSdrjfmSrc *self = GST_SDRJFM_SRC (asrc);
+
+  delete self->radio;
+  self->radio = 0;
+
+  return TRUE;
 }
 
 static guint
@@ -155,6 +160,8 @@ gst_sdrjfm_src_read (GstAudioSrc * asrc, gpointer data, guint length,
     GstClockTime * timestamp)
 {
   GstSdrjfmSrc *self =  GST_SDRJFM_SRC (asrc);
+
+  return self->radio->getSamples(static_cast<float *>(data), length);
 }
 
 static guint
@@ -222,7 +229,7 @@ gst_sdrjfm_src_class_init (GstSdrjfmSrcClass * klass)
   g_object_class_install_property (gobject_class, PROP_FREQUENCY,
       g_param_spec_int ("frequency", "Frequency",
           "Frequency to receive", 0, G_MAXINT, DEFAULT_FREQUENCY,
-          G_PARAM_READWRITE | GST_PARAM_MUTABLE_PLAYING | G_PARAM_STATIC_STRINGS));
+    static_cast<GParamFlags>(G_PARAM_READWRITE | GST_PARAM_MUTABLE_PLAYING | G_PARAM_STATIC_STRINGS)));
 
   gst_element_class_set_static_metadata (gstelement_class, "FM Radio Source (SDR-J)",
       "Source/Audio",
