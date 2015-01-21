@@ -1,4 +1,4 @@
-Name:       agl_plugin_suite
+Name:       agl-plugins
 Summary:    A collection of IVI software
 Version:    0.0.1
 Release:    1
@@ -28,59 +28,52 @@ Requires:       ibus-hangul
 Requires:       ibus-libpinyin
 Requires:       systemd
 
-
-%global plugin_list extension_common BoilerPlateExtension wkb_client_ext FMRadioService
+%global folder_list extension_common BoilerPlateExtension wkb_client_ext FMRadioService
 
 %description
 A collection of IVI software
 
+%package service
+Summary: FMRadioService dbus service
+Group: Applications/System
+%description service
+FMRadioService dbus-daemon
+
 %prep
 %setup -q -n %{name}-%{version}
+
 # Support for GNU autotools-style build systems
-for plugin in %{plugin_list}; do
-	cd ${plugin}
+for folder in %{folder_list}; do
+	cd ${folder}
 	if [ -f autogen.sh ]; then
 		./autogen.sh
 	fi
-    cd ..
+	cd ..
 done
 
-
 %build
-echo "**********************************"
-echo "**********************************"
-echo "PREFIX=%{_prefix}"
-echo "BUILDROOT=%{buildroot}"
-echo "LIBDIR=%{_libdir}"
-echo "DATADIR=%{_datadir}"
-echo "**********************************"
-echo "**********************************"
-for plugin in %{plugin_list}; do
 # Support for GNU autotools-style build systems
-	for plugin in %{plugin_list}; do
-		cd ${plugin}
-		if [ -f configure ]; then
-		 # We have to install inside gbs buildroot jail! 
-		 ./configure --prefix=%{_prefix}
-		fi
-		cd ..
-	done
-    make -C ${plugin}
+for folder in %{folder_list}; do
+	cd ${folder}
+	if [ -f configure ]; then
+	 # We have to install inside gbs buildroot jail! 
+	 ./configure --prefix=%{_prefix}
+	fi
+	cd ..
+make -C ${folder}
 done
 
 %install
 # manually add those paths that we are going to install
 mkdir -p %{buildroot}/usr/lib/systemd/user
 mkdir -p %{buildroot}/usr/share/dbus-1/services
-for plugin in %{plugin_list}; do
-    make -C ${plugin} install DESTDIR=%{buildroot} PREFIX=%{_prefix}
+for folder in %{folder_list}; do
+    make -C ${folder} install DESTDIR=%{buildroot} PREFIX=%{_prefix}
 done
-
 
 %files
 %{_prefix}/lib/tizen-extensions-crosswalk/libbp.so
 %{_prefix}/lib/tizen-extensions-crosswalk/libwkb_client.so
-#%{_prefix}/local/sbin/wkb_inst
 %{_prefix}/share/X11/xkb/symbols/wkb
 %{_prefix}/local/sbin/kb_inst
 %{_prefix}/share/weekeyboard/blue_1080.edj
@@ -92,6 +85,9 @@ done
 %{_prefix}/share/weekeyboard/amber_1080.edj
 %{_prefix}/share/weekeyboard/amber_720.edj
 %{_prefix}/share/weekeyboard/amber_600.edj
+
+%files service
 %{_prefix}/lib/systemd/user/fmradioservice.service
 %{_prefix}/share/dbus-1/services/com.jlr.fmradioservice.service
 %{_prefix}/bin/fmradioservice
+
