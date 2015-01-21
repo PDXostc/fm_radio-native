@@ -1,0 +1,4 @@
+[submodule "src/sdr-j-fm-small"]
+	path = src/sdr-j-fm-small
+	url = http://cgit.collabora.com/git/user/rah/sdr-j-fm-small.git
+	branch = gst-sdr-j-fm-master
