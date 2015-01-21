@@ -21,14 +21,15 @@ BuildRequires:  pkgconfig(eldbus)
 BuildRequires:  pkgconfig(glib-2.0)
 BuildRequires:  pkgconfig(dbus-1)
 BuildRequires:  pkgconfig(dbus-glib-1)
+BuildRequires:  pkgconfig(systemd)
 
 Requires:       ibus
 Requires:       ibus-hangul
 Requires:       ibus-libpinyin
+Requires:       systemd
 
 
-#%global plugin_list extension_common BoilerPlateExtension wkb_client_ext FMRadioService
-%global plugin_list extension_common FMRadioService
+%global plugin_list extension_common BoilerPlateExtension wkb_client_ext FMRadioService
 
 %description
 A collection of IVI software
@@ -51,7 +52,8 @@ for plugin in %{plugin_list}; do
 	for plugin in %{plugin_list}; do
 		cd ${plugin}
 		if [ -f configure ]; then
-		 ./configure --prefix=%{_prefix}
+		 # We have to install inside gbs buildroot jail! 
+		 ./configure --prefix=%{buildroot}/%{_prefix}
 		fi
 		cd ..
 	done
@@ -59,6 +61,9 @@ for plugin in %{plugin_list}; do
 done
 
 %install
+# manually add those paths that we are going to install
+mkdir -p %{buildroot}/usr/lib/systemd/user
+mkdir -p %{buildroot}/usr/share/dbus-1/services
 for plugin in %{plugin_list}; do
     make -C ${plugin} install DESTDIR=%{buildroot} PREFIX=%{_prefix}
 done
@@ -66,9 +71,8 @@ done
 
 %files
 %{_prefix}/lib/tizen-extensions-crosswalk/libbp.so
-#%{_prefix}/lib/tizen-extensions-crosswalk/libmost.so
 %{_prefix}/lib/tizen-extensions-crosswalk/libwkb_client.so
-%{_prefix}/local/sbin/wkb_inst
+#%{_prefix}/local/sbin/wkb_inst
 %{_prefix}/share/X11/xkb/symbols/wkb
 %{_prefix}/local/sbin/kb_inst
 %{_prefix}/share/weekeyboard/blue_1080.edj
@@ -80,4 +84,6 @@ done
 %{_prefix}/share/weekeyboard/amber_1080.edj
 %{_prefix}/share/weekeyboard/amber_720.edj
 %{_prefix}/share/weekeyboard/amber_600.edj
-
+%{_prefix}/lib/systemd/user/fmradioservice.service
+%{_prefix}/share/dbus-1/services/com.jlr.fmradioservice.service
+%{_prefix}/bin/fmradioservice
