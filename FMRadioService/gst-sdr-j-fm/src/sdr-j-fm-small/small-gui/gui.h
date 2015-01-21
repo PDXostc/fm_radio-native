@@ -48,6 +48,8 @@ public:
 		RadioInterface		();
 		~RadioInterface		();
 
+		uint32_t getSamples(DSPFLOAT *data, uint32_t length);
+
 private:
 	bool		doInit;
 	int16_t		outputDevice;

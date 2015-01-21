@@ -32,7 +32,6 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 #include	"rds-blocksynchronizer.h"
-#include	"gui.h"
 
 const uint32_t rdsBlockSynchronizer::NUM_BITS_CRC		= 10;
 const uint32_t rdsBlockSynchronizer::NUM_BITS_BLOCK_PAYLOAD	= 16;

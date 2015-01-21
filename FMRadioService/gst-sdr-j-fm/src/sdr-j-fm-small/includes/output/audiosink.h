@@ -27,8 +27,6 @@
 #ifndef __AUDIO_SINK
 #define	__AUDIO_SINK
 #include	"fm-constants.h"
-#include	<sndfile.h>
-#include	<portaudio.h>
 #include	"ringbuffer.h"
 
 #define		LOWLATENCY	0100
@@ -37,44 +35,19 @@
 
 class	audioSink  {
 public:
-			audioSink		(int32_t);
+			audioSink		();
 			~audioSink		(void);
-	int16_t		numberofDevices		(void);
-const	char		*outputChannelwithRate	(int16_t, int32_t);
-	void		stop			(void);
-	void		restart			(void);
 	int32_t		putSample		(DSPCOMPLEX);
 	int32_t		putSamples		(DSPCOMPLEX *, int32_t);
-	int16_t		invalidDevice		(void);
-	bool		isValidDevice		(int16_t);
+	uint32_t        getSamples              (DSPFLOAT *data, uint32_t count);
 
 	int32_t		capacity		(void);
-	bool		selectDefaultDevice	(void);
-	bool		selectDevice		(int16_t);
-	void		startDumping		(SNDFILE *);
-	void		stopDumping		(void);
 	int32_t		getSelectedRate		(void);
 private:
-	bool		OutputrateIsSupported	(int16_t, int32_t);
-	int32_t		CardRate;
 	int32_t		size;
 	uint8_t		Latency;
-	bool		portAudio;
-	bool		writerRunning;
-	int16_t		numofDevices;
-	int		paCallbackReturn;
 	int16_t		bufSize;
-	PaStream	*ostream;
-	SNDFILE		*dumpFile;
 	RingBuffer<float>	*_O_Buffer;
-	PaStreamParameters	outputParameters;
-protected:
-static	int		paCallback_o	(const void	*input,
-	                                 void		*output,
-	                                 unsigned long	framesperBuffer,
-	                                 const PaStreamCallbackTimeInfo *timeInfo,
-					 PaStreamCallbackFlags statusFlags,
-	                                 void		*userData);
 };
 
 #endif

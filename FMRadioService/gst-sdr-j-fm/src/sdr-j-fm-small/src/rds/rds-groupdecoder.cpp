@@ -37,7 +37,6 @@
 #include	"rds-groupdecoder.h"
 #include	<cstring>
 #include	<stdio.h>
-#include	"gui.h"
 
 	rdsGroupDecoder::rdsGroupDecoder (RadioInterface *RI) {
 	MyRadioInterface	= RI;

@@ -26,8 +26,8 @@
 
 #include	<stdlib.h>
 #include	<stdio.h>
+#include	<string.h>
 #include	"rds-decoder.h"
-#include	"gui.h"
 #include	"iir-filters.h"
 #include	"sincos.h"
 
