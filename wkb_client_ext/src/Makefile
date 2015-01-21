@@ -42,7 +42,7 @@ prepare:
 install: $(TARGET)
 	install -D $(TARGET_DIR)/$(TARGET) \
 		$(DESTDIR)$(PREFIX)/lib/tizen-extensions-crosswalk/$(TARGET)
-	install -D wkb_inst \
+#	install -D wkb_inst \
 		$(DESTDIR)$(PREFIX)/local/sbin/wkb_inst
 	install -D kb_inst \
 		$(DESTDIR)$(PREFIX)/local/sbin/kb_inst
