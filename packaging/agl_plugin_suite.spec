@@ -28,7 +28,7 @@ Requires:       ibus-hangul
 Requires:       ibus-libpinyin
 Requires:       systemd
 
-%global folder_list extension_common BoilerPlateExtension wkb_client_ext FMRadioService
+%global folder_list extension_common BoilerPlateExtension wkb_client_ext FMRadioExtension FMRadioService
 
 %description
 A collection of IVI software
@@ -74,6 +74,7 @@ done
 %files
 %{_prefix}/lib/tizen-extensions-crosswalk/libbp.so
 %{_prefix}/lib/tizen-extensions-crosswalk/libwkb_client.so
+%{_prefix}/lib/tizen-extensions-crosswalk/lib_fmradio.so
 %{_prefix}/share/X11/xkb/symbols/wkb
 %{_prefix}/local/sbin/kb_inst
 %{_prefix}/share/weekeyboard/blue_1080.edj
