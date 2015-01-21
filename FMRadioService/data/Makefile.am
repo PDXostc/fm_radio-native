@@ -8,8 +8,8 @@ fmradioservice.service : fmradioservice.service.in
 all-local : fmradioservice.service 
 
 install-data-local:
-	$(INSTALL) fmradioservice.service $(SYSTEMD_USER_SERVICE_PATH)/
-	$(INSTALL) com.jlr.fmradioservice.service $(DBUS_SESSION_SERVICE_PATH)
+	$(INSTALL) fmradioservice.service $(DESTDIR)/$(SYSTEMD_USER_SERVICE_PATH)/
+	$(INSTALL) com.jlr.fmradioservice.service $(DESTDIR)/$(DBUS_SESSION_SERVICE_PATH)
 	
 CLEANFILES = fmradioservice.service
 
