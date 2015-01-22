@@ -334,6 +334,7 @@ handle_on_enabled(GstData *data)
 	PRINTF_DEBUG
 
 	server = (RadioServer *) data->server;
+	g_assert (server != NULL);
 	RadioServerClass* klass = RADIO_SERVER_GET_CLASS(server);
 
 	g_signal_emit(server,
@@ -509,12 +510,12 @@ sdrjfm_init (RadioServer *server, void (*playing_cb) (GstData*))
 
   data->server = server;
   data->pipeline =
-      gst_parse_launch ("sdrjfmsrc name=sdrjfm ! audioresample ! alsasink",
+      gst_parse_launch ("sdrjfmsrc name=sdrjfm ! audioresample ! pulsesink",
       &error);
   g_assert_no_error (error);
   g_assert (data->pipeline != NULL);
 
-  data->fmsrc = gst_bin_get_by_name (GST_BIN (data->pipeline), "sdrjfmsrc");
+  data->fmsrc = gst_bin_get_by_name (GST_BIN (data->pipeline), "sdrjfm");
   g_assert(data->fmsrc != NULL);
 
   // TODO: set the initial default frequency in here ?... or maybe better in JS
