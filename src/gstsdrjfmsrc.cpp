@@ -161,9 +161,10 @@ gst_sdrjfm_src_read (GstAudioSrc * asrc, gpointer data, guint length,
     GstClockTime * timestamp)
 {
   GstSdrjfmSrc *self =  GST_SDRJFM_SRC (asrc);
-
-  guint remaining = length;
   DSPFLOAT *samples = static_cast<DSPFLOAT *>(data);
+
+  /*
+  guint remaining = length;
 
   while (remaining) {
     guint count = self->radio->getSamples(samples, remaining);
@@ -177,6 +178,11 @@ gst_sdrjfm_src_read (GstAudioSrc * asrc, gpointer data, guint length,
   }
   
   return length;
+  */
+
+  guint count = self->radio->getSamples(samples, length);
+  GST_TRACE_OBJECT(self, "Read %u samples, from request of %u", count, length);
+  return count;
 }
 
 static guint
@@ -211,8 +217,8 @@ gst_sdrjfm_src_init (GstSdrjfmSrc * self)
 
   self->frequency = DEFAULT_FREQUENCY;
 
-  basrc->latency_time = 132000; /* base on buffer size */
-  basrc->buffer_time = 8 * basrc->latency_time;
+  //basrc->latency_time = 132000; /* base on buffer size */
+  //basrc->buffer_time = 8 * basrc->latency_time;
 
   gst_audio_base_src_set_provide_clock (basrc, FALSE);
 }
