@@ -24,6 +24,7 @@
 #include <unistd.h>
 
 #include <glib.h>
+#include <gst/gst.h>
 #include <gio/gio.h>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-bindings.h>
