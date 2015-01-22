@@ -25,8 +25,13 @@
  */
 
 #include	"audiosink.h"
+#include	<gst/gst.h>
 #include	<stdexcept>
 #include	<iostream>
+
+GST_DEBUG_CATEGORY_EXTERN (sdrjfm_debug);
+#define GST_CAT_DEFAULT sdrjfm_debug
+
 /*
  *	The class is the sink for the data generated
  */
@@ -82,11 +87,20 @@ int32_t	available = _O_Buffer -> GetRingBufferWriteAvailable ();
 	//std::cerr << now() << " writing 2*" << n << " samples to ringbuffer with "
 	//<< available << " available space" << std::endl;
 
+	GST_TRACE("Writing %d samples to SDR-J RingBuffer with %d available space",
+		  n * 2, available);
+	
+
 	_O_Buffer	-> putDataIntoBuffer (buffer, 2 * n);
 	return n;
 }
 
 uint32_t audioSink::getSamples (DSPFLOAT *data, uint32_t count)
 {
-	   return _O_Buffer -> getDataFromBuffer (data, 2 * count);
+	int32_t available = _O_Buffer -> GetRingBufferReadAvailable ();
+
+	GST_TRACE("Reading %u samples from SDR-J RingBuffer with %d available samples",
+		  count, available);
+
+	return _O_Buffer -> getDataFromBuffer (data, count);
 }
