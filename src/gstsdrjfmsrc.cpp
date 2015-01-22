@@ -81,6 +81,7 @@ gst_sdrjfm_src_set_frequency (GstSdrjfmSrc *self, gint frequency)
 static gint
 gst_sdrjfm_src_get_frequency (GstSdrjfmSrc *self)
 {
+  return 0;
 }
 
 static void
@@ -161,13 +162,28 @@ gst_sdrjfm_src_read (GstAudioSrc * asrc, gpointer data, guint length,
 {
   GstSdrjfmSrc *self =  GST_SDRJFM_SRC (asrc);
 
-  return self->radio->getSamples(static_cast<float *>(data), length);
+  guint remaining = length;
+  DSPFLOAT *samples = static_cast<DSPFLOAT *>(data);
+
+  while (remaining) {
+    guint count = self->radio->getSamples(samples, remaining);
+    GST_TRACE_OBJECT(self, "Read %u samples, %u remaining from %u", count, remaining, length);
+
+    samples += count;
+    remaining -= count;
+
+    // FIXME: Don't spin
+    pthread_yield();
+  }
+  
+  return length;
 }
 
 static guint
 gst_sdrjfm_src_delay (GstAudioSrc * asrc)
 {
-  GstSdrjfmSrc *self =  GST_SDRJFM_SRC (asrc);
+  GST_FIXME_OBJECT (asrc, "not implemented");
+  return 0;
 }
 
 static void
