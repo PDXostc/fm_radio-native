@@ -14,7 +14,7 @@ endif
 # This command will require your password and then you will be able to
 # use ssh and scp without a password from that user.
 
-all: apps extensions
+all: apps
 
 apps:
 	$(foreach app,$(app_list), make -C $(app);)
