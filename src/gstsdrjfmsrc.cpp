@@ -74,14 +74,16 @@ static GstStaticPadTemplate sdrjfmsrc_src_factory = GST_STATIC_PAD_TEMPLATE ("sr
 
 static void
 gst_sdrjfm_src_set_frequency (GstSdrjfmSrc *self, gint frequency)
-{
-  
+{ 
+  self->frequency = frequency;
+  if (self->radio)
+      self->radio->setTuner( frequency * 1000 );
 }
 
 static gint
 gst_sdrjfm_src_get_frequency (GstSdrjfmSrc *self)
 {
-  return 0;
+  return self->frequency;
 }
 
 static void
@@ -127,32 +129,32 @@ gst_sdrjfm_src_get_property (GObject * object, guint prop_id,
 static gboolean
 gst_sdrjfm_src_open (GstAudioSrc * asrc)
 {
+  GstSdrjfmSrc *self = GST_SDRJFM_SRC (asrc);
+  self->radio = new RadioInterface(self->frequency * 1000);
+
   return TRUE;
 }
 
 static gboolean
 gst_sdrjfm_src_close (GstAudioSrc * asrc)
 {
+  GstSdrjfmSrc *self = GST_SDRJFM_SRC (asrc);
+
+  delete self->radio;
+  self->radio = 0;
+
   return TRUE;
 }
 
 static gboolean
 gst_sdrjfm_src_prepare (GstAudioSrc * asrc, GstAudioRingBufferSpec * spec)
 {
-  GstSdrjfmSrc *self = GST_SDRJFM_SRC (asrc);
-  self->radio = new RadioInterface;
-
   return TRUE;
 }
 
 static gboolean
 gst_sdrjfm_src_unprepare (GstAudioSrc * asrc)
 {
-  GstSdrjfmSrc *self = GST_SDRJFM_SRC (asrc);
-
-  delete self->radio;
-  self->radio = 0;
-
   return TRUE;
 }
 
