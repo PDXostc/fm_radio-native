@@ -152,7 +152,6 @@ int32_t	IDecimator::getOutputsize (void) {
 	                        int32_t outRate, int32_t insize) {
 	intRatio	= inRate / outRate;
 	inCount		= inRate / outRate;
-int32_t	tempRate	= inRate / (intRatio);
 	fracDecimator_C	=
 	         new newConverter ((float)inRate, outRate, (float)inRate / 50, 6);
 //	         new newConverter (tempRate, outRate, insize / intRatio, 6);
