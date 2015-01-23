@@ -298,11 +298,16 @@ gboolean
 server_enable (RadioServer *server, GError **error)
 {
 	PRINTF_DEBUG
+
 	/* Enabling FM Radio is a two-step async process.
 	   We first enable our sdrjfm GST element in here, 
 	   then, the GST bus GST_MESSAGE_STATE_CHANGED callback will
 	   send the "enabled" signal if gst's state is set to GST_STATE_PLAYING */
-	sdrjfm_init(server, handle_on_enabled);
+
+	if (!server->enabled) {
+		PRINTF_DEBUG
+		sdrjfm_init(server, handle_on_enabled);
+	}
 
 	return TRUE;
 }
@@ -315,8 +320,7 @@ server_setfrequency (RadioServer *server, gdouble value_in, GError **error)
 	GValue val = G_VALUE_INIT;
 	g_value_init (&val, G_TYPE_DOUBLE);
 	g_value_set_double (&val, value_in);
-	// implement GST radio element async setFrequency
-	g_object_set_property (G_OBJECT (server), "frequency", &val);
+	g_object_set(G_OBJECT (server), "frequency", &val, NULL);
 	g_value_unset (&val);
 
 	return TRUE;
@@ -531,6 +535,7 @@ sdrjfm_init (RadioServer *server, void (*playing_cb) (GstData*))
   g_object_unref (bus);
 
   gst_element_set_state (data->pipeline, GST_STATE_PLAYING);
+  g_object_set(data->server, "enabled", TRUE, NULL);
 
   return data;
 }
