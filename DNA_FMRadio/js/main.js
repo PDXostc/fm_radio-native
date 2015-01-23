@@ -148,7 +148,7 @@ var init = function () {
 	} else {
 	    console.log("Store: Speech Recognition not running, voice control will be unavailable");
 	}
-	
+
 	bootstrap.themeEngine.addStatusListener(function (eData) {
 		// setThemeImageColor();
 	});
@@ -166,6 +166,17 @@ var init = function () {
  * @static
  **/
 $(document).ready(init);
+
+	if (fmradio) {
+		// We are initializing (enabling) the FMRadioService at boot-up time.
+		try {
+			fmradio.enable(function(error) {
+				console.log("FMRadio.enable internal error : " + error.message);
+			});
+	    } catch(e) {
+	           printError("FMRadio.enable Exception caught : " + e);
+	    }
+	}
 
 	$(".bar").each(function(i) {
     fluctuate($(this));
