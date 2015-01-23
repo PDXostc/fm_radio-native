@@ -298,19 +298,6 @@ void	fmProcessor::stopScanning	(void) {
 	scanning	= false;
 }
 
-//
-//	In this variant, we have a separate thread for the
-//	fm processing
-static std::string now()
-{
-  time_t t( time(NULL) );
-  struct tm *nw( localtime(&t) );
-
-  char str[32];
-  strftime(str, sizeof(str), "%F %T", nw);
-  return str;
-}
-
 void	fmProcessor::run (void) {
 DSPCOMPLEX	result;
 DSPFLOAT 	rdsData;

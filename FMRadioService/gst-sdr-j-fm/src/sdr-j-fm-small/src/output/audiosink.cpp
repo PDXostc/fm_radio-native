@@ -49,16 +49,6 @@ GST_DEBUG_CATEGORY_EXTERN (sdrjfm_debug);
 
 //
 //	helper
-static std::string now()
-{
-  time_t t( time(NULL) );
-  struct tm *nw( localtime(&t) );
-
-  char str[32];
-  strftime(str, sizeof(str), "%F %T", nw);
-  return str;
-}
-
 static inline
 int32_t	minimum (int32_t a, int32_t b) {
 	return a > b ? b : a;
