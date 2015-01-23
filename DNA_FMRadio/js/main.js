@@ -73,11 +73,11 @@ function addItemClick(item) {
 	console.log($("input[name='item_title']").val());
 	console.log($("textarea[name='item_description']").val());
 	console.log($("[name='item_template']").contents());
-	
+
 	// Capture the title and description data to be sent to the extension later.
 	var ti=$("input[name='item_title']").val();
 	var descr=$("textarea[name='item_description']").val();
-	
+
 	var newItemTemplate = $($("[name='item_template']").html());
 	console.log(newItemTemplate);
 	newItemTemplate.find("td[name='item_title_field']").text($("input[name='item_title']").val());
@@ -87,7 +87,7 @@ function addItemClick(item) {
 	newItem.find("input[name='delete_item']").click(newItem,deleteItemClick);
 	$("tbody[name='item_list_body']").append(newItem);
 	$("form[name='add_item_form']")[0].reset();
-	
+
 	// Send the title and description to the extension:
 	var jsonenc = {api:"handleItem", dest:"Item Consumer", title:ti, desc:descr};
 	console.log("stringify before bp.bpAsynch is "+JSON.stringify(jsonenc));
@@ -130,7 +130,7 @@ function fluctuate(bar) {
 
 /**
  * Initialize application components and register button events.
- * 
+ *
  * @method init
  * @static
  */
@@ -142,13 +142,13 @@ var init = function () {
 	$("#clockElement").ClockPlugin('init', 5);
 	$("#clockElement").ClockPlugin('startTimer');
 	$('#bottomPanel').bottomPanel('init');
-	
+
 	if (tizen.speech) {
 	    setupSpeechRecognition();
 	} else {
 	    console.log("Store: Speech Recognition not running, voice control will be unavailable");
 	}
-		
+	
 	bootstrap.themeEngine.addStatusListener(function (eData) {
 		// setThemeImageColor();
 	});
