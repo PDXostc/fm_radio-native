@@ -48,7 +48,7 @@
 GST_DEBUG_CATEGORY_EXTERN (sdrjfm_debug);
 #define GST_CAT_DEFAULT sdrjfm_debug
 
-#define DEFAULT_FREQUENCY  96700
+#define DEFAULT_FREQUENCY  96700000
 
 enum
 {
@@ -77,7 +77,7 @@ gst_sdrjfm_src_set_frequency (GstSdrjfmSrc *self, gint frequency)
 { 
   self->frequency = frequency;
   if (self->radio)
-      self->radio->setTuner( frequency * 1000 );
+      self->radio->setTuner( frequency );
 }
 
 static gint
@@ -130,7 +130,7 @@ static gboolean
 gst_sdrjfm_src_open (GstAudioSrc * asrc)
 {
   GstSdrjfmSrc *self = GST_SDRJFM_SRC (asrc);
-  self->radio = new RadioInterface(self->frequency * 1000);
+  self->radio = new RadioInterface(self->frequency);
 
   return TRUE;
 }
