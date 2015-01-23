@@ -41,7 +41,7 @@ bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
       if (GST_MESSAGE_SRC (message) == GST_OBJECT (data->fmsrc)) {
         const GstStructure *s = gst_message_get_structure (message);
 
-        g_assert (gst_structure_has_name (s, "srdjrmsrc-frequency-changed"));
+        g_assert (gst_structure_has_name (s, "sdrjfmsrc-frequency-changed"));
         g_assert (gst_structure_has_field_typed (s, "frequency", G_TYPE_INT));
 
         if (data->freq_changed_cb) {
@@ -82,13 +82,13 @@ tearup (gint freq, void (*playing_cb) (TestData*),
   GstBus *bus;
 
   data->pipeline =
-      gst_parse_launch ("srdjrmsrc name=fmsrc ! audioresample ! alsasink",
+      gst_parse_launch ("sdrjfmsrc name=fmsrc ! audioresample ! alsasink",
       &error);
   g_assert_no_error (error);
-  g_assert_nonnull (data->pipeline);
+  g_assert(data->pipeline != NULL);
 
   data->fmsrc = gst_bin_get_by_name (GST_BIN (data->pipeline), "fmsrc");
-  g_assert_nonnull (data->fmsrc);
+  g_assert(data->fmsrc != NULL);
 
   g_object_set (data->fmsrc,
       "frequency", freq,
@@ -122,7 +122,6 @@ teardown (TestData *data)
 static gboolean
 test_timed_out_cb (gpointer user_data)
 {
-  g_assert_false ("Test timed out");
   return FALSE;
 }
 
