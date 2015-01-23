@@ -47,25 +47,20 @@ extension.setMessageListener(function(msg) {
 	if (m.cmd === 'signal') {
 		if (!m.signal_name) {
 			console.error('fm_radio_api.js: Invalid signal from Radio api');
-			$("p").append("<br>fm_radio_api.js: Invalid signal from Radio api");
 			return;
 		}
 
 		if (m.signal_name === 'onenabled') {
 			console.error('fm_radio_api.js: messageListener::case EnabledSignal');
-			$("p").append("<br>fm_radio_api.js: setMessageListener::case EnabledSignal");
 			handleOnEnabledSignal(m);
 		} else if (m.signal_name === 'ondisabled') {
 			console.error('fm_radio_api.js: messageListener::case DisabledSignal');
-			$("p").append("<br>fm_radio_api.js: setMessageListener::case DisabledSignal");
 			handleOnDisabledSignal(m);
 		} else if (m.signal_name === 'onantennachanged') {
 			console.error('fm_radio_api.js: messageListener::case AntennaChangedSignal');
-			$("p").append("<br>fm_radio_api.js: setMessageListener::case AntennaChangedSignal");
 			handleOnAntennaChangedSignal(m);
 		} else if (m.signal_name === 'onfrequencychanged') {
 			console.error('fm_radio_api.js: messageListener::case FrequencyChangedSignal');
-			$("p").append("<br>fm_radio_api.js: setMessageListener::case FrequencyChangedSignal");
 			handleOnFrequencyChangedSignal(m);
 		}
 	} else if (!isNaN(parseInt(replyId)) && (typeof(callback) === 'function')) {
@@ -76,7 +71,6 @@ extension.setMessageListener(function(msg) {
 		delete _callbacks[replyId];
 	} else {
 		console.error('fm_radio_api.js: Invalid replyId from Radio api: ' + replyId);
-		$("p").append("<br>fm_radio_api.js: Invalid replyId from Radio api: " + replyId);
 	}
 });
 
@@ -85,7 +79,6 @@ function handleOnEnabledSignal(msg) {
 		var cb = _on_enabled_listeners[key];
 		if (!cb || typeof(cb) !== 'function') {
 			console.error('No enabled listener object found for id ' + key);
-			$("p").append("<br>fm_radio_api.js:No enabled listener object found for id" + key);
 		}
 		cb(msg.signal_name);
 	}
@@ -96,7 +89,6 @@ function handleOnDisabledSignal(msg) {
 		var cb = _on_disabled_listeners[key];
 		if (!cb || typeof(cb) !== 'function') {
 			console.error('No disabled listener object found for id ' + key);
-			$("p").append("<br>fm_radio_api.js:No disabled listener object found for id" + key);
 		}
 		cb(msg.signal_name);
 	}
@@ -107,7 +99,6 @@ function handleOnAntennaChangedSignal(msg) {
 		var cb = _on_antenna_changed_listeners[key];
 		if (!cb || typeof(cb) !== 'function') {
 			console.error('No antennachanged listener object found for id ' + key);
-			$("p").append("<br>fm_radio_api.js:No antennachanged listener object found for id" + key);
 		}
 		cb(msg.signal_name);
 	}
@@ -118,9 +109,8 @@ function handleOnFrequencyChangedSignal(msg) {
 		var cb = _on_frequency_changed_listeners[key];
 		if (!cb || typeof(cb) !== 'function') {
 			console.error('No frequencychanged listener object found for id ' + key);
-			$("p").append("<br>fm_radio_api.js:No frequencychanged listener object found for id" + key);
 		}
-		$("p").append("<br>fm_radio_api.js: handleOnFrequencyChangeSignal : " + msg.signal_params);
+		console.log("<br>fm_radio_api.js: handleOnFrequencyChangeSignal : " + msg.signal_params);
 		cb(msg.signal_name);
 	}
 }
@@ -134,11 +124,10 @@ function handleOnFrequencyChangedSignal(msg) {
 
 exports.enable = function(errorCallback) {
 	var msg = { cmd: 'Enable' };
-	$("p").append("<br>fm_radio_api.js: entered export.enable");
+	console.log("fm_radio_api.js: entered export.enable");
 	postMessage(msg, function(result) {
 	if (result.isError) {
 		console.error('fm_radio_api.js: Enable failed');
-		$("p").append("<br>fm_radio_api.js: Enable failed");
 		if (errorCallback) {
 			var error = { message: 'Enable failed' };
 			if (result.errorMessage)
@@ -151,11 +140,10 @@ exports.enable = function(errorCallback) {
 
 exports.setFrequency = function(freqVal, errorCallback) {
 	var msg = { cmd: 'SetFrequency', frequency: freqVal};
-	$("p").append("<br>fm_radio_api.js: entered export.setFrequency");
+	console.log("fm_radio_api.js: entered export.setFrequency, freq = " + freqVal);
 	postMessage(msg, function(result) {
 	if (result.isError) {
 		console.error('fm_radio_api.js: SetFrequency failed');
-		$("p").append("<br>fm_radio_api.js: SetFrequency failed");
 		if (errorCallback) {
 			var error = { message: 'SetFrequency failed' };
 			if (result.errorMessage)
@@ -174,17 +162,15 @@ exports.setFrequency = function(freqVal, errorCallback) {
 //
 
 exports.addOnEnabledListener = function(listener) {
-	$("p").append("<br>fm_radio_api.js: entered export.addEnabledListener");
+	console.log("fm_radio_api.js: entered export.addEnabledListener");
 	if (!(listener instanceof Function) && listener != undefined) {
 		console.error('fm_radio_api.js: AddEnabledListener failed');
-		$("p").append("<br>fm_radio_api.js: AddEnabledListener failed");
 		return;
 	}
 
 	for (var key in _on_enabled_listeners) {
 		if (_on_enabled_listeners[key] == listener) {
 			console.log('fm_radio_api.js: same listener added');
-			$("p").append("<br>fm_radio_api.js: same listener added");
 			return key;
 		}
 	}
@@ -196,7 +182,6 @@ exports.addOnEnabledListener = function(listener) {
 		postMessage(msg, function(result) {
 			if (result.isError) {
 				console.error('fm_radio_api.js: AddEnabledListener failed');
-				$("p").append("<br>fm_radio_api.js: AddEnabledListener failed");
 			}
 		});
 	}
@@ -208,14 +193,12 @@ exports.addOnDisabledListener = function(listener) {
 	$("p").append("<br>fm_radio_api.js: entered export.addDisabledListener");
 	if (!(listener instanceof Function) && listener != undefined) {
 		console.error('fm_radio_api.js: AddDisabledListener failed');
-		$("p").append("<br>fm_radio_api.js: AddDisabledListener failed");
 		return;
 	}
 
 	for (var key in _on_disabled_listeners) {
 		if (_on_disabled_listeners[key] == listener) {
 			console.log('fm_radio_api.js: same listener added');
-			$("p").append("<br>fm_radio_api.js: same listener added");
 			return key;
 		}
 	}
@@ -227,7 +210,6 @@ exports.addOnDisabledListener = function(listener) {
 		postMessage(msg, function(result) {
 			if (result.isError) {
 				console.error('fm_radio_api.js: AddDisabledListener failed');
-				$("p").append("<br>fm_radio_api.js: AddDisabledListener failed");
 			}
 		});
 	}
@@ -236,17 +218,15 @@ exports.addOnDisabledListener = function(listener) {
 };
 
 exports.addOnAntennaChangedListener = function(listener) {
-	$("p").append("<br>fm_radio_api.js: entered export.addAntennaChangedListener");
+	console.log("fm_radio_api.js: entered export.addAntennaChangedListener");
 	if (!(listener instanceof Function) && listener != undefined) {
 		console.error('fm_radio_api.js: AddAntennaChangedListener failed');
-		$("p").append("<br>fm_radio_api.js: AddAntennaChangedListener failed");
 		return;
 	}
 
 	for (var key in _on_antenna_changed_listeners) {
 		if (_on_antenna_changed_listeners[key] == listener) {
 			console.log('fm_radio_api.js: same listener added');
-			$("p").append("<br>fm_radio_api.js: same listener added");
 			return key;
 		}
 	}
@@ -258,7 +238,6 @@ exports.addOnAntennaChangedListener = function(listener) {
 		postMessage(msg, function(result) {
 			if (result.isError) {
 				console.error('fm_radio_api.js: AddAntennaChangedListener failed');
-				$("p").append("<br>fm_radio_api.js: AddAntennaChangedListener failed");
 			}
 		});
 	}
@@ -267,17 +246,15 @@ exports.addOnAntennaChangedListener = function(listener) {
 };
 
 exports.addOnFrequencyChangedListener = function(listener) {
-	$("p").append("<br>fm_radio_api.js: entered export.addFrequencyChangedListener");
+	console.log("fm_radio_api.js: entered export.addFrequencyChangedListener");
 	if (!(listener instanceof Function) && listener != undefined) {
 		console.error('fm_radio_api.js: AddFrequencyChangedListener failed');
-		$("p").append("<br>fm_radio_api.js: AddFrequencyChangedListener failed");
 		return;
 	}
 
 	for (var key in _on_frequency_changed_listeners) {
 		if (_on_frequency_changed_listeners[key] == listener) {
 			console.log('fm_radio_api.js: same listener added');
-			$("p").append("<br>fm_radio_api.js: same listener added");
 			return key;
 		}
 	}
@@ -290,7 +267,6 @@ exports.addOnFrequencyChangedListener = function(listener) {
 		postMessage(msg, function(result) {
 			if (result.isError) {
 				console.error('fm_radio_api.js: AddFrequencyChangedListener failed');
-				$("p").append("<br>fm_radio_api.js: AddFrequencyChangedListener failed");
 			}
 		});
 	}
@@ -312,7 +288,7 @@ exports.enabled = function () {
 	if (result.value != undefined) {
 		return result.value["enabled"];
 	}
-	$("p").append("<br>fm_radio_api.js: exports.enabled failed!");
+	console.log("fm_radio_api.js: exports.enabled failed!");
 	return null;
 };
 
@@ -339,6 +315,6 @@ exports.frequency = function () {
 	if (result.value != undefined) {
 		return result.value["frequency"];
 	}
-	$("p").append("<br>fm_radio_api.js: exports.frequency failed!");
+	console.log("<br>fm_radio_api.js: exports.frequency failed!");
 	return null;
 };

@@ -231,6 +231,7 @@ void FMRadioInstance::HandleSignal(GDBusConnection* connection,
 
 		double freq;
 	    g_variant_get(parameters, "(d)", &freq);
+
 	    picojson::value value(freq);
 
       // there is no 'value' (param) here.
@@ -309,6 +310,7 @@ void FMRadioInstance::HandleSetFrequency(const picojson::value& msg) {
 	//TODO:: Transform CallDBus to specify the bus name/path/iface
 	//       so it can be used to GetEnabled, etc... and return the value.
   //CallDBus("Hangup", NULL, &error);
+  // numbers are only repensented as 'double' in picojson, hense the conversion.
   if (!com_jlr_fmradioservice_setfrequency(busProxy, msg.get("frequency").get<double>(), &error)) {
 	std::string error_str;
     if (error)

@@ -56,6 +56,9 @@ var carIndicatorSignals =  [
                             "IviPoC_NightMode"
                             ];
 
+var frequency = 100700000;  // frequency is in Hz
+
+
 function deleteItemClick(item) {
 	console.log(item.target);
 	console.log(item.data.html());
@@ -234,3 +237,46 @@ function setupSpeechRecognition() {
 
 	});
 }
+
+$( "#TuneDownBtn" ).click(function() {
+	// TODO: Use nicer OnFrequencyChanged event handlers here !
+	frequency = frequency - 100000;
+	console.log("main.js : setting frequency to " + frequency);
+
+	if (fmradio) {
+		try {
+			fmradio.setFrequency(frequency, function(error) {
+				console.log("<br>main.js : " + error.message);
+	        });
+		} catch(e) {
+			printError("<br>main.js:radio.SetFrequency catch : " + e);
+		}
+	}
+
+	// Change the Station ID from the JS layer for now
+	// TODO: check if better to update from a onFrequenyChanged handler
+	//document.getElementById("station-id").innerHTML = frequency.toFixed(1);
+	var freqMHz = frequency / 1000000;
+	document.getElementById("station-id").innerHTML = freqMHz.toFixed(1);
+});
+
+$( "#TuneUpBtn" ).click(function() {
+	// TODO: Use nicer OnFrequencyChanged event handlers here !
+	frequency = frequency + 100000;
+
+	if (fmradio) {
+		try {
+			fmradio.setFrequency(frequency, function(error) {
+				console.log("<br>main.js : " + error.message);
+	        });
+		} catch(e) {
+			printError("<br>main.js:radio.SetFrequency catch : " + e);
+		}
+	}
+
+	// Change the Station ID from the JS layer for now
+	// TODO: check if better to update from a onFrequenyChanged handler
+	var freqMHz = frequency / 1000000;
+
+	document.getElementById("station-id").innerHTML = freqMHz.toFixed(1);
+});

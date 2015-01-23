@@ -30,7 +30,6 @@
 #include <dbus/dbus-glib-bindings.h>
 #include "../../extension_common/fm_radio_common.h"
 
-// TODO: add proper console/printf//debug/ in a proper header to include
 #define PRINTF_DEBUG printf("DEBUG: %s:%s:%d\n", __FILE__, __func__, __LINE__);
 
 GST_DEBUG_CATEGORY (sdrjfm_debug);
@@ -42,17 +41,17 @@ typedef enum {
 	E_SIGNAL_ON_ANTENNA_CHANGED,
 	E_SIGNAL_ON_FREQUENCY_CHANGED,
 
-	E_SIGNAL_COUNT				// E_SIGNAL_COUNT is not an actual signal.
+	E_SIGNAL_COUNT				/* E_SIGNAL_COUNT is not an actual signal */
 } signal_enum;
 
 typedef enum {
-	E_PROP_0,					// first prop_enum (0) has a special meaning
+	E_PROP_0,					/* first prop_enum (0) has a special meaning */
 
 	E_PROP_ENABLED,
 	E_PROP_ANTENNA_AVAILABLE,
 	E_PROP_FREQUENCY,
 
-	E_PROP_COUNT				// E_PROP_COUNT is not an actual property
+	E_PROP_COUNT				/* E_PROP_COUNT is not an actual property */
 } prop_enum;
 
 typedef struct _GstData GstData;
@@ -63,9 +62,6 @@ struct _GstData
   void *server;
   void (*playing_cb) (GstData*);
   /*void (*freq_changed_cb) (GstData*,gint);*/ // TODO: implement this!
-  gint freqs[10];
-  gint idx;
-  gint target_freq;
 };
 
 typedef struct {
@@ -74,7 +70,9 @@ typedef struct {
 	/* Actual properties */
 	gboolean enabled;
 	gboolean antennaavailable;
-	gdouble  frequency;
+	gdouble  frequency;  // frequency is in Hz
+
+	GstData *gstData;
 } RadioServer;
 
 typedef struct {
@@ -132,10 +130,6 @@ radio_server_create_signals(RadioServerClass *klass)
 
 	guint signal_id;
 
-	// TODO: Maybe have other enums/arrays with the closure
-	//		 marshalling functions ... so we can build all
-	//		 the signals in a nice loop and put this code back
-	//		 into radio_server_class_init()
 	PRINTF_DEBUG
     signal_id = g_signal_new(signal_names[E_SIGNAL_ON_ENABLED],
                    G_OBJECT_CLASS_TYPE(klass),
@@ -182,7 +176,7 @@ radio_server_create_signals(RadioServerClass *klass)
                    g_cclosure_marshal_VOID__VOID,
                    G_TYPE_NONE,
                    1,
-				   G_TYPE_DOUBLE);
+				   G_TYPE_UINT);
     klass->signals[E_SIGNAL_ON_FREQUENCY_CHANGED] = signal_id;
 }
 
@@ -209,9 +203,9 @@ radio_server_create_properties(GObjectClass *gobject_class)
 		g_param_spec_double ("frequency",
 							"frequency",
 							"Tells the current FMRadio frequency",
-							88.1,
-							108.0,
-							88.1,
+							88100000,
+							108000000,
+							88100000,
 							G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 
 	g_object_class_install_properties(gobject_class,
@@ -233,10 +227,6 @@ radio_server_class_init(RadioServerClass *klass)
 
 	radio_server_create_properties(gobject_class);
 
-	// TODO: Maybe have other enums/arrays with the closure
-	//		 marshalling functions ... so we can build all
-	//		 the signals in a nice loop and put this code back
-	//		 into radio_server_class_init()
 	radio_server_create_signals(klass);
 
 	/* Init the DBus connection, per-klass */
@@ -316,12 +306,10 @@ gboolean
 server_setfrequency (RadioServer *server, gdouble value_in, GError **error)
 {
 	PRINTF_DEBUG
-	printf("DEBUG : Server_setfrequency value_in : %f\n", value_in);
-	GValue val = G_VALUE_INIT;
-	g_value_init (&val, G_TYPE_DOUBLE);
-	g_value_set_double (&val, value_in);
-	g_object_set(G_OBJECT (server), "frequency", &val, NULL);
-	g_value_unset (&val);
+	printf("DEBUG: server received freq = %i\n", value_in);
+	// Set the frequency down the road first
+     g_object_set (server->gstData->fmsrc, "frequency", (gint) value_in, NULL);
+	server->frequency = value_in;
 
 	return TRUE;
 }
@@ -435,14 +423,17 @@ radio_set_property (GObject       *object,
 	printf("typename : %s\n", G_PARAM_SPEC_TYPE_NAME(pspec));
 	switch (property_id) {
 		case E_PROP_ENABLED:
+			PRINTF_DEBUG
 			server->enabled = g_value_get_boolean(value);
 		break;
 
 		case E_PROP_ANTENNA_AVAILABLE:
+			PRINTF_DEBUG
 			server->antennaavailable = g_value_get_boolean(value);
 		break;
 
 		case E_PROP_FREQUENCY:
+	PRINTF_DEBUG
 			server->frequency = g_value_get_double(value);
 			handle_on_frequency_changed(server);
 		break;
@@ -513,6 +504,7 @@ sdrjfm_init (RadioServer *server, void (*playing_cb) (GstData*))
   GstBus *bus;
 
   data->server = server;
+  server->gstData = data;
   data->pipeline =
       gst_parse_launch ("sdrjfmsrc name=sdrjfm ! audioresample ! pulsesink",
       &error);
@@ -521,11 +513,6 @@ sdrjfm_init (RadioServer *server, void (*playing_cb) (GstData*))
 
   data->fmsrc = gst_bin_get_by_name (GST_BIN (data->pipeline), "sdrjfm");
   g_assert(data->fmsrc != NULL);
-
-  // TODO: set the initial default frequency in here ?... or maybe better in JS
-  /*g_object_set (data->fmsrc,
-      "frequency", freq,
-      NULL);*/
 
   data->playing_cb = playing_cb;
   //TODO: data->freq_changed_cb = freq_changed_cb;
@@ -536,6 +523,11 @@ sdrjfm_init (RadioServer *server, void (*playing_cb) (GstData*))
 
   gst_element_set_state (data->pipeline, GST_STATE_PLAYING);
   g_object_set(data->server, "enabled", TRUE, NULL);
+
+  /* Default frequency : We don't want to send a frequencyChanged event here,
+     so just set server->frequency */
+  server->frequency = 88100000;
+  g_object_set (server->gstData->fmsrc, "frequency", (gint) server->frequency, NULL);
 
   return data;
 }
@@ -572,7 +564,7 @@ main(int argc, char** argv)
 	/* Start service requests on the D-Bus */
 	g_main_loop_run(mainloop);
 
-	/* CodeFlow should never reach that point in normal working conditions */
+	/* Should never be reached in normal working conditions */
 	return EXIT_FAILURE;
 }
 
