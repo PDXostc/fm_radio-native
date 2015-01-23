@@ -160,29 +160,22 @@ static guint
 gst_sdrjfm_src_read (GstAudioSrc * asrc, gpointer data, guint length,
     GstClockTime * timestamp)
 {
+  const guint samplesRequired = length / sizeof(DSPFLOAT);
+
   GstSdrjfmSrc *self =  GST_SDRJFM_SRC (asrc);
   DSPFLOAT *samples = static_cast<DSPFLOAT *>(data);
-
-  /*
-  guint remaining = length;
+  guint remaining = samplesRequired;
 
   while (remaining) {
     guint count = self->radio->getSamples(samples, remaining);
-    GST_TRACE_OBJECT(self, "Read %u samples, %u remaining from %u", count, remaining, length);
+    GST_TRACE_OBJECT(self, "Read %u samples out of %u remaining from %u (length: %u)",
+		     count, remaining, samplesRequired, length);
 
     samples += count;
     remaining -= count;
-
-    // FIXME: Don't spin
-    pthread_yield();
   }
   
   return length;
-  */
-
-  guint count = self->radio->getSamples(samples, length);
-  GST_TRACE_OBJECT(self, "Read %u samples, from request of %u", count, length);
-  return count;
 }
 
 static guint
