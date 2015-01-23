@@ -8,7 +8,7 @@ SEND := ~/send
 
  # TIZEN_IP must be exported from the env if set to anything else than NUC
 ifndef TIZEN_IP
-TIZEN_IP=TizenVTC
+TIZEN_IP=TizenNuc
 endif
 
 wgtPkg: clean
