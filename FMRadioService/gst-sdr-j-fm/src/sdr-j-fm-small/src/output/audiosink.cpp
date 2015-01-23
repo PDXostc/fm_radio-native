@@ -28,6 +28,7 @@
 #include	<gst/gst.h>
 #include	<stdexcept>
 #include	<iostream>
+#include	<sys/time.h>
 
 GST_DEBUG_CATEGORY_EXTERN (sdrjfm_debug);
 #define GST_CAT_DEFAULT sdrjfm_debug
@@ -37,6 +38,9 @@ GST_DEBUG_CATEGORY_EXTERN (sdrjfm_debug);
  */
 	audioSink::audioSink	() {
 	_O_Buffer		= new RingBuffer<float>(2 * 32768);
+
+	pthread_mutex_init (&lock, NULL);
+	pthread_cond_init (&sig, NULL);
 }
 
 	audioSink::~audioSink	(void) {
@@ -92,15 +96,57 @@ int32_t	available = _O_Buffer -> GetRingBufferWriteAvailable ();
 	
 
 	_O_Buffer	-> putDataIntoBuffer (buffer, 2 * n);
+	signal ();
 	return n;
 }
 
-uint32_t audioSink::getSamples (DSPFLOAT *data, uint32_t count)
-{
-	int32_t available = _O_Buffer -> GetRingBufferReadAvailable ();
+uint32_t audioSink::getSamples (DSPFLOAT *data, uint32_t count) {
+int32_t available = _O_Buffer -> GetRingBufferReadAvailable ();
+
 
 	GST_TRACE("Reading %u samples from SDR-J RingBuffer with %d available samples",
 		  count, available);
 
+	if (available < 1) {
+		GST_TRACE("No samples in SDR-J RingBuffer, waiting");
+		wait ();
+		GST_TRACE("Finished waiting for samples, %d now available",
+			  _O_Buffer -> GetRingBufferReadAvailable ()); 
+	}
+
 	return _O_Buffer -> getDataFromBuffer (data, count);
+}
+
+bool	audioSink::wait (int32_t secs) {
+	struct timeval now;
+	int err = gettimeofday (&now, NULL);
+	if (err != 0) {
+		std::ostringstream strm;
+		strm << "error getting time of day: " << strerror(errno); 
+		throw std::runtime_error(strm.str());
+	}
+
+	struct timespec timeout;
+	timeout.tv_sec = now.tv_sec + secs;
+	timeout.tv_nsec = now.tv_usec * 1000;
+
+	bool timedout = false;
+
+	pthread_mutex_lock (&lock);
+	while (_O_Buffer -> GetRingBufferReadAvailable () < 1) {
+	        err = pthread_cond_timedwait (&sig, &lock, &timeout);
+		if (err == ETIMEDOUT) { 
+			timedout = true;
+			break;
+		}
+	}
+	pthread_mutex_unlock (&lock);
+
+	return timedout;
+}
+
+void	audioSink::signal (void) {
+	pthread_mutex_lock (&lock);
+	pthread_cond_signal (&sig);
+	pthread_mutex_unlock (&lock);
 }

@@ -28,6 +28,7 @@
 #define	__AUDIO_SINK
 #include	"fm-constants.h"
 #include	"ringbuffer.h"
+#include	<pthread.h>
 
 #define		LOWLATENCY	0100
 #define		HIGHLATENCY	0200
@@ -39,15 +40,17 @@ public:
 			~audioSink		(void);
 	int32_t		putSample		(DSPCOMPLEX);
 	int32_t		putSamples		(DSPCOMPLEX *, int32_t);
-	uint32_t        getSamples              (DSPFLOAT *data, uint32_t count);
-
+	uint32_t        getSamples              (DSPFLOAT *, uint32_t);
 	int32_t		capacity		(void);
-	int32_t		getSelectedRate		(void);
 private:
+	bool		wait			(int32_t = 30);
+	void		signal			(void);    
 	int32_t		size;
 	uint8_t		Latency;
 	int16_t		bufSize;
 	RingBuffer<float>	*_O_Buffer;
+	pthread_mutex_t	lock;
+	pthread_cond_t	sig;
 };
 
 #endif
