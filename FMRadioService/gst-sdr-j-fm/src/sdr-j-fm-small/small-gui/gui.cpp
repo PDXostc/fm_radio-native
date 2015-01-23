@@ -52,10 +52,9 @@ int16_t	delayTable [] = {1, 3, 5, 7, 9, 10, 15};
  *	gui elements and the handling agents. All real action
  *	is embedded in actions, initiated by gui buttons
  */
-	RadioInterface::RadioInterface (): myFMprocessor(0) {
+	RadioInterface::RadioInterface (int32_t frequency): myFMprocessor(0) {
 std::string h;
 bool	success;
-int32_t	startFreq;
 
 	runMode			= IDLE;
 	squelchMode		= false;
@@ -85,8 +84,7 @@ int32_t	startFreq;
 	   exit (1);
 	}
 	
-	startFreq		= myRig	-> defaultFrequency	();
-	setTuner (startFreq);
+	setTuner (frequency);
 
 	myFMprocessor		= NULL;
 	our_audioSink		= new audioSink;
