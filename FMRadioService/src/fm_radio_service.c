@@ -203,9 +203,9 @@ radio_server_create_properties(GObjectClass *gobject_class)
 		g_param_spec_double ("frequency",
 							"frequency",
 							"Tells the current FMRadio frequency",
-							88100000,
+							88000000,
 							108000000,
-							88100000,
+							88000000,
 							G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 
 	g_object_class_install_properties(gobject_class,
@@ -306,7 +306,7 @@ gboolean
 server_setfrequency (RadioServer *server, gdouble value_in, GError **error)
 {
 	PRINTF_DEBUG
-	printf("DEBUG: server received freq = %i\n", value_in);
+	printf("DEBUG: server received freq = %f\n", value_in);
 	// Set the frequency down the road first
      g_object_set (server->gstData->fmsrc, "frequency", (gint) value_in, NULL);
 	server->frequency = value_in;
@@ -526,7 +526,6 @@ sdrjfm_init (RadioServer *server, void (*playing_cb) (GstData*))
 
   /* Default frequency : We don't want to send a frequencyChanged event here,
      so just set server->frequency */
-  server->frequency = 88100000;
   g_object_set (server->gstData->fmsrc, "frequency", (gint) server->frequency, NULL);
 
   return data;
