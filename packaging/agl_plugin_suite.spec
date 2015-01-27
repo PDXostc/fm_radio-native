@@ -12,8 +12,6 @@ BuildRequires:  python
 BuildRequires:  desktop-file-utils
 BuildRequires:  rpmbuild
 BuildRequires:  cmake
-BuildRequires:  pkgconfig(libusb)
-BuildRequires:  libusb-devel
 
 # Actual app/service requirements
 BuildRequires:  pkgconfig(eina)
@@ -31,6 +29,7 @@ BuildRequires:  pkgconfig(systemd)
 BuildRequires:  pkgconfig(gstreamer-1.0)
 BuildRequires:  pkgconfig(gstreamer-base-1.0)
 BuildRequires:  pkgconfig(gstreamer-audio-1.0)
+BuildRequires:  libusb-devel
 
 Requires:       ibus
 Requires:       ibus-hangul
@@ -44,7 +43,8 @@ Requires:       dbus-1
 Requires:       glib-2.0
 Requires:       libusb
 
-%global folder_list extension_common BoilerPlateExtension wkb_client_ext FMRadioExtension FMRadioService
+%global plugin_list extension_common BoilerPlateExtension wkb_client_ext FMRadioExtension
+%global FMRADIOSERVICE_PATH "FMRadioService"
 
 %description
 A collection of IVI software
@@ -57,40 +57,47 @@ FMRadioService dbus-daemon
 
 %prep
 %setup -q -n %{name}-%{version}
-cd FMRadioService/deps/rtl-sdr
-mkdir build && cd  build
-cmake ..
-make install
 #rpmbuild --rebuild FMRadioService/deps/shadow-utils-4.1.5.1-17.fc21.src.rpm
 #rpmbuild --rebuild FMRadioService/deps/rtl-sdr-0.5.3-3.src.rpm
 #rpm -ivh ${HOME}/rpmbuild/RPMS/i586/rtl-sdr-0.5.3-3.*.rpm
 
-# Support for GNU autotools-style build systems
-for folder in %{folder_list}; do
-	cd ${folder}
-	if [ -f autogen.sh ]; then
-		./autogen.sh
-	fi
-	cd ..
-done
-
 %build
-# Support for GNU autotools-style build systems
-for folder in %{folder_list}; do
-	cd ${folder}
-	if [ -f configure ]; then
-	 # We have to install inside gbs buildroot jail! 
-	 ./configure --prefix=%{_prefix}
-	fi
-	cd ..
-make -C ${folder}
+# Build rtl-sdr CMAKE project
+# rpm projects are... picky to build with .spec files (!)
+AGL_ROOT=`pwd`
+FMRADIOSERVICE_PATH=${AGL_ROOT}/FMRadioService
+RTLSDR_PATH=${FMRADIOSERVICE_PATH}/deps/rtl-sdr
+
+# First autotool project FMRadioService needs to be autogen'ed
+cd ${FMRADIOSERVICE_PATH}
+./autogen.sh
+
+cd ${RTLSDR_PATH}
+rm -fR build
+mkdir build
+cd build
+cmake .. -DCMAKE_C_FLAGS:STRING="%{optflags}" -DCMAKE_INSTALL_PREFIX=%{_prefix}
+make
+RTLSDR_LIBPATH=${RTLSDR_PATH}/src
+cd ${AGL_ROOT}
+
+# Now build autotool-like FMRadioService and pull the previously built dependencies
+cd ${FMRADIOSERVICE_PATH}
+LD_LIBRARY_PATH=${RTLSDR_LIBPATH} RS_CFLAGS="-I/${RTLSDR_PATH}/include" RS_LIBS=/${RTLSDR_LIBPATH}/librtlsdr.so ./configure --prefix=%{_prefix}
+make
+
+cd ${AGL_ROOT}
+
+# Build the xwalk extension plugins
+for folder in %{plugin_list}; do
+	make -C ${folder}
 done
 
 %install
 # manually add those paths that we are going to install
 mkdir -p %{buildroot}/usr/lib/systemd/user
 mkdir -p %{buildroot}/usr/share/dbus-1/services
-for folder in %{folder_list}; do
+for folder in %{plugin_list}; do
     make -C ${folder} install DESTDIR=%{buildroot} PREFIX=%{_prefix}
 done
 
