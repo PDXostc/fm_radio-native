@@ -44,7 +44,7 @@ Requires:       glib-2.0
 Requires:       libusb
 
 %global plugin_list extension_common BoilerPlateExtension wkb_client_ext FMRadioExtension
-%global FMRADIOSERVICE_PATH "FMRadioService"
+%global deps_list rtl-sdr libsamplerate-0.1.8
 
 %description
 A collection of IVI software
@@ -57,21 +57,25 @@ FMRadioService dbus-daemon
 
 %prep
 %setup -q -n %{name}-%{version}
-#rpmbuild --rebuild FMRadioService/deps/shadow-utils-4.1.5.1-17.fc21.src.rpm
-#rpmbuild --rebuild FMRadioService/deps/rtl-sdr-0.5.3-3.src.rpm
-#rpm -ivh ${HOME}/rpmbuild/RPMS/i586/rtl-sdr-0.5.3-3.*.rpm
 
 %build
 # Build rtl-sdr CMAKE project
-# rpm projects are... picky to build with .spec files (!)
 AGL_ROOT=`pwd`
 FMRADIOSERVICE_PATH=${AGL_ROOT}/FMRadioService
 RTLSDR_PATH=${FMRADIOSERVICE_PATH}/deps/rtl-sdr
+LIBSAMPLERATE_PATH=${FMRADIOSERVICE_PATH}/deps/libsamplerate-0.1.8
 
 # First autotool project FMRadioService needs to be autogen'ed
 cd ${FMRADIOSERVICE_PATH}
 ./autogen.sh
 
+# uncompress the deps
+cd ${FMRADIOSERVICE_PATH}/deps
+for files in %{deps_list}; do
+	tar -xvf ${files}.tar.gz
+done
+
+# Build RTLSDR dep
 cd ${RTLSDR_PATH}
 rm -fR build
 mkdir build
@@ -81,9 +85,17 @@ make
 RTLSDR_LIBPATH=${RTLSDR_PATH}/src
 cd ${AGL_ROOT}
 
+# Build LIBSAMPLERATE dep
+cd ${LIBSAMPLERATE_PATH}
+./configure --prefix=%{_prefix}
+make
+LIBSAMPLERATE_LIBPATH=${LIBSAMPLERATE_PATH}/src/.libs
+cd ${AGL_ROOT}
+
+
 # Now build autotool-like FMRadioService and pull the previously built dependencies
 cd ${FMRADIOSERVICE_PATH}
-LD_LIBRARY_PATH=${RTLSDR_LIBPATH} RS_CFLAGS="-I/${RTLSDR_PATH}/include" RS_LIBS=/${RTLSDR_LIBPATH}/librtlsdr.so ./configure --prefix=%{_prefix}
+LD_LIBRARY_PATH=${RTLSDR_LIBPATH} RS_CFLAGS="-I/${RTLSDR_PATH}/include" RS_LIBS=/${RTLSDR_LIBPATH}/librtlsdr.so SR_CFLAGS="-I/${LIBSAMPLERATE_PATH}/src" SR_LIBS=/${LIBSAMPLERATE_PATH}/src/.libs/libsamplerate.so ./configure --prefix=%{_prefix}
 make
 
 cd ${AGL_ROOT}
