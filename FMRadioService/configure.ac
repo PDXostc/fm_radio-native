@@ -4,7 +4,7 @@
 AC_PREREQ(2.68)
 AC_INIT([fmradioservice], 0.9)
 AC_CONFIG_SRCDIR([src/fm_radio_service.c])
-
+AC_CONFIG_SUBDIRS([gst-sdr-j-fm])
 AM_INIT_AUTOMAKE()
 
 # Initialize libtool
