@@ -7,9 +7,15 @@ License:    ASL 2.0
 URL:        http://www.tizen.org2
 Source0:    %{name}-%{version}.tar.bz2
 
+# External deps requirements
 BuildRequires:  python
 BuildRequires:  desktop-file-utils
+BuildRequires:  rpmbuild
+BuildRequires:  cmake
+BuildRequires:  pkgconfig(libusb)
+BuildRequires:  libusb-devel
 
+# Actual app/service requirements
 BuildRequires:  pkgconfig(eina)
 BuildRequires:  pkgconfig(eet)
 BuildRequires:  pkgconfig(evas)
@@ -30,6 +36,13 @@ Requires:       ibus
 Requires:       ibus-hangul
 Requires:       ibus-libpinyin
 Requires:       systemd
+Requires:       gstreamer-1.0
+Requires:       gstreamer-base-1.0
+Requires:       gstreamer-audio-1.0
+Requires:       dbus-glib-1
+Requires:       dbus-1
+Requires:       glib-2.0
+Requires:       libusb
 
 %global folder_list extension_common BoilerPlateExtension wkb_client_ext FMRadioExtension FMRadioService
 
@@ -44,6 +57,13 @@ FMRadioService dbus-daemon
 
 %prep
 %setup -q -n %{name}-%{version}
+cd FMRadioService/deps/rtl-sdr
+mkdir build && cd  build
+cmake ..
+make install
+#rpmbuild --rebuild FMRadioService/deps/shadow-utils-4.1.5.1-17.fc21.src.rpm
+#rpmbuild --rebuild FMRadioService/deps/rtl-sdr-0.5.3-3.src.rpm
+#rpm -ivh ${HOME}/rpmbuild/RPMS/i586/rtl-sdr-0.5.3-3.*.rpm
 
 # Support for GNU autotools-style build systems
 for folder in %{folder_list}; do
