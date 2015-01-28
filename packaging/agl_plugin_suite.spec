@@ -7,7 +7,7 @@ License:    ASL 2.0
 URL:        http://www.tizen.org2
 Source0:    %{name}-%{version}.tar.bz2
 
-# External deps requirements
+# External requirements to build deps
 BuildRequires:  python
 BuildRequires:  desktop-file-utils
 BuildRequires:  rpmbuild
@@ -29,8 +29,10 @@ BuildRequires:  pkgconfig(systemd)
 BuildRequires:  pkgconfig(gstreamer-1.0)
 BuildRequires:  pkgconfig(gstreamer-base-1.0)
 BuildRequires:  pkgconfig(gstreamer-audio-1.0)
-BuildRequires:  libusb-devel
+BuildRequires:  pkgconfig(sndfile)
+BuildRequires:  pkgconfig(libusb-1.0)
 
+# Run-time dependencies
 Requires:       ibus
 Requires:       ibus-hangul
 Requires:       ibus-libpinyin
@@ -42,9 +44,10 @@ Requires:       dbus-glib-1
 Requires:       dbus-1
 Requires:       glib-2.0
 Requires:       libusb
+Requires:       libsndfile
 
 %global plugin_list extension_common BoilerPlateExtension wkb_client_ext FMRadioExtension
-%global deps_list rtl-sdr libsamplerate-0.1.8
+%global deps_list rtl-sdr fftw-3.3.4 libsamplerate-0.1.8
 
 %description
 A collection of IVI software
@@ -64,6 +67,7 @@ AGL_ROOT=`pwd`
 FMRADIOSERVICE_PATH=${AGL_ROOT}/FMRadioService
 RTLSDR_PATH=${FMRADIOSERVICE_PATH}/deps/rtl-sdr
 LIBSAMPLERATE_PATH=${FMRADIOSERVICE_PATH}/deps/libsamplerate-0.1.8
+FFTW3_PATH=${FMRADIOSERVICE_PATH}/deps/fftw-3.3.4
 
 # First autotool project FMRadioService needs to be autogen'ed
 cd ${FMRADIOSERVICE_PATH}
@@ -82,25 +86,36 @@ mkdir build
 cd build
 cmake .. -DCMAKE_C_FLAGS:STRING="%{optflags}" -DCMAKE_INSTALL_PREFIX=%{_prefix}
 make
-RTLSDR_LIBPATH=${RTLSDR_PATH}/src
+RTLSDR_LIBS="${RTLSDR_PATH}/src/librtlsdr.so"
+RTLSDR_INCLUDES="-I/${RTLSDR_PATH}/include"
 cd ${AGL_ROOT}
+
+
+# Build FFTW dep
+cd ${FFTW3_PATH}
+./configure --prefix=%{_prefix} --enable-single --enable-shared
+make
+FFTW3_LIBS="${FFTW3_PATH}/.libs/libfftw3f.so"
+FFTW3_INCLUDES="-I/${FFTW3_PATH}/api"
+cd ${AGL_ROOT}
+
 
 # Build LIBSAMPLERATE dep
 cd ${LIBSAMPLERATE_PATH}
+#FFTW3_CFLAGS=${FFTW3_INCLUDES} FFTW3_LIBS=${FFTW3_LIBS} ./configure --prefix=%{_prefix}
 ./configure --prefix=%{_prefix}
 make
-LIBSAMPLERATE_LIBPATH=${LIBSAMPLERATE_PATH}/src/.libs
+LIBSAMPLERATE_LIBS="${LIBSAMPLERATE_PATH}/src/.libs/libsamplerate.so"
+LIBSAMPLERATE_INCLUDES="-I/${LIBSAMPLERATE_PATH}/src"
 cd ${AGL_ROOT}
-
 
 # Now build autotool-like FMRadioService and pull the previously built dependencies
 cd ${FMRADIOSERVICE_PATH}
-LD_LIBRARY_PATH=${RTLSDR_LIBPATH} RS_CFLAGS="-I/${RTLSDR_PATH}/include" RS_LIBS=/${RTLSDR_LIBPATH}/librtlsdr.so SR_CFLAGS="-I/${LIBSAMPLERATE_PATH}/src" SR_LIBS=/${LIBSAMPLERATE_PATH}/src/.libs/libsamplerate.so ./configure --prefix=%{_prefix}
+LD_LIBRARY_PATH=${RTLSDR_LIBPATH} RS_CFLAGS=${RTLSDR_INCLUDES} RS_LIBS=${RTLSDR_LIBS} SR_CFLAGS=${LIBSAMPLERATE_INCLUDES} SR_LIBS=${LIBSAMPLERATE_LIBS} FFTW_CFLAGS=${FFTW3_INCLUDES} FFTW_LIBS=${FFTW3_LIBS} ./configure --prefix=%{_prefix}
 make
-
 cd ${AGL_ROOT}
 
-# Build the xwalk extension plugins
+# Build all the xwalk extension plugins
 for folder in %{plugin_list}; do
 	make -C ${folder}
 done
