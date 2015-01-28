@@ -90,7 +90,6 @@ RTLSDR_LIBS="${RTLSDR_PATH}/src/librtlsdr.so"
 RTLSDR_INCLUDES="-I/${RTLSDR_PATH}/include"
 cd ${AGL_ROOT}
 
-
 # Build FFTW dep
 cd ${FFTW3_PATH}
 ./configure --prefix=%{_prefix} --enable-single --enable-shared
@@ -98,7 +97,6 @@ make
 FFTW3_LIBS="${FFTW3_PATH}/.libs/libfftw3f.so"
 FFTW3_INCLUDES="-I/${FFTW3_PATH}/api"
 cd ${AGL_ROOT}
-
 
 # Build LIBSAMPLERATE dep
 cd ${LIBSAMPLERATE_PATH}
