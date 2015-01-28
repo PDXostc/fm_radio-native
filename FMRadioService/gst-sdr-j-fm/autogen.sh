@@ -8,11 +8,6 @@ autoreconf --verbose --force --install --make || {
  exit 1;
 }
 
-./configure || {
- echo 'configure failed';
- exit 1;
-}
-
 echo
 echo "Now type 'make' to compile this module."
 echo
