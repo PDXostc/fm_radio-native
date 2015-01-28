@@ -47,6 +47,7 @@ Requires:       libusb
 Requires:       libsndfile
 
 %global plugin_list extension_common BoilerPlateExtension wkb_client_ext FMRadioExtension
+%global autogen_list FMRadioService FMRadioService/gst-sdr-j-fm
 %global deps_list rtl-sdr fftw-3.3.4 libsamplerate-0.1.8
 
 %description
@@ -70,13 +71,16 @@ LIBSAMPLERATE_PATH=${FMRADIOSERVICE_PATH}/deps/libsamplerate-0.1.8
 FFTW3_PATH=${FMRADIOSERVICE_PATH}/deps/fftw-3.3.4
 
 # First autotool project FMRadioService needs to be autogen'ed
-cd ${FMRADIOSERVICE_PATH}
-./autogen.sh
+for file in %{autogen_list}; do
+	cd ${AGL_ROOT}/${file}
+	./autogen.sh
+done
+
 
 # uncompress the deps
 cd ${FMRADIOSERVICE_PATH}/deps
-for files in %{deps_list}; do
-	tar -xvf ${files}.tar.gz
+for file in %{deps_list}; do
+	tar -xvf ${file}.tar.gz
 done
 
 # Build RTLSDR dep
