@@ -45,8 +45,11 @@ class	virtualInput;
  */
 class RadioInterface {
 public:
-		RadioInterface		();
+		RadioInterface		(int32_t = KHz(96700));
 		~RadioInterface		();
+
+		uint32_t getSamples(DSPFLOAT *data, uint32_t length);
+	void		setTuner		(int32_t);
 
 private:
 	bool		doInit;
@@ -67,7 +70,6 @@ private:
 
 	int32_t		mapIncrement		(int32_t);
 	int32_t		IncrementInterval	(int16_t);
-	void		setTuner		(int32_t);
 	int16_t		IncrementIndex;
 	int32_t		autoIncrement_amount;
 	int32_t		fmIncrement;

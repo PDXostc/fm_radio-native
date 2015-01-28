@@ -52,10 +52,9 @@ int16_t	delayTable [] = {1, 3, 5, 7, 9, 10, 15};
  *	gui elements and the handling agents. All real action
  *	is embedded in actions, initiated by gui buttons
  */
-	RadioInterface::RadioInterface (): myFMprocessor(0) {
+	RadioInterface::RadioInterface (int32_t frequency): myFMprocessor(0) {
 std::string h;
 bool	success;
-int32_t	startFreq;
 
 	runMode			= IDLE;
 	squelchMode		= false;
@@ -85,11 +84,10 @@ int32_t	startFreq;
 	   exit (1);
 	}
 	
-	startFreq		= myRig	-> defaultFrequency	();
-	setTuner (startFreq);
+	setTuner (frequency);
 
 	myFMprocessor		= NULL;
-	our_audioSink		= new audioSink (this -> audioRate);
+	our_audioSink		= new audioSink;
 
 //
 	audioDumping		= false;
@@ -136,7 +134,6 @@ bool	r = 0;
 //
 //	always ensure that datastreams are stopped
 	myRig		-> stopReader ();
-	our_audioSink 	-> stop ();
 //
 	r = myRig		-> restartReader ();
 	if (!r) {
@@ -148,8 +145,6 @@ bool	r = 0;
 	   return;
 	}
 
-	our_audioSink	-> restart ();
-
 //	and finally: recall that starting overrules pausing
 	runMode	= RUNNING;
 }
@@ -158,8 +153,7 @@ void	RadioInterface::TerminateProcess (void) {
 	runMode		= STOPPING;
 	stopIncrementing	();
 	if (audioDumping) {
-	   our_audioSink	-> stopDumping ();
-	   sf_close	(audiofilePointer);
+	   //sf_close	(audiofilePointer);
 	}
 //
 //	It is pretty important that no one is attempting to
@@ -452,6 +446,7 @@ void	RadioInterface::set_squelchValue (int n) {
 }
 
 void	RadioInterface::set_audioDump (const std::string &file) {
+	/*
 SF_INFO	*sf_info	= (SF_INFO *)alloca (sizeof (SF_INFO));
 
 	if (audioDumping) {
@@ -474,5 +469,9 @@ SF_INFO	*sf_info	= (SF_INFO *)alloca (sizeof (SF_INFO));
 
 	audioDumping		= true;
 	our_audioSink		-> startDumping (audiofilePointer);
+	*/
 }
 
+uint32_t RadioInterface::getSamples(DSPFLOAT *data, uint32_t length) {
+	return our_audioSink -> getSamples(data, length);
+}

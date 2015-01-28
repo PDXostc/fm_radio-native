@@ -25,211 +25,30 @@
  */
 
 #include	"audiosink.h"
+#include	<gst/gst.h>
 #include	<stdexcept>
 #include	<iostream>
+#include	<sys/time.h>
+
+GST_DEBUG_CATEGORY_EXTERN (sdrjfm_debug);
+#define GST_CAT_DEFAULT sdrjfm_debug
+
 /*
  *	The class is the sink for the data generated
  */
-	audioSink::audioSink	(int32_t rate) {
-
-	this	-> CardRate	= rate;
-
-	this -> Latency		= 1;
+	audioSink::audioSink	() {
 	_O_Buffer		= new RingBuffer<float>(2 * 32768);
-	portAudio		= false;
-	writerRunning		= false;
 
-	if (Pa_Initialize () != paNoError) {
-	   fprintf (stderr, "Initializing Pa for output failed\n");
-	   return;
-	}
-
-	portAudio	= true;
-	numofDevices	= Pa_GetDeviceCount ();
-	ostream		= NULL;
-	dumpFile	= NULL;
-
-	// select device
-	bool selected = false;
-	for (int16_t i = 0; i < numofDevices; ++i) {
-		const char *name = outputChannelwithRate(i, rate);
-		if (!name)
-			continue;
-
-		if (!isValidDevice(i))
-			continue;
-
-		if (std::string(name) != std::string("default"))
-			continue;
-
-		if (!selectDevice(i))
-			continue;
-
-		selected = true;
-		std::cout << "Selected audio output `" << name << "'" << std::endl;
-		
-		restart();
-		break;
-	}
-
-	if (!selected)
-		throw std::runtime_error("could not start audio output");
+	pthread_mutex_init (&lock, NULL);
+	pthread_cond_init (&sig, NULL);
 }
 
 	audioSink::~audioSink	(void) {
-	if ((ostream != NULL) && !Pa_IsStreamStopped (ostream)) {
-	   paCallbackReturn = paAbort;
-	   (void) Pa_AbortStream (ostream);
-	   while (!Pa_IsStreamStopped (ostream))
-	      Pa_Sleep (1);
-	   writerRunning = false;
-	}
-
-	if (ostream != NULL)
-	   Pa_CloseStream (ostream);
-
-	if (portAudio)
-	   Pa_Terminate ();
-
 	delete	_O_Buffer;
-}
-//
-bool	audioSink::selectDevice (int16_t odev) {
-PaError err;
-
-	if (!isValidDevice (odev))
-	   return false;
-
-	if ((ostream != NULL) && !Pa_IsStreamStopped (ostream)) {
-	   paCallbackReturn = paAbort;
-	   (void) Pa_AbortStream (ostream);
-	   while (!Pa_IsStreamStopped (ostream))
-	      Pa_Sleep (1);
-	   writerRunning = false;
-	}
-
-	if (ostream != NULL)
-	   Pa_CloseStream (ostream);
-
-	outputParameters. device		= odev;
-	outputParameters. channelCount		= 2;
-	outputParameters. sampleFormat		= paFloat32;
-	outputParameters. suggestedLatency	= Latency *
-	                             Pa_GetDeviceInfo (odev) ->
-	                                      defaultHighOutputLatency;
-	bufSize	= (int)((float)outputParameters. suggestedLatency * 
-	                                         (float)CardRate);
-
-	if (bufSize < 0 || bufSize > 16300)
-	   bufSize = 8192;
-
-	outputParameters. hostApiSpecificStreamInfo = NULL;
-//
-	fprintf (stderr, "Suggested size for outputbuffer = %d\n", bufSize);
-	err = Pa_OpenStream (
-	             &ostream,
-	             NULL,
-	             &outputParameters,
-	             CardRate,
-	             bufSize,
-	             0,
-	             this	-> paCallback_o,
-	             this
-	      );
-
-	if (err != paNoError) {
-	   return false;
-	}
-	paCallbackReturn = paContinue;
-	err = Pa_StartStream (ostream);
-	writerRunning	= true;
-	return true;
-}
-
-void	audioSink::restart	(void) {
-PaError err;
-
-	if (!Pa_IsStreamStopped (ostream))
-	   return;
-
-	paCallbackReturn = paContinue;
-	err = Pa_StartStream (ostream);
-	if (err == paNoError)
-	   writerRunning	= true;
-}
-
-void	audioSink::stop	(void) {
-	if (Pa_IsStreamStopped (ostream))
-	   return;
-
-	paCallbackReturn	= paAbort;
-	(void)Pa_StopStream	(ostream);
-	while (!Pa_IsStreamStopped (ostream))
-	   Pa_Sleep (1);
-	writerRunning		= false;
 }
 
 //
 //	helper
-bool	audioSink::OutputrateIsSupported (int16_t device, int32_t Rate) {
-PaStreamParameters *outputParameters =
-	           (PaStreamParameters *)alloca (sizeof (PaStreamParameters)); 
-
-	outputParameters -> device		= device;
-	outputParameters -> channelCount	= 2;	/* I and Q	*/
-	outputParameters -> sampleFormat	= paFloat32;
-	outputParameters -> suggestedLatency	= 0;
-	outputParameters -> hostApiSpecificStreamInfo = NULL;
-
-	return Pa_IsFormatSupported (NULL, outputParameters, Rate) ==
-	                                          paFormatIsSupported;
-}
-static std::string now()
-{
-  time_t t( time(NULL) );
-  struct tm *nw( localtime(&t) );
-
-  char str[32];
-  strftime(str, sizeof(str), "%F %T", nw);
-  return str;
-}
-/*
- * 	... and the callback
- */
-int	audioSink::paCallback_o (
-		const void*			inputBuffer,
-                void*				outputBuffer,
-		unsigned long			framesPerBuffer,
-		const PaStreamCallbackTimeInfo	*timeInfo,
-	        PaStreamCallbackFlags		statusFlags,
-	        void				*userData) {
-RingBuffer<float>	*outB;
-float	*outp		= (float *)outputBuffer;
-audioSink *ud		= reinterpret_cast <audioSink *>(userData);
-uint32_t	actualSize;
-uint32_t	i;
-
-	(void)statusFlags;
-	(void)inputBuffer;
-	(void)timeInfo;
-
-	if (statusFlags & (paOutputUnderflow|paOutputOverflow)) {
-	    const std::string runtype(statusFlags&paOutputUnderflow ? "Under" : "Over");
-	    //qDebug("%srun flag in PA callback", runtype.c_str());
-	}
-
-	if (ud -> paCallbackReturn == paContinue) {
-	   outB = (reinterpret_cast <audioSink *>(userData)) -> _O_Buffer;
-	   actualSize = outB -> getDataFromBuffer (outp, 2 * framesPerBuffer);
-	   //std::cerr << now() << " read " << actualSize
-	   //<< " samples from ringbuffer" << std::endl;
-	   for (i = actualSize; i < 2 * framesPerBuffer; i ++)
-	      outp [i] = 0;
-	}
-
-	return ud -> paCallbackReturn;
-}
-
 static inline
 int32_t	minimum (int32_t a, int32_t b) {
 	return a > b ? b : a;
@@ -262,55 +81,62 @@ int32_t	available = _O_Buffer -> GetRingBufferWriteAvailable ();
 	//std::cerr << now() << " writing 2*" << n << " samples to ringbuffer with "
 	//<< available << " available space" << std::endl;
 
-	if (dumpFile != NULL)
-	   sf_writef_float (dumpFile, buffer, n);
+	GST_TRACE("Writing %d samples to SDR-J RingBuffer with %d available space",
+		  n * 2, available);
+	
+
 	_O_Buffer	-> putDataIntoBuffer (buffer, 2 * n);
+	signal ();
 	return n;
 }
 
-int16_t	audioSink::numberofDevices	(void) {
-	return numofDevices;
+uint32_t audioSink::getSamples (DSPFLOAT *data, uint32_t count) {
+int32_t available = _O_Buffer -> GetRingBufferReadAvailable ();
+
+
+	GST_TRACE("Reading %u samples from SDR-J RingBuffer with %d available samples",
+		  count, available);
+
+	if (available < 1) {
+		GST_TRACE("No samples in SDR-J RingBuffer, waiting");
+		wait ();
+		GST_TRACE("Finished waiting for samples, %d now available",
+			  _O_Buffer -> GetRingBufferReadAvailable ()); 
+	}
+
+	return _O_Buffer -> getDataFromBuffer (data, count);
 }
 
-const char	*audioSink::outputChannelwithRate (int16_t ch, int32_t rate) {
-const PaDeviceInfo *deviceInfo;
-const	char	*name	= NULL;
+bool	audioSink::wait (int32_t secs) {
+	struct timeval now;
+	int err = gettimeofday (&now, NULL);
+	if (err != 0) {
+		std::ostringstream strm;
+		strm << "error getting time of day: " << strerror(errno); 
+		throw std::runtime_error(strm.str());
+	}
 
-	if ((ch < 0) || (ch >= numofDevices))
-	   return name;
+	struct timespec timeout;
+	timeout.tv_sec = now.tv_sec + secs;
+	timeout.tv_nsec = now.tv_usec * 1000;
 
-	deviceInfo = Pa_GetDeviceInfo (ch);
-	if (deviceInfo == NULL)
-	   return name;
-	if (deviceInfo -> maxOutputChannels <= 0)
-	   return name;
+	bool timedout = false;
 
-	if (OutputrateIsSupported (ch, rate))
-	   name = deviceInfo -> name;
-	return name;
+	pthread_mutex_lock (&lock);
+	while (_O_Buffer -> GetRingBufferReadAvailable () < 1) {
+	        err = pthread_cond_timedwait (&sig, &lock, &timeout);
+		if (err == ETIMEDOUT) { 
+			timedout = true;
+			break;
+		}
+	}
+	pthread_mutex_unlock (&lock);
+
+	return timedout;
 }
 
-int16_t	audioSink::invalidDevice	(void) {
-	return numofDevices + 128;
+void	audioSink::signal (void) {
+	pthread_mutex_lock (&lock);
+	pthread_cond_signal (&sig);
+	pthread_mutex_unlock (&lock);
 }
-
-bool	audioSink::isValidDevice (int16_t dev) {
-	return 0 <= dev && dev < numofDevices;
-}
-
-bool	audioSink::selectDefaultDevice (void) {
-	return selectDevice (Pa_GetDefaultOutputDevice ());
-}
-
-void	audioSink::startDumping	(SNDFILE *f) {
-	dumpFile	= f;
-}
-
-void	audioSink::stopDumping	(void) {
-	dumpFile	= NULL;
-}
-
-int32_t	audioSink::getSelectedRate	(void) {
-	return CardRate;
-}
-
