@@ -33,23 +33,55 @@
 #include	"ringbuffer.h"
 #include	"fft.h"
 #include	"fir-filters.h"
+#include	<gst/gst.h>
 class	keyPad;
 
 class	fmProcessor;
 class	rdsDecoder;
 class	audioSink;
 class	virtualInput;
-/*
- *	The main gui object. It inherits from
- *	QDialog and the generated form
+/** This is the main interface for the FM radio.  Originally it was
+    the main GUI class.
  */
 class RadioInterface {
 public:
 		RadioInterface		(int32_t = KHz(96700));
 		~RadioInterface		();
 
-		uint32_t getSamples(DSPFLOAT *data, uint32_t length);
-	void		setTuner		(int32_t);
+	/** Get demodulated stereo interleaved audio samples.  This
+	 * function will block until there are samples available.
+	 * Request up to @length samples and store them in the array pointed to by @data.
+	 * Returns: the actual number of samples written to @data
+	 */
+	uint32_t	getSamples		(DSPFLOAT *data, uint32_t length);
+	/** Set the tuner to receive @frequency Hz */
+	void		setTuner		(int32_t frequency);
+
+	/** Callback type for seek function.
+	 * FIXME: more docs
+	 */
+	typedef void (*StationCallback) (int32_t frequency, void *userdata);
+
+	/** Start seeking for a station.  After this function returns,
+	 * the RadioInterface will start sampling different
+	 * frequencies for @interval milliseconds, adding @frequencyStep Hz each iteration,
+	 * wrapping at the lower and upper bounds of @minFrequency and
+	 * @maxFrequency, respectively.  The seek will continue either
+	 * until cancelSeek() is called or until a station is found,
+	 * in which case @callback is called with the station
+	 * frequency and @userdata.
+	 * \param threshold The signal level over which a signal is considered to be a station
+	 * \param interval How long to scan for a station on each
+	 * frequency, in milliseconds
+	 * \param callback A function to call when a station is found
+	 * \param userdata A pointer to be provided to @callback
+	 */
+	void		seek			(int16_t threshold,
+						 int32_t minFrequency, int32_t maxFrequency,
+						 int32_t frequencyStep, int32_t interval,
+						 StationCallback callback, void *userdata);
+
+	void		cancelSeek		();
 
 private:
 	bool		doInit;
@@ -68,16 +100,24 @@ private:
 
 	void		setDetectorScreen	(int16_t);
 
-	int32_t		mapIncrement		(int32_t);
-	int32_t		IncrementInterval	(int16_t);
-	int16_t		IncrementIndex;
-	int32_t		autoIncrement_amount;
-	int32_t		fmIncrement;
-	int32_t		minLoopFrequency;
-	int32_t		maxLoopFrequency;
+	GstClock        *systemClock;
+	GstClockID      periodicClockId;
+	int32_t         preSeekFrequency;
+	int32_t		seekMin;
+	int32_t		seekMax;
+	int32_t		seekStep;
+	StationCallback seekCallback; 
+	void *		seekUserdata;
+
+	void            cancelSeekTimeout ();
+	void            resetSeekMembers ();
+
+	static void	stationCallback(int32_t frequency, void *userdata);
+	void		stationCallback(int32_t frequency);
 	
-	void		stopIncrementing	(void);
-	int32_t		get_Increment_for	(int16_t);
+        static gboolean seekTimeout (GstClock *clock, GstClockTime time,
+				     GstClockID id, gpointer user_data);
+	gboolean        seekTimeout ();
 
 	int32_t		Panel;
 	int16_t		CurrentRig;
@@ -88,8 +128,6 @@ private:
 	fmProcessor	*myFMprocessor;
 	rdsDecoder	*myRdsDecoder;
 	int8_t		rdsModus;
-
-	void		IncrementFrequency	(int32_t);
 
 	int32_t		currentPIcode;
 	int32_t		frequencyforPICode;
@@ -123,23 +161,12 @@ private:
 	void	setfmChannelSelector	(const std::string &);
 	void	setfmDeemphasis		(const std::string &);
 
-	void	autoIncrement_timeout	(void);
-	void	autoIncrementButton	(void);
-	void	autoDecrementButton	(void);
-	void	set_fm_increment	(int);
-	void	set_minimum		(int);
-	void	set_maximum		(int);
-	void	IncrementButton		(void);
-	void	DecrementButton		(void);
-
 	bool	setupSoundOut		(audioSink *,
 	                                 int32_t, int16_t *);
 	void	set_squelchValue	(int);
 	void	set_squelchMode		(void);
-	void	set_plusOne		(void);
-	void	set_minusOne		(void);
+	/*
 public:
-	void	newFrequency		(int);
 	void	setCRCErrors		(int);
 	void	setSyncErrors		(int);
 	void	setbitErrorRate		(double);
@@ -153,7 +180,7 @@ public:
 	void	setRDSisSynchronized	(bool);
 	void	setMusicSpeechFlag	(int);
 	void	clearMusicSpeechFlag	(void);
-	void	scanresult		(void);
+	*/
 };
 
 #endif

@@ -48,13 +48,29 @@
 GST_DEBUG_CATEGORY_EXTERN (sdrjfm_debug);
 #define GST_CAT_DEFAULT sdrjfm_debug
 
-#define DEFAULT_FREQUENCY  96700000
+
+#define DEFAULT_MIN_FREQUENCY    88100000
+#define DEFAULT_MAX_FREQUENCY   108100000
+#define DEFAULT_FREQUENCY_STEP     100000
+#define DEFAULT_FREQUENCY        96700000
 
 enum
 {
   PROP_0,
+  PROP_MIN_FREQUENCY,
+  PROP_MAX_FREQUENCY,
+  PROP_FREQUENCY_STEP,
   PROP_FREQUENCY
 };
+
+/* signals and args */
+enum
+{
+  SIGNAL_SEEK_UP,
+  SIGNAL_SEEK_DOWN,
+  LAST_SIGNAL
+};
+
 
 #define gst_sdrjfm_src_parent_class parent_class
 
@@ -71,6 +87,8 @@ static GstStaticPadTemplate sdrjfmsrc_src_factory = GST_STATIC_PAD_TEMPLATE ("sr
         "rate = (int) 44100, "
         "channels = (int) 2; ")
     );
+
+static guint signals[LAST_SIGNAL] = { 0 };
 
 static void
 gst_sdrjfm_src_set_frequency (GstSdrjfmSrc *self, gint frequency)
@@ -95,6 +113,15 @@ static void
   GST_OBJECT_LOCK (self);
 
   switch (prop_id) {
+    case PROP_MIN_FREQUENCY:
+      self->min_freq = g_value_get_int (value);
+      break;
+    case PROP_MAX_FREQUENCY:
+      self->max_freq = g_value_get_int (value);
+      break;
+    case PROP_FREQUENCY_STEP:
+      self->freq_step = g_value_get_int (value);
+      break;
     case PROP_FREQUENCY:
       gst_sdrjfm_src_set_frequency (self, g_value_get_int (value));
       break;
@@ -115,6 +142,15 @@ gst_sdrjfm_src_get_property (GObject * object, guint prop_id,
   GST_OBJECT_LOCK (self);
 
   switch (prop_id) {
+    case PROP_MIN_FREQUENCY:
+      g_value_set_int (value, self->min_freq);
+      break;
+    case PROP_MAX_FREQUENCY:
+      g_value_set_int (value, self->max_freq);
+      break;
+    case PROP_FREQUENCY_STEP:
+      g_value_set_int (value, self->freq_step);
+      break;
     case PROP_FREQUENCY:
       g_value_set_int (value, gst_sdrjfm_src_get_frequency (self));
       break;
@@ -130,7 +166,10 @@ static gboolean
 gst_sdrjfm_src_open (GstAudioSrc * asrc)
 {
   GstSdrjfmSrc *self = GST_SDRJFM_SRC (asrc);
+
   self->radio = new RadioInterface(self->frequency);
+  GST_INFO_OBJECT (self, "Created new SDR-J FM Radio object with frequency %u",
+		   self->frequency);
 
   return TRUE;
 }
@@ -206,10 +245,51 @@ gst_sdrjfm_src_finalize (GstSdrjfmSrc * self)
 }
 
 static void
+gst_sdrjfm_src_station_found (int32_t frequency, void *user_data)
+{
+  GstSdrjfmSrc *self = static_cast<GstSdrjfmSrc *>(user_data);
+  GstStructure *s;
+  GstMessage *msg;
+  GstBus *bus;
+
+  GST_DEBUG_OBJECT (self, "Station found at frequency %i", frequency);
+  printf("Station found at frequency %i\n", frequency);
+
+  s = gst_structure_new ("sdrjfmsrc-station-found",
+			 "frequency", G_TYPE_INT, frequency, NULL);
+  msg = gst_message_new_element (GST_OBJECT (self), s);
+  bus = gst_element_get_bus (GST_ELEMENT (self));
+  gst_bus_post (bus, msg);
+  g_object_unref (bus);
+}
+
+static void
+gst_sdrjfm_src_do_seek(GstSdrjfmSrc * self, int32_t step)
+{
+  self->radio->seek(20, self->min_freq, self->max_freq, step,
+    1000, gst_sdrjfm_src_station_found, self);
+}
+
+static void
+gst_sdrjfm_src_seek_up (GstSdrjfmSrc * self)
+{
+  return gst_sdrjfm_src_do_seek(self, self->freq_step);
+}
+
+static void
+gst_sdrjfm_src_seek_down (GstSdrjfmSrc * self)
+{
+  return gst_sdrjfm_src_do_seek(self, -self->freq_step);
+}
+
+static void
 gst_sdrjfm_src_init (GstSdrjfmSrc * self)
 {
   GstAudioBaseSrc *basrc = GST_AUDIO_BASE_SRC (self);
 
+  self->min_freq = DEFAULT_MIN_FREQUENCY;
+  self->max_freq = DEFAULT_MAX_FREQUENCY;
+  self->freq_step = DEFAULT_FREQUENCY_STEP;
   self->frequency = DEFAULT_FREQUENCY;
 
   //basrc->latency_time = 132000; /* base on buffer size */
@@ -243,10 +323,40 @@ gst_sdrjfm_src_class_init (GstSdrjfmSrcClass * klass)
   gstaudiosrc_class->delay = GST_DEBUG_FUNCPTR (gst_sdrjfm_src_delay);
   gstaudiosrc_class->reset = GST_DEBUG_FUNCPTR (gst_sdrjfm_src_reset);
 
+  klass->seek_up = GST_DEBUG_FUNCPTR (gst_sdrjfm_src_seek_up);
+  klass->seek_down = GST_DEBUG_FUNCPTR (gst_sdrjfm_src_seek_down);
+
+  g_object_class_install_property (gobject_class, PROP_MIN_FREQUENCY,
+      g_param_spec_int ("min-frequency", "Minimum Frequency",
+          "Minimum frequency used in seeks (in Hz)", 0, G_MAXINT, DEFAULT_MIN_FREQUENCY,
+			static_cast<GParamFlags>( G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS)));
+
+  g_object_class_install_property (gobject_class, PROP_MAX_FREQUENCY,
+      g_param_spec_int ("max-frequency", "Maximum Frequency",
+          "Maximum frequency used in seeks (in Hz)", 0, G_MAXINT, DEFAULT_MAX_FREQUENCY,
+			static_cast<GParamFlags>( G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS)));
+
+  g_object_class_install_property (gobject_class, PROP_FREQUENCY_STEP,
+      g_param_spec_int ("frequency-step", "Frequency Step",
+          "Frequency steps used in seeks (in Hz)", 1, G_MAXINT, DEFAULT_FREQUENCY_STEP,
+			static_cast<GParamFlags>( G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS)));
+
   g_object_class_install_property (gobject_class, PROP_FREQUENCY,
       g_param_spec_int ("frequency", "Frequency",
           "Frequency to receive", 0, G_MAXINT, DEFAULT_FREQUENCY,
     static_cast<GParamFlags>(G_PARAM_READWRITE | GST_PARAM_MUTABLE_PLAYING | G_PARAM_STATIC_STRINGS)));
+
+  signals[SIGNAL_SEEK_UP] =
+      g_signal_new ("seek-up", G_TYPE_FROM_CLASS (klass),
+		    static_cast<GSignalFlags>( G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
+		    G_STRUCT_OFFSET (GstSdrjfmSrcClass, seek_up), NULL, NULL,
+		    g_cclosure_marshal_generic, G_TYPE_NONE, 0, G_TYPE_NONE);
+
+  signals[SIGNAL_SEEK_DOWN] =
+      g_signal_new ("seek-down", G_TYPE_FROM_CLASS (klass),
+		    static_cast<GSignalFlags>( G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION ),
+		    G_STRUCT_OFFSET (GstSdrjfmSrcClass, seek_down), NULL, NULL,
+		    g_cclosure_marshal_generic, G_TYPE_NONE, 0, G_TYPE_NONE);
 
   gst_element_class_set_static_metadata (gstelement_class, "FM Radio Source (SDR-J)",
       "Source/Audio",

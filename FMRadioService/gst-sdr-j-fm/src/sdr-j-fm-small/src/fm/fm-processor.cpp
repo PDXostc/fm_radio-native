@@ -37,6 +37,9 @@
 #include	<stdexcept>
 #include	<iostream>
 
+GST_DEBUG_CATEGORY_EXTERN (sdrjfm_debug);
+#define GST_CAT_DEFAULT sdrjfm_debug
+
 #define	AUDIO_FREQ_DEV_PROPORTION 0.85f
 #define	PILOT_FREQUENCY		19000
 #define	RDS_FREQUENCY		(3 * PILOT_FREQUENCY)
@@ -64,6 +67,8 @@
 	this	-> audioRate		= audioRate;
 	this	-> thresHold		= thresHold;
 	this	-> squelchOn		= false;
+
+	pthread_mutex_init (&this -> scanLock, NULL);
 	this	-> scanning		= false;
 
 	this	-> localOscillator	= new Oscillator (inputRate);
@@ -157,9 +162,7 @@
 	ykm1			= 0;
 	alpha			= 1.0 / (fmRate / (1000000.0 / 50.0 + 1));
 
-	// FIXME: Need new method for scanning
-	//connect (this, SIGNAL (scanresult (void)),
-	//myRadioInterface, SLOT (scanresult (void)));
+	stopScanning();
 	squelchValue		= 50;
 	old_squelchValue	= 0;
 
@@ -183,6 +186,8 @@
 	delete	fm_Levels;
 	delete	mySinCos;
 	delete fmAudioFilter;
+
+	pthread_mutex_destroy (&this -> scanLock);
 }
 
 void *  fmProcessor::c_run (void * userdata) {
@@ -290,12 +295,36 @@ void	fmProcessor::setAttenuation (int16_t at) {
 	Gain	= at;
 }
 
-void	fmProcessor::startScanning	(void) {
+void	fmProcessor::startScanning	(StationCallback callback, void *userdata) {
+	lockScan();
 	scanning	= true;
+	scanCallback    = callback;
+	scanUserdata    = userdata;
+	unlockScan();
 }
 
 void	fmProcessor::stopScanning	(void) {
+	lockScan();
 	scanning	= false;
+	scanCallback    = 0;
+	scanUserdata    = 0;
+	unlockScan();
+}
+
+bool	fmProcessor::isScanning (void) {
+	bool is;
+	lockScan();
+	is = scanning;
+	unlockScan();
+	return is;
+}
+
+void	fmProcessor::lockScan() {
+	pthread_mutex_lock (&this -> scanLock);
+}
+
+void	fmProcessor::unlockScan() {
+	pthread_mutex_unlock (&this -> scanLock);
 }
 
 void	fmProcessor::run (void) {
@@ -355,23 +384,29 @@ int16_t		audioIndex	= 0;
 
 	      v = v * DSPFLOAT (Gain);
 //	second step: if we are scanning, do the scan
+	      bool cont = false;
+	      lockScan();
 	      if (scanning) {
+		 cont = true;
 	         scanBuffer [scanPointer ++] = v;
 	         if (scanPointer >= 1024) {
 	            scanPointer	= 0;
 	            scan_fft -> do_FFT ();
-	            float signal	= getSignal	(scanBuffer, 1024);
-	            float Noise		= getNoise	(scanBuffer, 1024);
-	            if (get_db (signal, 256) - get_db (Noise, 256) > 
-	                               this -> thresHold) {
-	               fprintf (stderr, "signal found %f %f\n",
-	                        get_db (signal, 256), get_db (Noise, 256));
-		       // FIXME: New signal
-	               //scanresult ();
+	            float signal	= get_db (getSignal	(scanBuffer, 1024), 256);
+	            float noise		= get_db (getNoise	(scanBuffer, 1024), 256);
+		    float ratio         = signal - noise;
+	            if (ratio > this -> thresHold) {
+	               fprintf (stderr, "signal found %f %f\n", signal, noise);
+		       GST_DEBUG("Station found; signal: %f, noise: %f, ratio: %f",
+				 signal, noise, ratio, scanCallback);
+		       scanCallback(myRig -> getVFOFrequency(), scanUserdata);
+		       scanning = false;
 	            }
 	         }
-	         continue;	// no signal processing!!!!
 	      }
+	      unlockScan();
+	      if (cont)
+	         continue;	// no signal processing!!!!
 
 //	Now we have the signal ready for decoding
 //	keep track of the peaklevel, we take segments
@@ -574,10 +609,10 @@ DSPFLOAT	fmProcessor::getSignal		(DSPCOMPLEX *v, int32_t size) {
 DSPFLOAT sum = 0;
 int16_t	i;
 
-	for (i = 5; i < 25; i ++)
+	for (i = 5; i < 25; i ++) {
 	   sum += abs (v [i]);
-	for (i = 5; i < 25; i ++)
 	   sum += abs (v [size - 1 - i]);
+	}
 	return sum / 40;
 }
 
@@ -585,10 +620,10 @@ DSPFLOAT	fmProcessor::getNoise		(DSPCOMPLEX *v, int32_t size) {
 DSPFLOAT sum	= 0;
 int16_t	i;
 
-	for (i = 5; i < 25; i ++)
+	for (i = 5; i < 25; i ++) {
 	   sum += abs (v [size / 2 - 1 - i]);
-	for (i = 5; i < 25; i ++)
 	   sum += abs (v [size / 2 + 1 + i]);
+	}
 	return sum / 40;
 }
 

@@ -35,17 +35,16 @@
 #include	<iostream>
 #include	<windows.h>
 #endif
+
+GST_DEBUG_CATEGORY_EXTERN (sdrjfm_debug);
+#define GST_CAT_DEFAULT sdrjfm_debug
+
 //
 //	Processing modes
 #define	IDLE		0100
 #define	PAUSED		0101
 #define	RUNNING		0102
 #define	STOPPING	0103
-//
-//
-static
-int16_t	delayTable [] = {1, 3, 5, 7, 9, 10, 15};
-#define delayTableSize	((int)(sizeof (delayTable) / sizeof (int16_t)))
 /*
  *	We use the creation function merely to set up the
  *	user interface and make the connections between the
@@ -93,7 +92,9 @@ bool	success;
 	audioDumping		= false;
 	audiofilePointer	= NULL;
 
-	IncrementIndex		= 0;
+	systemClock             = gst_system_clock_obtain ();
+	periodicClockId         = 0;
+	resetSeekMembers ();
 
 //
 //
@@ -114,15 +115,18 @@ bool	success;
 }
 
 	RadioInterface::~RadioInterface () {
+	gst_object_unref (GST_OBJECT (systemClock));
 	delete		our_audioSink;
 	if (myFMprocessor != NULL)
 	   delete myFMprocessor;
 }
 
+/*
 void	RadioInterface::newFrequency (int f) {
 	stopIncrementing	();
 	setTuner (f);
 }
+*/
 //
 //	On start, we ensure that the streams are stopped so
 //	that they can be restarted again.
@@ -151,7 +155,7 @@ bool	r = 0;
 
 void	RadioInterface::TerminateProcess (void) {
 	runMode		= STOPPING;
-	stopIncrementing	();
+	cancelSeek ();
 	if (audioDumping) {
 	   //sf_close	(audiofilePointer);
 	}
@@ -203,12 +207,6 @@ void	RadioInterface::setAttenuation (int n) {
 	if (myFMprocessor != NULL)
 	   myFMprocessor	-> setAttenuation (2 * n);
 }
-//	Increment frequency: with amount N, depending
-//	on the mode of operation
-//
-int32_t 	RadioInterface::mapIncrement (int32_t n) {
-	return n * 1000;
-}
 //
 //	The generic setTuner.
 void	RadioInterface::setTuner (int32_t n) {
@@ -217,135 +215,98 @@ void	RadioInterface::setTuner (int32_t n) {
 	   myFMprocessor	-> resetRds	();
 }
 
-void	RadioInterface::set_plusOne	(void) {
-	myRig	-> setVFOFrequency (myRig -> getVFOFrequency () + KHz (1));
-}
-
-void	RadioInterface::set_minusOne	(void) {
-	myRig	-> setVFOFrequency (myRig -> getVFOFrequency () - KHz (1));
-}
-
 //
-//===== code for auto increment/decrement
-//	lots of code for something simple,
-
-static inline
-bool	frequencyInBounds (int32_t f, int32_t l, int32_t u) {
-	return l <= f && f <= u;
-}
-
-int32_t	RadioInterface::IncrementInterval (int16_t index) {
-	if (index < 0)
-	   index = - index;
-
-	if (index == 0)
-	   index = 1;
-	if (index >= delayTableSize)
-	   index = delayTableSize;
-
-	return 1000 * delayTable [index - 1];
-}
-
-//
-void	RadioInterface::autoIncrement_timeout (void) {
-int32_t	amount;
-int32_t	frequency;
-int32_t	low, high;
-
-	low	= KHz (minLoopFrequency);
-	high	= KHz (maxLoopFrequency);
-	amount	=  fmIncrement;
-	if (IncrementIndex < 0)
-	   amount = - amount;
-//
-	frequency	= myRig -> getVFOFrequency () + KHz (amount);
-
-	if ((IncrementIndex < 0) &&
-	   !frequencyInBounds (frequency, low, high))
-	   frequency = high;
-
-	if ((IncrementIndex > 0) &&
-	   !frequencyInBounds (frequency, low, high))
-	   frequency = low;
-
-	setTuner (frequency);
-	//autoIncrementTimer	-> start (IncrementInterval (IncrementIndex));
-	myFMprocessor	-> startScanning ();
-}
-
-void	RadioInterface::scanresult	(void) {
-	stopIncrementing ();
-}
-//
-//	stopIncrementing is called from various places to
-//	just interrupt the autoincrementing
-void	RadioInterface::stopIncrementing (void) {
-        //set_incrementFlag (0);
-
-	//if (autoIncrementTimer	-> isActive ())
-	//autoIncrementTimer -> stop ();
-
-	IncrementIndex = 0;
-	myFMprocessor	-> stopScanning ();
-}
-
-void	RadioInterface::autoIncrementButton (void) {
-
-  //if (autoIncrementTimer	-> isActive ())
-  //autoIncrementTimer -> stop ();
-
-	if (++IncrementIndex > delayTableSize)
-	   IncrementIndex = delayTableSize;
-
-	if (IncrementIndex == 0) {
-		//set_incrementFlag (0);
-	   return;
+void	RadioInterface::seek (int16_t threshold,
+			      int32_t minFrequency, int32_t maxFrequency,
+			      int32_t frequencyStep, int32_t interval,
+			      StationCallback callback, void *userdata) {
+	if (myFMprocessor -> isScanning ()) {
+		cancelSeekTimeout();
 	}
-//
-	//autoIncrementTimer	-> start (IncrementInterval (IncrementIndex));
-	//set_incrementFlag (IncrementIndex);
+
+	seekCallback	= callback;
+	seekUserdata	= userdata;
+	seekMin		= minFrequency;
+	seekMax		= maxFrequency;
+	seekStep	= frequencyStep;
+
+	preSeekFrequency = myRig -> getVFOFrequency ();
+
+	GST_DEBUG("Starting seek with threshold %d, minimum frequency %d Hz"
+		  ", maximum frequency %d Hz, frequency step %d Hz"
+		  ", interval %d milliseconds, pre-seek frequency %d Hz",
+		  threshold, seekMin, seekMax, seekStep, interval, preSeekFrequency);
+
+	myFMprocessor -> startScanning (&RadioInterface::stationCallback, this);
+
+	periodicClockId	= gst_clock_new_periodic_id (systemClock,
+						     gst_clock_get_time(systemClock),
+						     interval * 1000000);
+
+	gst_clock_id_wait_async (periodicClockId, &RadioInterface::seekTimeout, this, NULL);
 }
 
-void	RadioInterface::autoDecrementButton (void) {
-	//if (autoIncrementTimer	-> isActive ())
-	//autoIncrementTimer -> stop ();
+void	RadioInterface::cancelSeek () {
+	if (!myFMprocessor -> isScanning ())
+		return;
 
-	if (--IncrementIndex < - delayTableSize)
-	   IncrementIndex = - delayTableSize;
+	cancelSeekTimeout ();
+	myFMprocessor -> stopScanning ();
+	myRig -> setVFOFrequency (preSeekFrequency);
 
-	if (IncrementIndex == 0) {
-		//set_incrementFlag (0);
-	   return;
-	}
-//
-	//autoIncrementTimer	-> start (IncrementInterval (IncrementIndex));
-	//set_incrementFlag (IncrementIndex);
+	resetSeekMembers();
 }
 
-void	RadioInterface::set_fm_increment (int v) {
-	fmIncrement	= v;		// in Khz
-}
-//
-//	min and max frequencies are specified in Mhz
-void	RadioInterface::set_minimum	(int f) {
-	   minLoopFrequency	= Khz (f);
+void	RadioInterface::cancelSeekTimeout() {
+	gst_clock_id_unschedule (periodicClockId);
+	gst_clock_id_unref (periodicClockId);
+	periodicClockId         = 0;
 }
 
-void	RadioInterface::set_maximum	(int f) {
-	   maxLoopFrequency	= Khz (f);
+void	RadioInterface::resetSeekMembers() {
+	preSeekFrequency = seekMin = seekMax = -1;
+	seekStep                = 0;
+	seekUserdata            = 0;
+	seekCallback            = 0;
 }
 
-void	RadioInterface::IncrementButton (void) {
-	stopIncrementing ();
-	setTuner (myRig -> getVFOFrequency () + Khz (fmIncrement));
+void	RadioInterface::stationCallback(int32_t frequency, void *userdata) {
+	static_cast<RadioInterface *>(userdata)->stationCallback(frequency);
 }
 
-void	RadioInterface::DecrementButton (void) {
-	stopIncrementing ();
-	setTuner (myRig -> getVFOFrequency () - Khz (fmIncrement));
-}
-//
+void	RadioInterface::stationCallback(int32_t frequency) {
+	StationCallback cb = seekCallback;
+	void *userdata = seekUserdata;
 
+	cancelSeekTimeout ();
+	resetSeekMembers ();
+
+	cb(frequency, userdata);
+}
+
+gboolean RadioInterface::seekTimeout (GstClock *clock, GstClockTime time,
+				      GstClockID id, gpointer user_data) {
+	return static_cast<RadioInterface *>(user_data)->seekTimeout();
+}
+
+gboolean RadioInterface::seekTimeout () {
+	if (!myFMprocessor -> isScanning ())
+		return FALSE;
+
+	int32_t nextFrequency = myRig -> getVFOFrequency() + seekStep;
+	if (nextFrequency > seekMax)
+		nextFrequency = seekMin;
+	else if (nextFrequency < seekMin)
+		nextFrequency = seekMax;
+
+	GST_DEBUG("Setting frequency to %d in seek", nextFrequency);
+
+	myRig -> setVFOFrequency (nextFrequency);
+
+	return TRUE;
+}
+	
+	
 //	Deemphasis	= 50 usec (3183 Hz, Europe)
 //	Deemphasis	= 75 usec (2122 Hz US)
 void	RadioInterface::setfmDeemphasis	(const std::string& s) {
@@ -366,6 +327,7 @@ void	RadioInterface::setVolume (int v) {
 }
 //
 
+/*
 void	RadioInterface::setCRCErrors	(int n) {
 //	crcErrors	-> display (n);
 	(void)n;
@@ -399,6 +361,7 @@ int32_t	t	= myRig -> getVFOFrequency ();
 	   frequencyforPICode = t;
 	}
 }
+*/
 
 void	RadioInterface::setfmMode (const std::string &s) {
 	myFMprocessor	-> setfmMode (s == "stereo");

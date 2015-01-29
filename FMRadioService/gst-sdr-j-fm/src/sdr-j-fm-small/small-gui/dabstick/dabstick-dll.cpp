@@ -34,6 +34,7 @@
 
 #include	"rtl-sdr.h"
 #include	"dabstick-dll.h"
+#include	<gst/gst.h>
 #include	<pthread.h>
 #include	<sstream>
 #include	<stdexcept>
@@ -46,6 +47,10 @@
 #endif
 
 #define	READLEN_DEFAULT	8192
+
+GST_DEBUG_CATEGORY_EXTERN (sdrjfm_debug);
+#define GST_CAT_DEFAULT sdrjfm_debug
+
 //
 //	For the callback, we do need some environment which
 //	is passed through the ctx parameter
@@ -219,6 +224,7 @@ err:
 void	dabstick_dll::setVFOFrequency	(int32_t f) {
 	lastFrequency	= f;
 	(void)(this -> rtlsdr_set_center_freq (device, f + vfoOffset));
+	GST_DEBUG("Set reception frequency of DAB stick to %u", f);
 }
 
 int32_t	dabstick_dll::getVFOFrequency	(void) {

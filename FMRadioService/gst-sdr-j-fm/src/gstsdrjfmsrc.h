@@ -35,6 +35,9 @@ struct _GstSdrjfmSrc {
   GstAudioSrc    src;
 
   gint frequency;
+  gint min_freq;
+  gint max_freq;
+  gint freq_step;
 
   RadioInterface *radio;
 };
@@ -42,6 +45,9 @@ struct _GstSdrjfmSrc {
 struct _GstSdrjfmSrcClass {
   GstAudioSrcClass parent_class;
 
+  /* action signals */
+  void        (*seek_up)         (GstSdrjfmSrc *src);
+  void        (*seek_down)       (GstSdrjfmSrc *src);
 };
 
 extern "C" {

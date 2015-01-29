@@ -13,7 +13,7 @@ struct _TestData
   GstElement *pipeline;
   GstElement *fmsrc;
   void (*playing_cb) (TestData*);
-  void (*freq_changed_cb) (TestData*,gint);
+  void (*station_found_cb) (TestData*,gint);
   gint timeout;
   GMainLoop *loop;
   gint freqs[10];
@@ -41,17 +41,17 @@ bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
       if (GST_MESSAGE_SRC (message) == GST_OBJECT (data->fmsrc)) {
         const GstStructure *s = gst_message_get_structure (message);
 
-        g_assert (gst_structure_has_name (s, "sdrjfmsrc-frequency-changed"));
+        g_assert (gst_structure_has_name (s, "sdrjfmsrc-station-found"));
         g_assert (gst_structure_has_field_typed (s, "frequency", G_TYPE_INT));
 
-        if (data->freq_changed_cb) {
+        if (data->station_found_cb) {
           gint freq;
           gst_structure_get_int (s, "frequency", &freq);
 
           g_assert_cmpint (freq, >=, MIN_FREQ);
           g_assert_cmpint (freq, <=, MAX_FREQ);
 
-          data->freq_changed_cb (data, freq);
+          data->station_found_cb (data, freq);
         }
       }
       break;
@@ -75,14 +75,14 @@ bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
 
 static TestData *
 tearup (gint freq, void (*playing_cb) (TestData*),
-    void (*freq_changed_cb) (TestData*,gint))
+    void (*station_found_cb) (TestData*,gint))
 {
   GError *error = NULL;
   TestData *data = g_slice_new0 (TestData);
   GstBus *bus;
 
   data->pipeline =
-      gst_parse_launch ("sdrjfmsrc name=fmsrc ! audioresample ! alsasink",
+      gst_parse_launch ("sdrjfmsrc name=fmsrc ! pulsesink",
       &error);
   g_assert_no_error (error);
   g_assert(data->pipeline != NULL);
@@ -96,7 +96,7 @@ tearup (gint freq, void (*playing_cb) (TestData*),
 
   data->timeout = 20;
   data->playing_cb = playing_cb;
-  data->freq_changed_cb = freq_changed_cb;
+  data->station_found_cb = station_found_cb;
 
   bus = gst_pipeline_get_bus (GST_PIPELINE (data->pipeline));
   gst_bus_add_watch (bus, bus_cb, data);
@@ -163,7 +163,7 @@ test_tune_playing_cb (TestData *data)
 }
 
 static void
-test_tune_freq_changed_cb (TestData *data, gint frequency)
+test_tune_station_found_cb (TestData *data, gint frequency)
 {
   g_assert_cmpint (frequency, ==, data->target_freq);
 
@@ -184,7 +184,38 @@ test_tune ()
   GST_DEBUG ("Starting tune test");
   TestData *data = tearup (96700000,
       test_tune_playing_cb,
-      test_tune_freq_changed_cb);
+      test_tune_station_found_cb);
+  test_run (data);
+}
+
+static void
+test_seek_playing_cb (TestData *data)
+{
+  data->target_freq = 0;
+  g_signal_emit_by_name (data->fmsrc, "seek-up");
+}
+
+static void
+test_seek_station_found_cb (TestData *data, gint frequency)
+{
+
+  if (data->target_freq == 0) {
+    data->target_freq = frequency;
+    g_signal_emit_by_name (data->fmsrc, "seek-down");
+
+    GST_DEBUG_OBJECT (data->fmsrc, "Seeking with frequency %d", frequency);
+  } else {
+    test_done (data);
+  }
+}
+
+static void
+test_seek ()
+{
+  GST_DEBUG ("Starting seek test");
+  TestData *data = tearup (88100000,
+      test_seek_playing_cb,
+      test_seek_station_found_cb);
   test_run (data);
 }
 
@@ -197,7 +228,8 @@ main (gint argc, gchar **argv)
   GST_DEBUG ("Running test");
 
   g_test_init (&argc, &argv, NULL);
-  g_test_add_func ("/tune/live", test_tune);
+  //g_test_add_func ("/tune/live", test_tune);
+  g_test_add_func ("/tune/seek", test_seek);
   g_test_run ();
   return 0;
 }

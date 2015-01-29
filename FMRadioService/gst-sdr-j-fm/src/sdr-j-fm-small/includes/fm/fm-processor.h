@@ -49,6 +49,12 @@ class		newConverter;
 
 class	fmProcessor {
 public:
+	/** Callback type for scanning
+	 * \param frequency The frequency on which a station has been found, in Hz
+	 * \param userdata A pointer provided to the scan function
+	 */
+	typedef void (*StationCallback) (int32_t frequency, void *userdata);
+
 			fmProcessor (
 				     virtualInput	*,
 	                             RadioInterface *,
@@ -78,8 +84,9 @@ public:
 	DSPFLOAT	get_noiseStrength	(void);
 	DSPFLOAT	get_dcComponent		(void);
 	bool		isLocked		(void);
-	void		startScanning		(void);
+	void		startScanning		(StationCallback callback, void *userdata);
 	void		stopScanning		(void);
+	bool		isScanning		(void);
 	const char *	nameofDecoder	(void);
 
 	enum Channels {
@@ -108,8 +115,13 @@ private:
 	int32_t		workingRate;
 	int32_t		audioRate;
 	uint8_t		inputMode;
-	bool		scanning;
 	int16_t		thresHold;
+	pthread_mutex_t scanLock;
+	void		lockScan();
+	void		unlockScan();
+	bool		scanning;
+	StationCallback	scanCallback;
+	void *		scanUserdata;
 	DSPFLOAT	getSignal	(DSPCOMPLEX *, int32_t);
 	DSPFLOAT	getNoise	(DSPCOMPLEX *, int32_t);
 	bool		squelchOn;
