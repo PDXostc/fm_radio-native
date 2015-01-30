@@ -33,25 +33,38 @@
 GST_DEBUG_CATEGORY (sdrjfm_debug);
 #define GST_CAT_DEFAULT sdrjfm_debug
 
+/**
+ * Signal enum types.
+ * Signal enums are used in g_signal_new as name/id.
+ */
 typedef enum {
     E_SIGNAL_ON_ENABLED,
     E_SIGNAL_ON_DISABLED,
     E_SIGNAL_ON_ANTENNA_CHANGED,
     E_SIGNAL_ON_FREQUENCY_CHANGED,
 
-    E_SIGNAL_COUNT              /* E_SIGNAL_COUNT is not an actual signal */
+    E_SIGNAL_COUNT              /**< E_SIGNAL_COUNT is not an actual signal */
 } signal_enum;
 
+/**
+ * GObject properties.
+ * GObject properties are necessary for dbus to expose modifiable
+ * properties/values to the connected clients.
+ */
 typedef enum {
-    E_PROP_0,                   /* first prop_enum (0) has a special meaning */
+    E_PROP_0,                   /**< first prop_enum (0) has a special meaning */
 
     E_PROP_ENABLED,
     E_PROP_ANTENNA_AVAILABLE,
     E_PROP_FREQUENCY,
 
-    E_PROP_COUNT                /* E_PROP_COUNT is not an actual property */
+    E_PROP_COUNT                /**< E_PROP_COUNT is not an actual property */
 } prop_enum;
 
+/**
+ * GStreamer element data structure.
+ * Useful struct to keep data about fmsrc gstreamer element.
+ */
 typedef struct _GstData GstData;
 struct _GstData
 {
@@ -64,22 +77,23 @@ struct _GstData
     /* void (*freq_changed_cb) (GstData*,gint);*/
 };
 
+/** Main GObject RadioServer object. */
 typedef struct {
     GObject parent;
 
     /* Actual properties */
     gboolean enabled;
     gboolean antennaavailable;
-    gdouble  frequency;  // frequency is in Hz
+    gdouble  frequency;         /**< frequency is in Hz */
 
     GstData *gstData;
 } RadioServer;
 
+/** Main GObject RadioServerClass class. */
 typedef struct {
     GObjectClass parent;
     DBusGConnection *connection;
 
-    /* Signals created for this class. */
     guint signals[E_SIGNAL_COUNT];
 } RadioServerClass;
 
@@ -117,6 +131,10 @@ static void radio_set_property (GObject *object, uint property_id,
 static void radio_get_property (GObject *object, guint property_id,
                                 GValue *value, GParamSpec *pspec);
 
+/**
+* Function that creates all the glib signals.
+* @param klass Pointer on the main gobject class.
+*/
 static void
 radio_server_create_signals(RadioServerClass *klass)
 {
@@ -175,6 +193,10 @@ radio_server_create_signals(RadioServerClass *klass)
     klass->signals[E_SIGNAL_ON_FREQUENCY_CHANGED] = signal_id;
 }
 
+/**
+* Function that creates all the glib properties.
+* @param gobject_class Pointer on the main gobject class.
+*/
 static void
 radio_server_create_properties(GObjectClass *gobject_class)
 {
@@ -207,6 +229,10 @@ radio_server_create_properties(GObjectClass *gobject_class)
                                       obj_properties);
 }
 
+/**
+* Create properties and signals, and create dbus connection.
+* @param klass Pointer on the main gobject class.
+*/
 static void
 radio_server_class_init(RadioServerClass *klass)
 {
@@ -234,6 +260,10 @@ radio_server_class_init(RadioServerClass *klass)
                                      &dbus_glib_server_object_object_info);
 }
 
+/**
+* Create dbus proxy and register service.
+* @param klass Pointer on the main gobject class.
+*/
 static void
 radio_server_init(RadioServer *server)
 {
@@ -264,46 +294,10 @@ radio_server_init(RadioServer *server)
                                          G_OBJECT (server));
 }
 
-// TODO: remove this forward decl. when testing finished
-void handle_on_enabled(GstData* data);
-gboolean handle_on_disabled(gpointer data);
-gboolean handle_on_antenna_changed(gpointer data);
-gboolean handle_on_frequency_changed(gpointer data);
-
-// **********************************************************
-// WebFM api SERVER implementation **************************
-// The following are server implementations of all the sup-
-// ported WebFM apis declared in radio-service.xml
-
-gboolean
-server_enable (RadioServer *server, GError **error)
-{
-
-    /* Enabling FM Radio is a two-step async process.
-       We first enable our sdrjfm GST element in here,
-       then, the GST bus GST_MESSAGE_STATE_CHANGED callback will
-       send the "enabled" signal if gst's state is set to GST_STATE_PLAYING */
-
-    if (!server->enabled) {
-        sdrjfm_init(server, handle_on_enabled);
-    }
-
-    return TRUE;
-}
-
-gboolean
-server_setfrequency (RadioServer *server, gdouble value_in, GError **error)
-{
-    // Set the frequency down the road first
-    g_object_set (server->gstData->fmsrc, "frequency", (gint) value_in, NULL);
-    server->frequency = value_in;
-
-    return TRUE;
-}
-
-// **********************************************************
-
-// Handler called when radio has been enabled
+/**
+* Handler called when the radio is just been enabled.
+* @param data GstData structure.
+*/
 void
 handle_on_enabled(GstData *data)
 {
@@ -320,7 +314,10 @@ handle_on_enabled(GstData *data)
                   0);
 }
 
-// Handler called when radio has been disabled
+/**
+* Handle called when the radio is just been disabled.
+* @param data GstData structure.
+*/
 gboolean
 handle_on_disabled(gpointer data)
 {
@@ -334,7 +331,10 @@ handle_on_disabled(gpointer data)
     return FALSE;
 }
 
-// Handler called when radio antenna has been changed
+/**
+* Handler called when the antenna has been changed.
+* @param data GstData structure.
+*/
 gboolean
 handle_on_antenna_changed(gpointer data)
 {
@@ -348,7 +348,10 @@ handle_on_antenna_changed(gpointer data)
     return FALSE;
 }
 
-// Handler called when radio frequency has been changed
+/**
+* Handler called when the frequency has been changed.
+* @param data GstData structure.
+*/
 gboolean
 handle_on_frequency_changed(gpointer data)
 {
@@ -363,6 +366,61 @@ handle_on_frequency_changed(gpointer data)
     return FALSE;
 }
 
+// **********************************************************
+// WebFM api SERVER implementation **************************
+// The following are server implementations of all the sup-
+// ported WebFM apis declared in radio-service.xml
+
+/**
+* Initialize gstsdrjfm gst element if it's not already done.
+* @param server Main server object.
+* @param error GError containing code and message for calling dbus client.
+* @return TRUE is successful.
+*/
+gboolean
+server_enable (RadioServer *server, GError **error)
+{
+
+    /* Enabling FM Radio is a two-step async process.
+       We first enable our sdrjfm GST element in here,
+       then, the GST bus GST_MESSAGE_STATE_CHANGED callback will
+       send the "enabled" signal if gst's state is set to GST_STATE_PLAYING */
+
+    if (!server->enabled) {
+        sdrjfm_init(server, handle_on_enabled);
+    }
+
+    // TODO: Return false and set error in case something went wrong.
+    return TRUE;
+}
+
+/**
+* Set the internal frequency of the gstsdrjfm gst element
+* @param server Main server object.
+* @param value_in The passed-in dbus frequency dbus parameter.
+* @param error GError containing code and message for calling dbus client.
+* @return TRUE is successful.
+*/
+gboolean
+server_setfrequency (RadioServer *server, gdouble value_in, GError **error)
+{
+    // Set the frequency down the road first
+    g_object_set (server->gstData->fmsrc, "frequency", (gint) value_in, NULL);
+    server->frequency = value_in;
+
+    // TODO: Return false and set error in case something went wrong.
+    return TRUE;
+}
+
+// **********************************************************
+
+/**
+* Main gobject property getter.
+* @param object Pointer to the Gobject to get properties from.
+* @param property_id The ID of the property to get.
+* @param value Pointer to a GValue containing the value to get.
+* @param pspec Pointer to GParamSpec.
+*/
 static void
 radio_get_property (GObject    *object,
                     guint       property_id,
@@ -390,6 +448,13 @@ radio_get_property (GObject    *object,
     }
 }
 
+/**
+* Main gobject property setter.
+* @param object Pointer to the Gobject to set properties on.
+* @param property_id The ID of the property to set.
+* @param value Pointer to a GValue containing the value to set.
+* @param pspec Pointer to GParamSpec.
+*/
 static void
 radio_set_property (GObject       *object,
                     guint          property_id,
@@ -418,6 +483,13 @@ radio_set_property (GObject       *object,
     }
 }
 
+/**
+* Callback called when receiving message from gstsdrjfm gst element.
+* @param bus Pointer on the GstBus that initiated the message.
+* @param message Pointer on GstMessage containing the sent message.
+* @param user_data Some user data passed along with the message.
+* @param TRUE is successful, FALSE otherwise.
+*/
 static gboolean
 bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
 {
@@ -472,6 +544,12 @@ bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
     return TRUE;
 }
 
+/**
+* Gstreamer element initialization and pipeline creation.
+* @param server Pointer to main GObject RadioServer object.
+* @param playing_cb A callback function pointer for the "playing" state
+* @param Pointer to GstData struct filled-in with all required fields.
+*/
 static GstData *
 sdrjfm_init (RadioServer *server, void (*playing_cb) (GstData*))
 {
@@ -508,6 +586,11 @@ sdrjfm_init (RadioServer *server, void (*playing_cb) (GstData*))
     return data;
 }
 
+// TODO: Call this when relevant
+/**
+* Gstreamer element destruction and pipeline teardown.
+* @param data Some GstData.
+*/
 static void
 sdrjfm_deinit(GstData *data)
 {
