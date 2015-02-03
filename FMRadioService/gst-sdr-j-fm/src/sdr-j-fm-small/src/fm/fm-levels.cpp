@@ -68,8 +68,8 @@ float	binSize;	// size of bin in Hz
 
 	fmLevels::~fmLevels	(void) {
 	delete	compute;
-	delete	inputBuffer;
-	delete	Window;
+	delete	[] inputBuffer;
+	delete	[] Window;
 }
 
 void	fmLevels::addItem		(DSPFLOAT v) {

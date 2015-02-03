@@ -65,7 +65,7 @@ int32_t	i;
 }
 
 		fm_Demodulator::~fm_Demodulator (void) {
-	delete	Arcsine;
+	delete	[] Arcsine;
 	delete	myfm_pll;
 }
 
