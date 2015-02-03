@@ -44,12 +44,15 @@
 
 #define	someStick(x)	((x) & 03)
 
+typedef void (*  vfoFrequencyChangedCB) (void *, int32_t);
+
 class	virtualInput {
 public:
 			virtualInput 	(void);
 virtual			~virtualInput 	(void);
 virtual		void	setVFOFrequency	(int32_t);
 virtual		int32_t	getVFOFrequency	(void);
+virtual		void	setVFOFrequencyChangeCallback (vfoFrequencyChangedCB, void *);
 virtual		int32_t	setExternalRate	(int32_t);
 virtual		int32_t	setExternalGain	(int32_t);
 virtual		uint8_t	myIdentity	(void);

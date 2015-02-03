@@ -33,15 +33,15 @@
 #include	"ringbuffer.h"
 #include	"fft.h"
 #include	"fir-filters.h"
+#include	"virtual-input.h"
+#include	"fm-processor.h"
 #include	<gst/gst.h>
-class	keyPad;
 
-class	fmProcessor;
 class	rdsDecoder;
 class	audioSink;
-class	virtualInput;
+
 /** This is the main interface for the FM radio.  Originally it was
-    the main GUI class.
+ * the main GUI class.
  */
 class RadioInterface {
 public:
@@ -57,10 +57,7 @@ public:
 	/** Set the tuner to receive @frequency Hz */
 	void		setTuner		(int32_t frequency);
 
-	/** Callback type for seek function.
-	 * FIXME: more docs
-	 */
-	typedef void (*StationCallback) (int32_t frequency, void *userdata);
+	void		setFrequencyChangeCB	(vfoFrequencyChangedCB, void *);
 
 	/** Start seeking for a station.  After this function returns,
 	 * the RadioInterface will start sampling different
@@ -109,6 +106,7 @@ private:
 	StationCallback seekCallback; 
 	void *		seekUserdata;
 
+	void            iterateSeekFrequency ();
 	void            cancelSeekTimeout ();
 	void            resetSeekMembers ();
 

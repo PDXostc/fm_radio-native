@@ -68,6 +68,7 @@ enum
 {
   SIGNAL_SEEK_UP,
   SIGNAL_SEEK_DOWN,
+  SIGNAL_CANCEL_SEEK,
   LAST_SIGNAL
 };
 
@@ -162,6 +163,46 @@ gst_sdrjfm_src_get_property (GObject * object, guint prop_id,
   GST_OBJECT_UNLOCK (self);
 }
 
+typedef struct _BusMessageData
+{
+  GstSdrjfmSrc *src;
+  GstMessage *msg;
+} BusMessageData;
+
+static gboolean
+gst_sdrjfm_src_send_bus_message_idle (void *user_data)
+{
+  BusMessageData *data = static_cast<BusMessageData *>(user_data);
+  gst_element_post_message (GST_ELEMENT(data->src), data->msg);
+  delete data;
+  return FALSE;
+}
+
+static void
+gst_sdrjfm_src_send_bus_message(void * user_data, const char *name,
+				const char*field_name, gint field_value)
+{
+
+  GstSdrjfmSrc *self = static_cast<GstSdrjfmSrc *>(user_data);
+  GstStructure *s;
+  BusMessageData *data;
+
+  s = gst_structure_new (name, field_name, G_TYPE_INT, field_value, NULL);
+
+  data = new BusMessageData;
+  data->src = self;
+  data->msg = gst_message_new_element (GST_OBJECT (self), s);
+
+  g_idle_add (gst_sdrjfm_src_send_bus_message_idle, data);
+}
+
+static void
+gst_sdrjfm_src_frequency_changed (void * user_data, int32_t frequency)
+{
+  gst_sdrjfm_src_send_bus_message (user_data, "sdrjfmsrc-frequency-changed",
+				   "frequency", frequency);
+}
+
 static gboolean
 gst_sdrjfm_src_open (GstAudioSrc * asrc)
 {
@@ -170,6 +211,8 @@ gst_sdrjfm_src_open (GstAudioSrc * asrc)
   self->radio = new RadioInterface(self->frequency);
   GST_INFO_OBJECT (self, "Created new SDR-J FM Radio object with frequency %u",
 		   self->frequency);
+
+  self->radio->setFrequencyChangeCB (gst_sdrjfm_src_frequency_changed, self);
 
   return TRUE;
 }
@@ -248,19 +291,11 @@ static void
 gst_sdrjfm_src_station_found (int32_t frequency, void *user_data)
 {
   GstSdrjfmSrc *self = static_cast<GstSdrjfmSrc *>(user_data);
-  GstStructure *s;
-  GstMessage *msg;
-  GstBus *bus;
-
   GST_DEBUG_OBJECT (self, "Station found at frequency %i", frequency);
-  printf("Station found at frequency %i\n", frequency);
 
-  s = gst_structure_new ("sdrjfmsrc-station-found",
-			 "frequency", G_TYPE_INT, frequency, NULL);
-  msg = gst_message_new_element (GST_OBJECT (self), s);
-  bus = gst_element_get_bus (GST_ELEMENT (self));
-  gst_bus_post (bus, msg);
-  g_object_unref (bus);
+  self->frequency = frequency;
+  gst_sdrjfm_src_send_bus_message (user_data, "sdrjfmsrc-station-found",
+				   "frequency", frequency);
 }
 
 static void
@@ -280,6 +315,12 @@ static void
 gst_sdrjfm_src_seek_down (GstSdrjfmSrc * self)
 {
   return gst_sdrjfm_src_do_seek(self, -self->freq_step);
+}
+
+static void
+gst_sdrjfm_src_cancel_seek (GstSdrjfmSrc * self)
+{
+  self->radio->cancelSeek();
 }
 
 static void
@@ -325,6 +366,7 @@ gst_sdrjfm_src_class_init (GstSdrjfmSrcClass * klass)
 
   klass->seek_up = GST_DEBUG_FUNCPTR (gst_sdrjfm_src_seek_up);
   klass->seek_down = GST_DEBUG_FUNCPTR (gst_sdrjfm_src_seek_down);
+  klass->cancel_seek = GST_DEBUG_FUNCPTR (gst_sdrjfm_src_cancel_seek);
 
   g_object_class_install_property (gobject_class, PROP_MIN_FREQUENCY,
       g_param_spec_int ("min-frequency", "Minimum Frequency",
@@ -356,6 +398,12 @@ gst_sdrjfm_src_class_init (GstSdrjfmSrcClass * klass)
       g_signal_new ("seek-down", G_TYPE_FROM_CLASS (klass),
 		    static_cast<GSignalFlags>( G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION ),
 		    G_STRUCT_OFFSET (GstSdrjfmSrcClass, seek_down), NULL, NULL,
+		    g_cclosure_marshal_generic, G_TYPE_NONE, 0, G_TYPE_NONE);
+
+  signals[SIGNAL_CANCEL_SEEK] =
+      g_signal_new ("cancel-seek", G_TYPE_FROM_CLASS (klass),
+		    static_cast<GSignalFlags>( G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION ),
+		    G_STRUCT_OFFSET (GstSdrjfmSrcClass, cancel_seek), NULL, NULL,
 		    g_cclosure_marshal_generic, G_TYPE_NONE, 0, G_TYPE_NONE);
 
   gst_element_class_set_static_metadata (gstelement_class, "FM Radio Source (SDR-J)",

@@ -39,6 +39,13 @@
 #include	"oscillator.h"
 #include	"resampler.h"
 
+
+/** Callback type for scanning
+ * \param frequency The frequency on which a station has been found, in Hz
+ * \param userdata A pointer provided to the scan function
+ */
+typedef void (*StationCallback) (int32_t frequency, void *userdata);
+
 class		rigInterface;
 class		virtualInput;
 class		RadioInterface;
@@ -49,12 +56,6 @@ class		newConverter;
 
 class	fmProcessor {
 public:
-	/** Callback type for scanning
-	 * \param frequency The frequency on which a station has been found, in Hz
-	 * \param userdata A pointer provided to the scan function
-	 */
-	typedef void (*StationCallback) (int32_t frequency, void *userdata);
-
 			fmProcessor (
 				     virtualInput	*,
 	                             RadioInterface *,
@@ -106,7 +107,7 @@ private:
         static void *   c_run (void * userdata);
         void		start		(void);
 	void		run		(void);
-        pthread_t       thread;
+        pthread_t       threadId;
 	virtualInput	*myRig;
 	RadioInterface	*myRadioInterface;
 	audioSink	*theSink;

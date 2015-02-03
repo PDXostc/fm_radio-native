@@ -69,6 +69,7 @@ public:
 			~dabstick_dll	(void);
 	void		setVFOFrequency	(int32_t);
 	int32_t		getVFOFrequency	(void);
+       	void		setVFOFrequencyChangeCallback (vfoFrequencyChangedCB, void *);
 	int32_t		setExternalRate	(int32_t);
 	int32_t		setExternalGain	(int32_t);
 	int32_t		defaultFrequency	(void);
@@ -120,6 +121,9 @@ private:
 	pfnrtlsdr_get_device_count rtlsdr_get_device_count;
 	pfnrtlsdr_set_freq_correction rtlsdr_set_freq_correction;
 	pfnrtlsdr_get_device_name rtlsdr_get_device_name;
+
+	vfoFrequencyChangedCB vfoFrequencyChanged;
+	void *vfoFrequencyChangedUserData;
 };
 #endif
 

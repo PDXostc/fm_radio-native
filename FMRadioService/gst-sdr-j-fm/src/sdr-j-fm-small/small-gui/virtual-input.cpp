@@ -43,6 +43,9 @@ int32_t	virtualInput::getVFOFrequency	(void) {
 	return lastFrequency;
 }
 
+void	virtualInput::setVFOFrequencyChangeCallback (vfoFrequencyChangedCB cb, void *userData) {
+}
+
 bool	virtualInput::legalFrequency	(int32_t f) {
 	(void)f;
 	return true;

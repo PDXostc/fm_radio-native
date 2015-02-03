@@ -115,10 +115,11 @@ bool	success;
 }
 
 	RadioInterface::~RadioInterface () {
-	gst_object_unref (GST_OBJECT (systemClock));
-	delete		our_audioSink;
 	if (myFMprocessor != NULL)
 	   delete myFMprocessor;
+	gst_object_unref (GST_OBJECT (systemClock));
+	delete		our_audioSink;
+	delete myRig;
 }
 
 /*
@@ -215,6 +216,9 @@ void	RadioInterface::setTuner (int32_t n) {
 	   myFMprocessor	-> resetRds	();
 }
 
+void	RadioInterface::setFrequencyChangeCB (vfoFrequencyChangedCB cb, void *userData) {
+	myRig		-> setVFOFrequencyChangeCallback	(cb, userData);
+}
 //
 void	RadioInterface::seek (int16_t threshold,
 			      int32_t minFrequency, int32_t maxFrequency,
@@ -237,6 +241,8 @@ void	RadioInterface::seek (int16_t threshold,
 		  ", interval %d milliseconds, pre-seek frequency %d Hz",
 		  threshold, seekMin, seekMax, seekStep, interval, preSeekFrequency);
 
+	iterateSeekFrequency ();
+
 	myFMprocessor -> startScanning (&RadioInterface::stationCallback, this);
 
 	periodicClockId	= gst_clock_new_periodic_id (systemClock,
@@ -255,6 +261,16 @@ void	RadioInterface::cancelSeek () {
 	myRig -> setVFOFrequency (preSeekFrequency);
 
 	resetSeekMembers();
+}
+
+void	RadioInterface::iterateSeekFrequency() {
+	int32_t nextFrequency = myRig -> getVFOFrequency() + seekStep;
+	if (nextFrequency > seekMax)
+		nextFrequency = seekMin;
+	else if (nextFrequency < seekMin)
+		nextFrequency = seekMax;
+
+	myRig -> setVFOFrequency (nextFrequency);
 }
 
 void	RadioInterface::cancelSeekTimeout() {
@@ -293,15 +309,7 @@ gboolean RadioInterface::seekTimeout () {
 	if (!myFMprocessor -> isScanning ())
 		return FALSE;
 
-	int32_t nextFrequency = myRig -> getVFOFrequency() + seekStep;
-	if (nextFrequency > seekMax)
-		nextFrequency = seekMin;
-	else if (nextFrequency < seekMin)
-		nextFrequency = seekMax;
-
-	GST_DEBUG("Setting frequency to %d in seek", nextFrequency);
-
-	myRig -> setVFOFrequency (nextFrequency);
+	iterateSeekFrequency ();
 
 	return TRUE;
 }

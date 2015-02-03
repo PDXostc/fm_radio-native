@@ -124,6 +124,7 @@ int32_t	r;
 int16_t	deviceIndex;
 int16_t	i;
 
+	this	-> vfoFrequencyChanged	= 0;
 	this	-> rateIn		= rateIn;
 	*success			= false;	// just the default
 	libraryLoaded			= false;
@@ -212,6 +213,7 @@ err:
 }
 
 	dabstick_dll::~dabstick_dll	(void) {
+	stopReader();
 	if (open)
 	   this -> rtlsdr_close (device);
 	if (_I_Buffer != NULL)
@@ -225,10 +227,17 @@ void	dabstick_dll::setVFOFrequency	(int32_t f) {
 	lastFrequency	= f;
 	(void)(this -> rtlsdr_set_center_freq (device, f + vfoOffset));
 	GST_DEBUG("Set reception frequency of DAB stick to %u", f);
+	if (this -> vfoFrequencyChanged)
+		this -> vfoFrequencyChanged (this -> vfoFrequencyChangedUserData, f);
 }
 
 int32_t	dabstick_dll::getVFOFrequency	(void) {
 	return (int32_t)(this -> rtlsdr_get_center_freq (device)) - vfoOffset;
+}
+
+void	dabstick_dll::setVFOFrequencyChangeCallback (vfoFrequencyChangedCB cb, void *userData) {
+	this -> vfoFrequencyChanged = cb;
+	this -> vfoFrequencyChangedUserData = userData;
 }
 
 bool	dabstick_dll::legalFrequency (int32_t f) {
@@ -263,12 +272,6 @@ void	dabstick_dll::stopReader		(void) {
 
 	this -> rtlsdr_cancel_async (device);
 	if (workerHandle != NULL) {
-		// FIXME: Join thread
-		/*
-	   while (!workerHandle -> isFinished ()) 
-	      usleep (100);
-		*/
-
 	   delete	workerHandle;
 	}
 

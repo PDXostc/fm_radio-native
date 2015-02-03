@@ -197,7 +197,7 @@ void *  fmProcessor::c_run (void * userdata) {
 }
 
 void	fmProcessor::start	(void) {
-	int err = pthread_create(&thread, NULL, &fmProcessor::c_run, this);
+	int err = pthread_create(&threadId, NULL, &fmProcessor::c_run, this);
 	if (err != 0) {
 		std::ostringstream strm;
 		strm << "error creating processor thread: "
@@ -209,7 +209,8 @@ void	fmProcessor::start	(void) {
 
 void	fmProcessor::stop	(void) {
 	running	= false;
-	int err = pthread_join(thread, NULL);
+	void *ret = NULL;
+	int err = pthread_join(threadId, &ret);
 	if (err != 0) {
 		std::cerr << "warning: could not join processor thread: "
 			  << strerror(err) << std::endl;
@@ -398,7 +399,7 @@ int16_t		audioIndex	= 0;
 	            if (ratio > this -> thresHold) {
 	               fprintf (stderr, "signal found %f %f\n", signal, noise);
 		       GST_DEBUG("Station found; signal: %f, noise: %f, ratio: %f",
-				 signal, noise, ratio, scanCallback);
+				 signal, noise, ratio);
 		       scanCallback(myRig -> getVFOFrequency(), scanUserdata);
 		       scanning = false;
 	            }

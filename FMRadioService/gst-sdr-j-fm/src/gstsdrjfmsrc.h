@@ -48,6 +48,7 @@ struct _GstSdrjfmSrcClass {
   /* action signals */
   void        (*seek_up)         (GstSdrjfmSrc *src);
   void        (*seek_down)       (GstSdrjfmSrc *src);
+  void        (*cancel_seek)     (GstSdrjfmSrc *src);
 };
 
 extern "C" {
