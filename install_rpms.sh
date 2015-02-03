@@ -51,6 +51,6 @@ if [ $DEBUG_MODE -eq "1" ]; then
 	done
 	for i in "${DEBUG_RPM_INSTALL_ORDER[@]}"
 	do
-	    rpi -ivh --force ${DEBUG_RPM_LIST[${i}]}.rpm
+	    rpm -ivh --force ${DEBUG_RPM_LIST[${i}]}.rpm
 	done
 fi
