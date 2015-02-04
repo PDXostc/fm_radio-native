@@ -8,118 +8,244 @@
 * IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
 * PARTICULAR PURPOSE.
 *
-* Filename:	 header.txt
+* Filename:	            main.js
 * Version:              1.0
-* Date:                 January 2013
-* Project:              Widget incorporation
-* Contributors:         XXXXXXX
-*                       xxxxxxx
+* Date:                 Feb. 2015
+* Project:              DNA_FMRadio
+* Contributors:         Frederic Plourde
 *
-* Incoming Code:        GStreamer 0.93, <link>
 *
 */
 
-/*global Bootstrap */
-
 /**
-  * Boilerplate application provides starting point for new applications and provides basic layout and infrastructure:
-  *
-  * * {{#crossLink "Bootstrap"}}{{/crossLink}} component
-  * * {{#crossLink "BottomPanel"}}{{/crossLink}} component
-  * * {{#crossLink "TopBarIcons"}}{{/crossLink}} component
-  *
-  * Update following code for new applications built from this code:
-  *
-  * * `config.xml` - update `/widget/@id`, `/widget/tizen:application/@id`, `/widget/tizen:application/@name`, `/widget/name`
-  * * `icon.png` - application icon
-  *
-  * @module BoilerplateApplication
-  * @main BoilerplateApplication
- **/
-
-var FREQ_MAX_LIMIT = 108000000;
-var FREQ_MIN_LIMIT = 88000000;
-
-/**
- * Reference to instance of  class object this class is inherited from dataModel {@link CarIndicator}
-@property carInd {Object}
+ * Very Simple Application state tracker mechanism for operations
+ * like keypad direct tuning and scanning.
+ * Possible states are :
+ *
+ * STATE_NORMAL             : Main app state under normal operation
+ * STATE_DIRECT_TUNING_1    : User has entered direct tuning. Ready to input digit 1
+ * STATE_DIRECT_TUNING_2    : User has entered digit1, ready to input digit 2
+ * STATE_DIRECT_TUNING_3    : User has entered digit2, ready to input digit 3
+ * STATE_DIRECT_TUNING_4    : User has entered digit3, ready to input digit 4
+ * STATE_DIRECT_TUNING_FULL : User has entered digit4, no more digits can be entered
+ * STATE_SCANNING_SCAN      : User has entered scanning mode. waiting for a channel
+ * STATE_SCANNING_SHOW      : System found a station and is rendering for 5 seconds.
+ * STATE_ERROR              : FMRadio{Service,Extension} had an unrecoverable error
+ *
+@property state {String}
  */
-var carInd;
-/**
- * Reference to instance of ThemeEngine class object
- * @property te {Object}
- */
-var te;
+var state = "STATE_NORMAL";
 
 /**
- * Array of signals who want subscribe in carInd 
- * @property carIndicatorSignals {string[]}
+ * Temporary 'string' frequency when in DIRECT_TUNING state
+@property directTuningFreqStr {String}
  */
-var carIndicatorSignals =  [
-                            "IviPoC_NightMode"
-                            ];
+var directTuningFreqStr;
 
-function setStationIdFrequency(freq) {
-	var freqMHz = freq / 1000000;
-	document.getElementById("station-id").innerHTML = freqMHz.toFixed(1);
-}
-
-function deleteItemClick(item) {
-	console.log(item.target);
-	console.log(item.data.html());
-	item.data.remove();
-}
-// Handler function invoked from the Crosswalk extension
-// when  bp.bpAsync is called.
-var callback = function(response) {
-console.log("bp callback js: Async>>> " + response);
+/**
+ * Useful constants
+@property constants {Object}
+ */
+var constants = {
+    'FREQ_MAX_LIMIT': 108000000,
+    'FREQ_MIN_LIMIT': 88000000
 };
 
-function addItemClick(item) {
-	console.log('addItemClick()');
-	console.log(item);
-	console.log($("input[name='item_title']").val());
-	console.log($("textarea[name='item_description']").val());
-	console.log($("[name='item_template']").contents());
+/**
+ * Station presets channel/frequency values
+ * We use the actual {int} here for values, as we have to feed FMRadioService
+ * with {int} frequencies
+@property presets {Object}
+ */
+var presets = {
+    'num_1': 100.7,
+    'num_2': 98.5,
+    'num_3': 94.3,
+    'num_4': 105.7,
+    'num_5': 89.3,
+    'num_6': 88.5
+};
 
-	// Capture the title and description data to be sent to the extension later.
-	var ti=$("input[name='item_title']").val();
-	var descr=$("textarea[name='item_description']").val();
+/**
+ * Keycode Constant
+ *
+@property KEYCODE_ESC {Number}
+ */
+var KEYCODE_ESC = 27;
 
-	var newItemTemplate = $($("[name='item_template']").html());
-	console.log(newItemTemplate);
-	newItemTemplate.find("td[name='item_title_field']").text($("input[name='item_title']").val());
-	newItemTemplate.find("td[name='item_description_field']").text($("textarea[name='item_description']").val());
-	console.log(newItemTemplate);
-	var newItem = newItemTemplate.clone();
-	newItem.find("input[name='delete_item']").click(newItem,deleteItemClick);
-	$("tbody[name='item_list_body']").append(newItem);
-	$("form[name='add_item_form']")[0].reset();
+/**
+ * Time to wait for direct tuning flashing timer
+ *
+@property DIRECT_TUNING_TIMER {Number} (in ms)
+ */
+var DIRECT_TUNING_FLASH_TIME = 1000;
 
-	// Send the title and description to the extension:
-	var jsonenc = {api:"handleItem", dest:"Item Consumer", title:ti, desc:descr};
-	console.log("stringify before bp.bpAsynch is "+JSON.stringify(jsonenc));
-	bp.bpAsync(JSON.stringify(jsonenc), callback);
+/**
+ * Interval variable used to make Digits flash
+ *
+@property flashInterval {Object}
+ */
+var flashInterval;
+
+/**
+ * Currently shown dash opacity in direct tuning animation
+ *
+@property curDashOpacity {Number}
+ */
+var curDashOpacity = 1.0;
+
+/**
+ * Utility function to replace a single char in a string by another one
+ *
+ * @method setCharAt
+ * @param  str   {String} The String in which replacement will occur
+ * @param  index {Number} The index of the char to replace
+ * @param  chr   {String} The new character
+ * @static
+ */
+function setCharAt(str, index, chr) {
+    if(index > str.length-1) return str;
+    return str.substr(0,index) + chr + str.substr(index+1);
 }
 
-function themeErrorCB (msg) {
-    console.log("Theme Error Callback: " + msg);
+/**
+ * Set StationID Big Digits frequency value
+ * This function supports input freq. as a number OR as a string.
+ * If freq. is a number : automatic truncation will happen to fit XXX.X
+ * If freq. is a string : caller needs to send correct format. No check made.
+ *
+ * @method setStationIdFrequency
+ * @param  freq {number,string} Frequency to set. Can be either string or number
+ * @static
+ */
+function setStationIdFrequency(freq, dash, opacity) {
+    if(typeof(dash)==='undefined') dash = false;
+
+    var element = document.getElementById("station-id");
+    if (typeof freq == "number" ) {
+	    var freqMHz = freq / 1000000;
+	    element.innerHTML = freqMHz.toFixed(1);
+    } else if (typeof freq == "string" ) {
+        var strLength = freq.length;
+        if (strLength > 0) {
+            var index;
+            if (freq.charAt(0) == "1") index = 2; else index = 1;
+            var subStr = freq.substr(0, Math.min(strLength-1, index) + 1);
+
+            // subStr length can never be > than index + 1;
+            if (subStr.length < (index + 1)) {
+                element.innerHTML = freq;
+            } else {
+                element.innerHTML = subStr + ".";
+            }
+
+            // Now, show the remaining digit from freq is any
+            if (freq.length > subStr.length) {
+                element.innerHTML += freq.charAt(freq.length-1);
+            }
+
+        } else {
+            element.innerHTML = freq;
+        }
+
+        // Add the "flashing dash" at the end if in direct tuning mode
+        // 'dash' should only be used with 'String' mode. Note that the
+        // is not showned on STATE_DIRECT_TUNING_FULL
+        if (dash && (state != "STATE_DIRECT_TUNING_FULL")) {
+            element.innerHTML += "<span style=\"opacity: " + opacity + ";\">_</span>";
+        }
+    } else {
+        console.error("Bad Station frequency type !");
+        return;
+    }
+    // Add the "fm" at the very end
+    element.innerHTML += '<span class="fm-designation">FM</span>';
 }
 
-function smallClick(item) {
-    console.log('smallClick()');
+/**
+ * Modify StationId Big Digits frequency according to last Direct Tuning input
+ * This method can only be called when in one of the 'direct tuning' states
+ *
+ * @method updateStationIdDigit
+ * @param  num_value {Number} Numerical value of the single digit to set
+ * @static
+ */
+function updateStationIdDigit(add, num_value) {
 
-    var jsonenc = {api:"setTheme", theme:"/usr/share/weekeyboard/blue_600.edj"};
-    console.log("RE: setTheme stringify: "+JSON.stringify(jsonenc));
-    wkb_client.clientSync(JSON.stringify(jsonenc), themeErrorCB);
-}
+    if (state.indexOf("DIRECT_TUNING") > -1) {
+        var strLength = directTuningFreqStr.length;
 
-function bigClick(item) {
-    console.log('bigClick()');
+        /* We can only start frequency value with '1', '8' or '9' */
+        if ((strLength == 0) && ((num_value != "1") &&
+                                 (num_value != "8") &&
+                                 (num_value != "9"))) {
+            return;
+        }
 
-    var jsonenc = {api:"setTheme", theme:"/usr/share/weekeyboard/blue_1080.edj"};
-    console.log("RE: setTheme stringify: "+JSON.stringify(jsonenc));
-    wkb_client.clientSync(JSON.stringify(jsonenc), themeErrorCB);
+        // First, update the state machine, since we added or removed a digit
+        switch(state) {
+            case "STATE_NORMAL":
+                console.error("STATE_ERROR: keypad-box cannot be clicked" +
+                              "(hidden) when in STATE_NORMAL");
+                break;
+            case "STATE_DIRECT_TUNING_1":
+                if (add) {
+                    directTuningFreqStr += num_value;
+                    state = "STATE_DIRECT_TUNING_2";
+                }
+                break;
+            case "STATE_DIRECT_TUNING_2":
+                if (add) {
+                    directTuningFreqStr += num_value;
+                    state = "STATE_DIRECT_TUNING_3";
+                } else {
+                    directTuningFreqStr = directTuningFreqStr.substring(0, strLength-1);
+                    state = "STATE_DIRECT_TUNING_1";
+                }
+                break;
+            case "STATE_DIRECT_TUNING_3":
+                if (add) {
+                    directTuningFreqStr += num_value;
+                    if (directTuningFreqStr.charAt(0) == "1")
+                        state = "STATE_DIRECT_TUNING_4";
+                    else
+                        state = "STATE_DIRECT_TUNING_FULL";
+                } else {
+                    directTuningFreqStr = directTuningFreqStr.substring(0, strLength-1);
+                    state = "STATE_DIRECT_TUNING_2";
+                }
+                break;
+            case "STATE_DIRECT_TUNING_4":
+                if (add) {
+                    directTuningFreqStr += num_value;
+                    state = "STATE_DIRECT_TUNING_FULL";
+                } else {
+                    directTuningFreqStr = directTuningFreqStr.substring(0, strLength-1);
+                    state = "STATE_DIRECT_TUNING_3";
+                }
+                break;
+            case "STATE_DIRECT_TUNING_FULL":
+                // We can't enter any more digits at this point.
+                if (!add) {
+                    directTuningFreqStr = directTuningFreqStr.substring(0, strLength-1);
+                    if (directTuningFreqStr.charAt(0) == "1")
+                        state = "STATE_DIRECT_TUNING_4";
+                    else
+                        state = "STATE_DIRECT_TUNING_3";
+                }
+                break;
+            case "STATE_ERROR":
+                // It's a noop
+                break;
+            default:
+                console.error("Invalid STATE in keypad-box.click !");
+        }
+        curDashOpacity = 1;
+        setStationIdFrequency(directTuningFreqStr, true, curDashOpacity);
+    } else {
+        console.error("updateStationIdDigit should be called only when in" +
+                      "one of the STATE_DIRECT_TUNING_XX modes!");
+    }
 }
 
 /* faked audio visualizer */
@@ -135,35 +261,68 @@ function fluctuate(bar) {
     });
 }
 
-
 /**
  * Initialize application components and register button events.
  *
  * @method init
  * @static
  */
-
-
 var init = function () {
-    var bootstrap = new Bootstrap(function (status) {
-	$("#topBarIcons").topBarIconsPlugin('init', 'news');
-	$("#clockElement").ClockPlugin('init', 5);
-	$("#clockElement").ClockPlugin('startTimer');
-	$('#bottomPanel').bottomPanel('init');
 
-	if (tizen.speech) {
-	    setupSpeechRecognition();
-	} else {
-	    console.log("Store: Speech Recognition not running, voice control will be unavailable");
-	}
-
-	bootstrap.themeEngine.addStatusListener(function (eData) {
-		// setThemeImageColor();
-	});
+	$(".bar").each(function(i) {
+        fluctuate($(this));
     });
-    $("input[name='add_item_button']").click(addItemClick);
-    $("input[name='small_button']").click(smallClick);
-    $("input[name='big_button']").click(bigClick);
+
+    // Keypad-container is dynamically positionned over preset-container
+    var preset = document.getElementById("presets-container");
+    var keypad = document.getElementById("keypad-container");
+    if (preset.getBoundingClientRect) {
+        var r = preset.getBoundingClientRect();
+        keypad.style.top = (r.top - 100) + "px";
+        keypad.style.left = (((r.left + r.width)/2) - (keypad.clientWidth/2)) + "px";
+    } else {
+        console.error("Browser does not support getBoundingClientRect !");
+    }
+
+    var bootstrap = new Bootstrap(function (status) {
+    	$("#topBarIcons").topBarIconsPlugin('init', 'news');
+    	$("#clockElement").ClockPlugin('init', 5);
+    	$("#clockElement").ClockPlugin('startTimer');
+    	$('#bottomPanel').bottomPanel('init');
+
+    	if (tizen.speech) {
+    	    setupSpeechRecognition();
+    	} else {
+    	    console.log("Store: Speech Recognition not running, " +
+                        "voice control will be unavailable");
+    	}
+    });
+
+	if (fmradio) {
+		// We are initializing (enabling) the FMRadioService at boot-up time.
+		try {
+			fmradio.enable(function(error) {
+				console.error("FMRadio.enable internal error : " + error.message);
+                state = "STATE_ERROR";
+                return;
+			});
+	    } catch(e) {
+            console.error("FMRadio.enable Exception caught : " + e);
+            state = "STATE_ERROR";
+            return;
+	    }
+
+		// Set initial statio-id frequency
+		var frequency = fmradio.frequency();
+		setStationIdFrequency(frequency);
+	} else {
+        // If underlying FMRadioService/Extension is not present, trouble!
+        console.error("Could not find underlying FMRadioExtension !");
+
+        /* To prevent user from accessing radio features when there's no
+         * underlying FMRadioExtension/Service, we set the state to 'error' */
+        state = "STATE_ERROR";
+    }
 };
 
 
@@ -174,59 +333,6 @@ var init = function () {
  * @static
  **/
 $(document).ready(init);
-
-	if (fmradio) {
-		// We are initializing (enabling) the FMRadioService at boot-up time.
-		try {
-			fmradio.enable(function(error) {
-				console.log("FMRadio.enable internal error : " + error.message);
-			});
-	    } catch(e) {
-	           printError("FMRadio.enable Exception caught : " + e);
-	    }
-
-		// Set initial statio-di frequency
-		var frequency = fmradio.frequency();
-		setStationIdFrequency(frequency);
-	}
-
-	$(".bar").each(function(i) {
-    fluctuate($(this));
-});
-
-/**
- * Applies selected theme to application icons 
- * @method setThemeImageColor
- * @static
- **/
-function setThemeImageColor() {
-	var imageSource;
-	$('body').find('img').each(function() {
-		var self = this;
-		imageSource = $(this).attr('src');
-
-	    if (typeof(imageSource) !== 'undefined' && $(this.parentElement).hasClass('themeImage') == false) {
-	        console.log(imageSource);
-
-	        var img = new Image();
-	        var ctx = document.createElement('canvas').getContext('2d');
-
-	        img.onload = function () {
-	            var w = ctx.canvas.width = img.width;
-	            var h = ctx.canvas.height = img.height;
-	            ctx.fillStyle = ThemeKeyColor;
-	            ctx.fillRect(0, 0, w, h);
-	            ctx.globalCompositeOperation = 'destination-in';
-	            ctx.drawImage(img, 0, 0);
-
-	            $(self).attr('src', ctx.canvas.toDataURL());
-	            $(self).hide(0, function() { $(self).show();});
-	        };
-
-	        img.src = imageSource;
-	    }
-	});
-}
 
 function setupSpeechRecognition() {
 	console.log("Store setupSpeechRecognition");
@@ -247,46 +353,163 @@ function setupSpeechRecognition() {
 	});
 }
 
-$( "#TuneDownBtn" ).click(function() {
-	var frequency = fmradio.frequency() - 100000;
-	if (frequency < FREQ_MIN_LIMIT) {
-		frequency = FREQ_MAX_LIMIT;
-	}
-	console.log("main.js : setting frequency to " + frequency);
+/****************************************************************************
+ * TIMER CALLBACKS    *******************************************************
+ ****************************************************************************/
 
-	if (fmradio) {
-		try {
-			fmradio.setFrequency(frequency, function(error) {
-				console.log("<br>main.js : " + error.message);
-	        });
-		} catch(e) {
-			printError("<br>main.js:radio.SetFrequency catch : " + e);
-		}
-	}
+function flashStationIdDigits() {
 
-	// Change the Station ID from the JS layer for now
-	// TODO: check if better to update from a onFrequenyChanged handler
-	setStationIdFrequency(frequency);
+    // we just toggle dash opacity while animating direct tuning
+    if (curDashOpacity == 0)
+        curDashOpacity = 1;
+    else
+        curDashOpacity = 0;
+
+    setStationIdFrequency(directTuningFreqStr, true, curDashOpacity);
+}
+
+/****************************************************************************
+ * JQUERY EVENT HANDLERS    *************************************************
+ ****************************************************************************/
+
+/**
+ * Catch key up events (keyboard keys)
+ *
+ * @method keyup
+ * @param  handler {function} Callback called when element is clicked
+ * @static
+ */
+$(document).keydown(function(e) {
+    if (e.keyCode == KEYCODE_ESC) {
+        if (state.indexOf("STATE_DIRECT_TUNING") >= 0) {
+            var keypad = document.getElementById("keypad-container");
+            var preset = document.getElementById("presets-container");
+            keypad.classList.add("hidden");
+            preset.classList.remove("hidden");
+            clearInterval(flashInterval);
+            state = "STATE_NORMAL";
+            setStationIdFrequency(fmradio.frequency());
+        }
+    }
 });
 
+/**
+ * Decreases FMRadioService frequency by 0.1 MHz
+ *
+ * @method TuneDownBtn.click
+ * @param  handler {function} Callback called when element is clicked
+ * @static
+ */
+$( "#TuneDownBtn" ).click(function() {
+    // Interaction with 'manual tuning' is only possible on STATE_NORMAL
+    if (state == "STATE_NORMAL") {
+    	var frequency = fmradio.frequency() - 100000;
+    	if (frequency < constants.FREQ_MIN_LIMIT) {
+    		frequency = constants.FREQ_MAX_LIMIT;
+    	}
+    	console.log("main.js : setting frequency to " + frequency);
+
+    	if (fmradio) {
+    		try {
+    			fmradio.setFrequency(frequency, function(error) {
+    				console.log("<br>main.js : " + error.message);
+    	        });
+    		} catch(e) {
+    			printError("<br>main.js:radio.SetFrequency catch : " + e);
+    		}
+    	}
+
+    	// Change the Station ID from the JS layer for now
+    	// TODO: check if better to update from a onFrequenyChanged handler
+    	setStationIdFrequency(frequency);
+    }
+});
+
+
+/**
+ * Increases FMRadioService frequency by 0.1 MHz
+ *
+ * @method TuneUpBtn.click
+ * @param  handler {function} Callback called when element is clicked
+ * @static
+ */
 $( "#TuneUpBtn" ).click(function() {
-	var frequency = fmradio.frequency() + 100000;
-	if (frequency > FREQ_MAX_LIMIT) {
-		frequency = FREQ_MIN_LIMIT;
-	}
-	console.log("main.js : setting frequency to " + frequency);
+    // Interaction with 'manual tuning' is only possible on STATE_NORMAL
+    if (state == "STATE_NORMAL") {
+    	var frequency = fmradio.frequency() + 100000;
+    	if (frequency > constants.FREQ_MAX_LIMIT) {
+    		frequency = constants.FREQ_MIN_LIMIT;
+    	}
+    	console.log("main.js : setting frequency to " + frequency);
 
-	if (fmradio) {
-		try {
-			fmradio.setFrequency(frequency, function(error) {
-				console.log("<br>main.js : " + error.message);
-	        });
-		} catch(e) {
-			printError("<br>main.js:radio.SetFrequency catch : " + e);
-		}
-	}
+    	if (fmradio) {
+    		try {
+    			fmradio.setFrequency(frequency, function(error) {
+    				console.log("<br>main.js : " + error.message);
+    	        });
+    		} catch(e) {
+    			printError("<br>main.js:radio.SetFrequency catch : " + e);
+    		}
+    	}
 
-	// Change the Station ID from the JS layer for now
-	// TODO: check if better to update from a onFrequenyChanged handler
-	setStationIdFrequency(frequency);
+    	// Change the Station ID from the JS layer for now
+    	// TODO: check if better to update from a onFrequenyChanged handler
+    	setStationIdFrequency(frequency);
+    }
+});
+
+/**
+ * React to user clicking on big numbers station frequency
+ * When station-id is clicked, a state machine starts to track
+ * user entering big numbers station frequency number by number
+ *
+ * @method station-id.click
+ * @param  handler {function} Callback called when element is clicked
+ * @static
+ */
+$( "#station-id" ).click(function() {
+    var keypad = document.getElementById("keypad-container");
+    var preset = document.getElementById("presets-container");
+
+    /* state machine states to validate in this element click
+     * For clarity of all the states, we use a switch-case here
+     * even if many branches do the exact same thing */
+    switch(state) {
+        case "STATE_NORMAL":
+            state = "STATE_DIRECT_TUNING_1";
+            preset.classList.add("hidden");
+            keypad.classList.remove("hidden");
+            directTuningFreqStr = "";
+            curDashOpacity = 1;
+            setStationIdFrequency(directTuningFreqStr, true, curDashOpacity);
+            flashInterval = setInterval(flashStationIdDigits, DIRECT_TUNING_FLASH_TIME);
+            break;
+        default:
+            console.log("MODAL keypad is currently shown. Can't click here")
+    }
+});
+
+/**
+ * React to user clicking on keypad num buttons
+ *
+ * @method keypad-box.click
+ * @param  handler {function} Callback called when element is clicked
+ * @static
+ */
+$( ".clickable-key" ).click(function() {
+    // the clicked element's index
+    var num = $(this).attr('index');
+    updateStationIdDigit(true, num);
+});
+
+
+/**
+ * React to user clicking on the DEL keypad button
+ *
+ * @method key_DEL.click
+ * @param  handler {function} Callback called when element is clicked
+ * @static
+ */
+$( "#key_DEL" ).click(function() {
+    updateStationIdDigit(false);
 });
