@@ -559,7 +559,7 @@ sdrjfm_init (RadioServer *server, void (*playing_cb) (GstData*))
     data->server = server;
     server->gstData = data;
     data->pipeline =
-        gst_parse_launch ("sdrjfmsrc name=sdrjfm ! audioresample ! pulsesink",
+        gst_parse_launch ("sdrjfmsrc name=sdrjfm ! audioresample ! queue ! pulsesink",
         &error);
     g_assert_no_error (error);
     g_assert (data->pipeline != NULL);
