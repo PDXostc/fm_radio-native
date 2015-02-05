@@ -406,7 +406,7 @@ server_setfrequency (RadioServer *server, gdouble value_in, GError **error)
     g_object_set (server->gstData->fmsrc, "frequency", (gint) value_in, NULL);
     server->frequency = value_in;
 
-    g_message("FMRadioService: frequency set to : %i", value_in);
+    g_message("FMRadioService: frequency set to : %f", value_in);
     // TODO: Return false and set error in case something went wrong.
     return TRUE;
 }
