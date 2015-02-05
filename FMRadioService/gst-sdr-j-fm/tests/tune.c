@@ -134,7 +134,7 @@ teardown (TestData *data)
 static gboolean
 test_timed_out_cb (gpointer user_data)
 {
-  g_assert_false ("Test timed out");
+  g_assert ("Test timed out" == 0);
   return FALSE;
 }
 
