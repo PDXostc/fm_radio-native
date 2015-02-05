@@ -204,6 +204,10 @@ body {
   color: #fe9c00;
 }
 
+.dna-green {
+  color: #03fe00;
+}
+
 .title-reflect {
   -webkit-box-reflect: below -18px -webkit-gradient(linear, left top, left bottom, from(transparent), to(rgba(250, 250, 225, 0.4) ) );
 }

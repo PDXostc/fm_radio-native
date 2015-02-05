@@ -8,7 +8,7 @@
 * IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
 * PARTICULAR PURPOSE.
 *
-* Filename:	            main.js
+* Filename:             main.js
 * Version:              1.0
 * Date:                 Feb. 2015
 * Project:              DNA_FMRadio
@@ -82,10 +82,12 @@ var DIRECT_TUNING_FLASH_TIME = 1000;
 
 /**
  * Interval variable used to make Digits flash
+ * It is important to set the flashInterval to 'null' when
+ * not in use to indicate that there's no animation going on
  *
 @property flashInterval {Object}
  */
-var flashInterval;
+var flashInterval = null;
 
 /**
  * Currently shown dash opacity in direct tuning animation
@@ -109,6 +111,75 @@ function setCharAt(str, index, chr) {
 }
 
 /**
+ * Helper function to clip a number between two limits
+ *
+ * @method clip
+ * @param  n     {Number} The number to clip
+ * @param  lower {Number} The lower limit
+ * @param  upper {Number} The upper limit
+ * @static
+ */
+function clip(n, lower, upper) {
+  return Math.max(lower, Math.min(n, upper));
+}
+
+/**
+ * Validates if the passed-in frequency (String) is in the correct
+ * range / follows the right format.
+ * This function supports input freq. as a number OR as a string.
+ * If freq. is a number : it is assumed in Hz and validation is against range only
+ * If freq. is a string : it is assumed string representation of a float (with .)
+ *
+ * @method freqIsValid
+ * @param  freq {String} Frequency to validate.
+ * @static
+ */
+function freqIsValid(freq) {
+    console.error("DEBUG: freqIsValid(" + freq + ") called");
+    var freqHz;
+    if (typeof freq == "number" ) {
+        // the 'Number' version assume freq. already in Hz
+        freqHz = freq;
+    } else if (typeof freq == "string" ) {
+        // basic initial checks
+        if (freq.charAt(freq.length-1) == ".") {
+            console.error("DEBUG: freqIsValid : FALSE");
+            return false;
+        }
+        freqHz = (parseFloat(freq)) * 1000000;
+    }
+
+    // then check against the freq range.
+    if ((freqHz >= constants.FREQ_MIN_LIMIT) &&
+        (freqHz <= constants.FREQ_MAX_LIMIT)) {
+        console.error("DEBUG: freqIsValid : TRUE");
+        return true;
+    } else {
+        console.error("DEBUG: freqIsValid : FALSE");
+        return false;
+    }
+}
+
+/**
+ * Set the actual FMRadio frequency (tune-in)
+ *
+ * @method setFMRadioFrequency
+ * @param  freqHz {Number}
+ * @static
+ */
+function setFMRadioFrequency(freqHz) {
+    if (fmradio) {
+        try {
+            fmradio.setFrequency(freqHz, function(error) {
+                console.error("fmradio.setFrequency error : " + error.message);
+            });
+        } catch(e) {
+            console.error("setFMRadioFrequency error catch : " + e);
+        }
+    }
+}
+
+/**
  * Set StationID Big Digits frequency value
  * This function supports input freq. as a number OR as a string.
  * If freq. is a number : automatic truncation will happen to fit XXX.X
@@ -123,8 +194,8 @@ function setStationIdFrequency(freq, dash, opacity) {
 
     var element = document.getElementById("station-id");
     if (typeof freq == "number" ) {
-	    var freqMHz = freq / 1000000;
-	    element.innerHTML = freqMHz.toFixed(1);
+        var freqMHz = freq / 1000000;
+        element.innerHTML = freqMHz.toFixed(1);
     } else if (typeof freq == "string" ) {
         var strLength = freq.length;
         if (strLength > 0) {
@@ -144,6 +215,21 @@ function setStationIdFrequency(freq, dash, opacity) {
                 element.innerHTML += freq.charAt(freq.length-1);
             }
 
+            // Lastly, check for validity and set color and OK button accordingly.
+            var okBtn = document.getElementById("numOK");
+            if (!freqIsValid(element.innerHTML)) {
+                element.classList.remove("dna-green");
+                element.classList.add("dna-orange");
+
+                okBtn.classList.remove("dna-green");
+                okBtn.classList.add("dna-orange");
+            } else {
+                element.classList.add("dna-green");
+                element.classList.remove("dna-orange");
+
+                okBtn.classList.add("dna-green");
+                okBtn.classList.remove("dna-orange");
+            }
         } else {
             element.innerHTML = freq;
         }
@@ -208,8 +294,10 @@ function updateStationIdDigit(add, num_value) {
                     directTuningFreqStr += num_value;
                     if (directTuningFreqStr.charAt(0) == "1")
                         state = "STATE_DIRECT_TUNING_4";
-                    else
+                    else {
+                        stopFlash();
                         state = "STATE_DIRECT_TUNING_FULL";
+                    }
                 } else {
                     directTuningFreqStr = directTuningFreqStr.substring(0, strLength-1);
                     state = "STATE_DIRECT_TUNING_2";
@@ -218,6 +306,7 @@ function updateStationIdDigit(add, num_value) {
             case "STATE_DIRECT_TUNING_4":
                 if (add) {
                     directTuningFreqStr += num_value;
+                    stopFlash();
                     state = "STATE_DIRECT_TUNING_FULL";
                 } else {
                     directTuningFreqStr = directTuningFreqStr.substring(0, strLength-1);
@@ -227,6 +316,7 @@ function updateStationIdDigit(add, num_value) {
             case "STATE_DIRECT_TUNING_FULL":
                 // We can't enter any more digits at this point.
                 if (!add) {
+                    startFlash();
                     directTuningFreqStr = directTuningFreqStr.substring(0, strLength-1);
                     if (directTuningFreqStr.charAt(0) == "1")
                         state = "STATE_DIRECT_TUNING_4";
@@ -246,6 +336,55 @@ function updateStationIdDigit(add, num_value) {
         console.error("updateStationIdDigit should be called only when in" +
                       "one of the STATE_DIRECT_TUNING_XX modes!");
     }
+}
+
+/**
+ * Start "flashing dash" interval timer animation
+ *
+ * @method startFlash
+ * @static
+ */
+function startFlash() {
+    flashInterval = setInterval(flashStationIdDigits, DIRECT_TUNING_FLASH_TIME);
+}
+
+/**
+ * Stop "flashing dash" interval timer animation
+ *
+ * @method stopFlash
+ * @static
+ */
+function stopFlash() {
+    clearInterval(flashInterval);
+    flashInterval = null;
+}
+
+/**
+ * Put state back to Normal state.
+ *
+ * @method goBackToNormal
+ * @param  num_value {Number} Numerical value of the single digit to set
+ * @static
+ */
+function goBackToNormal() {
+    var keypad = document.getElementById("keypad-container");
+    var preset = document.getElementById("presets-container");
+    var okBtn = document.getElementById("numOK");
+    var stationId = document.getElementById("station-id");
+
+    // Show/Hide/Stop back
+    keypad.classList.add("hidden");
+    preset.classList.remove("hidden");
+    stopFlash();
+
+    // Put state back to normal
+    state = "STATE_NORMAL";
+
+    // Put colors back
+    okBtn.classList.remove("dna-green");
+    okBtn.classList.add("dna-orange");
+    stationId.classList.remove("dna-green");
+    stationId.classList.add("dna-orange");
 }
 
 /* faked audio visualizer */
@@ -269,7 +408,7 @@ function fluctuate(bar) {
  */
 var init = function () {
 
-	$(".bar").each(function(i) {
+    $(".bar").each(function(i) {
         fluctuate($(this));
     });
 
@@ -285,37 +424,37 @@ var init = function () {
     }
 
     var bootstrap = new Bootstrap(function (status) {
-    	$("#topBarIcons").topBarIconsPlugin('init', 'news');
-    	$("#clockElement").ClockPlugin('init', 5);
-    	$("#clockElement").ClockPlugin('startTimer');
-    	$('#bottomPanel').bottomPanel('init');
+        $("#topBarIcons").topBarIconsPlugin('init', 'news');
+        $("#clockElement").ClockPlugin('init', 5);
+        $("#clockElement").ClockPlugin('startTimer');
+        $('#bottomPanel').bottomPanel('init');
 
-    	if (tizen.speech) {
-    	    setupSpeechRecognition();
-    	} else {
-    	    console.log("Store: Speech Recognition not running, " +
+        if (tizen.speech) {
+            setupSpeechRecognition();
+        } else {
+            console.log("Store: Speech Recognition not running, " +
                         "voice control will be unavailable");
-    	}
+        }
     });
 
-	if (fmradio) {
-		// We are initializing (enabling) the FMRadioService at boot-up time.
-		try {
-			fmradio.enable(function(error) {
-				console.error("FMRadio.enable internal error : " + error.message);
+    if (fmradio) {
+        // We are initializing (enabling) the FMRadioService at boot-up time.
+        try {
+            fmradio.enable(function(error) {
+                console.error("FMRadio.enable internal error : " + error.message);
                 state = "STATE_ERROR";
                 return;
-			});
-	    } catch(e) {
+            });
+        } catch(e) {
             console.error("FMRadio.enable Exception caught : " + e);
             state = "STATE_ERROR";
             return;
-	    }
+        }
 
-		// Set initial statio-id frequency
-		var frequency = fmradio.frequency();
-		setStationIdFrequency(frequency);
-	} else {
+        // Set initial statio-id frequency
+        var frequency = fmradio.frequency();
+        setStationIdFrequency(frequency);
+    } else {
         // If underlying FMRadioService/Extension is not present, trouble!
         console.error("Could not find underlying FMRadioExtension !");
 
@@ -335,22 +474,22 @@ var init = function () {
 $(document).ready(init);
 
 function setupSpeechRecognition() {
-	console.log("Store setupSpeechRecognition");
-	Speech.addVoiceRecognitionListener({
-		onapplicationinstall : function() {
-			console.log("Speech application install invoked");
-			if (_applicationDetail.id !== undefined) {
-				StoreLibrary.installApp(_applicationDetail.id);
-			}
-		},
-		onapplicationuninstall : function() {
-			console.log("Speech application uninstall invoked");
-			if (_applicationDetail.id !== undefined) {
-				StoreLibrary.uninstallApp(_applicationDetail.id);
-			}
-		}
+    console.log("Store setupSpeechRecognition");
+    Speech.addVoiceRecognitionListener({
+        onapplicationinstall : function() {
+            console.log("Speech application install invoked");
+            if (_applicationDetail.id !== undefined) {
+                StoreLibrary.installApp(_applicationDetail.id);
+            }
+        },
+        onapplicationuninstall : function() {
+            console.log("Speech application uninstall invoked");
+            if (_applicationDetail.id !== undefined) {
+                StoreLibrary.uninstallApp(_applicationDetail.id);
+            }
+        }
 
-	});
+    });
 }
 
 /****************************************************************************
@@ -382,12 +521,7 @@ function flashStationIdDigits() {
 $(document).keydown(function(e) {
     if (e.keyCode == KEYCODE_ESC) {
         if (state.indexOf("STATE_DIRECT_TUNING") >= 0) {
-            var keypad = document.getElementById("keypad-container");
-            var preset = document.getElementById("presets-container");
-            keypad.classList.add("hidden");
-            preset.classList.remove("hidden");
-            clearInterval(flashInterval);
-            state = "STATE_NORMAL";
+            goBackToNormal();
             setStationIdFrequency(fmradio.frequency());
         }
     }
@@ -403,25 +537,17 @@ $(document).keydown(function(e) {
 $( "#TuneDownBtn" ).click(function() {
     // Interaction with 'manual tuning' is only possible on STATE_NORMAL
     if (state == "STATE_NORMAL") {
-    	var frequency = fmradio.frequency() - 100000;
-    	if (frequency < constants.FREQ_MIN_LIMIT) {
-    		frequency = constants.FREQ_MAX_LIMIT;
-    	}
-    	console.log("main.js : setting frequency to " + frequency);
+        var frequency = fmradio.frequency() - 100000;
 
-    	if (fmradio) {
-    		try {
-    			fmradio.setFrequency(frequency, function(error) {
-    				console.log("<br>main.js : " + error.message);
-    	        });
-    		} catch(e) {
-    			printError("<br>main.js:radio.SetFrequency catch : " + e);
-    		}
-    	}
+        if (frequency < constants.FREQ_MIN_LIMIT)
+            frequency = constants.FREQ_MAX_LIMIT;
 
-    	// Change the Station ID from the JS layer for now
-    	// TODO: check if better to update from a onFrequenyChanged handler
-    	setStationIdFrequency(frequency);
+        setFMRadioFrequency(frequency);
+        console.log("main.js : setting frequency to " + frequency);
+
+        // Change the Station ID from the JS layer for now
+        // TODO: check if better to update from a onFrequenyChanged handler
+        setStationIdFrequency(frequency);
     }
 });
 
@@ -436,25 +562,19 @@ $( "#TuneDownBtn" ).click(function() {
 $( "#TuneUpBtn" ).click(function() {
     // Interaction with 'manual tuning' is only possible on STATE_NORMAL
     if (state == "STATE_NORMAL") {
-    	var frequency = fmradio.frequency() + 100000;
-    	if (frequency > constants.FREQ_MAX_LIMIT) {
-    		frequency = constants.FREQ_MIN_LIMIT;
-    	}
-    	console.log("main.js : setting frequency to " + frequency);
+        var frequency = fmradio.frequency() + 100000;
 
-    	if (fmradio) {
-    		try {
-    			fmradio.setFrequency(frequency, function(error) {
-    				console.log("<br>main.js : " + error.message);
-    	        });
-    		} catch(e) {
-    			printError("<br>main.js:radio.SetFrequency catch : " + e);
-    		}
-    	}
+        if (frequency > constants.FREQ_MAX_LIMIT)
+            frequency = constants.FREQ_MIN_LIMIT;
 
-    	// Change the Station ID from the JS layer for now
-    	// TODO: check if better to update from a onFrequenyChanged handler
-    	setStationIdFrequency(frequency);
+        frequency = clip (frequency, constants.FREQ_MIN_LIMIT,
+                                     constants.FREQ_MAX_LIMIT);
+        setFMRadioFrequency(frequency);
+        console.log("main.js : setting frequency to " + frequency);
+
+        // Change the Station ID from the JS layer for now
+        // TODO: check if better to update from a onFrequenyChanged handler
+        setStationIdFrequency(frequency);
     }
 });
 
@@ -480,9 +600,9 @@ $( "#station-id" ).click(function() {
             preset.classList.add("hidden");
             keypad.classList.remove("hidden");
             directTuningFreqStr = "";
+            startFlash();
             curDashOpacity = 1;
             setStationIdFrequency(directTuningFreqStr, true, curDashOpacity);
-            flashInterval = setInterval(flashStationIdDigits, DIRECT_TUNING_FLASH_TIME);
             break;
         default:
             console.log("MODAL keypad is currently shown. Can't click here")
@@ -502,7 +622,6 @@ $( ".clickable-key" ).click(function() {
     updateStationIdDigit(true, num);
 });
 
-
 /**
  * React to user clicking on the DEL keypad button
  *
@@ -512,4 +631,26 @@ $( ".clickable-key" ).click(function() {
  */
 $( "#key_DEL" ).click(function() {
     updateStationIdDigit(false);
+});
+
+/**
+ * React to user clicking on the OK keypad button
+ *
+ * @method key_OK.click
+ * @param  handler {function} Callback called when element is clicked
+ * @static
+ */
+$( "#key_OK" ).click(function() {
+    console.error("DEBUG: key_OK.click called..." + directTuningFreqStr);
+    if (state == "STATE_DIRECT_TUNING_FULL") {
+        // Changing the actual tuned frequency is only done
+        // through setStationIdFrequency with Number parameter
+        var freqHz = (parseFloat(directTuningFreqStr)) * 100000;
+        console.error("DEBUG: freqHz..." + freqHz);
+        if (freqIsValid(freqHz)) {
+            setFMRadioFrequency(freqHz);
+            setStationIdFrequency(freqHz);
+            goBackToNormal();
+        }
+    }
 });
