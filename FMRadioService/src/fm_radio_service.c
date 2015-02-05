@@ -612,7 +612,7 @@ main(int argc, char** argv)
 
     radio_obj = g_object_new(TYPE_RADIO_SERVER, NULL);
     if (radio_obj == NULL)
-        g_error("Failed to create one Value instance.", TRUE);
+        g_error("Failed to create one Value instance.");
 
     gst_init(&argc, &argv);
 
