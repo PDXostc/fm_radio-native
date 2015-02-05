@@ -53,6 +53,8 @@ GST_DEBUG_CATEGORY_EXTERN (sdrjfm_debug);
 #define DEFAULT_MAX_FREQUENCY   108100000
 #define DEFAULT_FREQUENCY_STEP     100000
 #define DEFAULT_FREQUENCY        96700000
+#define DEFAULT_INTERVAL             1000
+#define DEFAULT_THRESHOLD              20
 
 enum
 {
@@ -60,7 +62,9 @@ enum
   PROP_MIN_FREQUENCY,
   PROP_MAX_FREQUENCY,
   PROP_FREQUENCY_STEP,
-  PROP_FREQUENCY
+  PROP_FREQUENCY,
+  PROP_INTERVAL,
+  PROP_THRESHOLD
 };
 
 /* signals and args */
@@ -126,6 +130,14 @@ static void
     case PROP_FREQUENCY:
       gst_sdrjfm_src_set_frequency (self, g_value_get_int (value));
       break;
+    case PROP_INTERVAL:
+      self->interval = g_value_get_int (value);
+      GST_DEBUG_OBJECT (self, "Set interval to %i from %i",
+			self->interval, g_value_get_int (value));
+      break;
+    case PROP_THRESHOLD:
+      self->threshold = g_value_get_int (value);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -154,6 +166,12 @@ gst_sdrjfm_src_get_property (GObject * object, guint prop_id,
       break;
     case PROP_FREQUENCY:
       g_value_set_int (value, gst_sdrjfm_src_get_frequency (self));
+      break;
+    case PROP_INTERVAL:
+      g_value_set_int (value, self->interval);
+      break;
+    case PROP_THRESHOLD:
+      g_value_set_int (value, self->threshold);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -301,8 +319,8 @@ gst_sdrjfm_src_station_found (int32_t frequency, void *user_data)
 static void
 gst_sdrjfm_src_do_seek(GstSdrjfmSrc * self, int32_t step)
 {
-  self->radio->seek(20, self->min_freq, self->max_freq, step,
-    1000, gst_sdrjfm_src_station_found, self);
+  self->radio->seek(self->threshold, self->min_freq, self->max_freq, step,
+    self->interval, gst_sdrjfm_src_station_found, self);
 }
 
 static void
@@ -332,6 +350,8 @@ gst_sdrjfm_src_init (GstSdrjfmSrc * self)
   self->max_freq = DEFAULT_MAX_FREQUENCY;
   self->freq_step = DEFAULT_FREQUENCY_STEP;
   self->frequency = DEFAULT_FREQUENCY;
+  self->interval = DEFAULT_INTERVAL;
+  self->threshold = DEFAULT_THRESHOLD;
 
   //basrc->latency_time = 132000; /* base on buffer size */
   //basrc->buffer_time = 8 * basrc->latency_time;
@@ -387,6 +407,22 @@ gst_sdrjfm_src_class_init (GstSdrjfmSrcClass * klass)
       g_param_spec_int ("frequency", "Frequency",
           "Frequency to receive", 0, G_MAXINT, DEFAULT_FREQUENCY,
     static_cast<GParamFlags>(G_PARAM_READWRITE | GST_PARAM_MUTABLE_PLAYING | G_PARAM_STATIC_STRINGS)));
+
+  g_object_class_install_property (gobject_class, PROP_INTERVAL,
+      g_param_spec_int ("interval", "Interval",
+			"Interval between frequency hops during seeks",
+			0, G_MAXINT, DEFAULT_INTERVAL,
+			static_cast<GParamFlags>(G_PARAM_READWRITE
+						 | GST_PARAM_MUTABLE_PLAYING
+						 | G_PARAM_STATIC_STRINGS)));
+ 
+  g_object_class_install_property (gobject_class, PROP_THRESHOLD,
+      g_param_spec_int ("threshold", "Threshold",
+			"Signal-to-noise threshold to consider a station present during seeks",
+			0, G_MAXINT, DEFAULT_THRESHOLD,
+			static_cast<GParamFlags>(G_PARAM_READWRITE
+						 | GST_PARAM_MUTABLE_PLAYING
+						 | G_PARAM_STATIC_STRINGS)));
 
   signals[SIGNAL_SEEK_UP] =
       g_signal_new ("seek-up", G_TYPE_FROM_CLASS (klass),

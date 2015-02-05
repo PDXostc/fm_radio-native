@@ -1,9 +1,7 @@
 TESTS = tune.sh
 TESTS_ENVIRONMENT = GST_PLUGIN_PATH="$(top_builddir)/src/.libs"
 
-noinst_PROGRAMS = tune
+AM_CFLAGS= $(GST_CFLAGS)
+AM_LDFLAGS= $(GST_LIBS)
 
-tune_SOURCES = tune.c
-tune_CFLAGS= $(GST_CFLAGS)
-tune_LDADD= $(GST_LIBS)
-
+noinst_PROGRAMS = tune optimise

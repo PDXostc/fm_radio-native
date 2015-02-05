@@ -34,10 +34,26 @@ typedef struct _GstSdrjfmSrcClass GstSdrjfmSrcClass;
 struct _GstSdrjfmSrc {
   GstAudioSrc    src;
 
+  /** The receiver frequency, in Hz */
   gint frequency;
+  /** Lower bound frequency for seeking, in Hz */
   gint min_freq;
+  /** Upper bound frequency for seeking, in Hz */
   gint max_freq;
+  /** The amount, in Hz, by which the frequency is increased
+   * in each iteration during a seek.  The sign of this variable
+   * indicates the direction of the seek.
+   */
   gint freq_step;
+  /** The time, in milliseconds, allowed for sampling a frequency
+   * during seeking.
+   */
+  gint interval;
+  /** The signal-to-noise ratio beyond which a station is considered
+   * found during seeking.  The units of this variable are an internal
+   * representation.
+   */
+  gint threshold;
 
   RadioInterface *radio;
 };

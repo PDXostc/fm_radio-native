@@ -296,8 +296,12 @@ void	fmProcessor::setAttenuation (int16_t at) {
 	Gain	= at;
 }
 
-void	fmProcessor::startScanning	(StationCallback callback, void *userdata) {
+void	fmProcessor::startScanning	(StationCallback callback, void *userdata,
+					 int16_t threshold) {
 	lockScan();
+	if (threshold != -1)
+		thresHold = threshold;
+
 	scanning	= true;
 	scanCallback    = callback;
 	scanUserdata    = userdata;
@@ -396,10 +400,11 @@ int16_t		audioIndex	= 0;
 	            float signal	= get_db (getSignal	(scanBuffer, 1024), 256);
 	            float noise		= get_db (getNoise	(scanBuffer, 1024), 256);
 		    float ratio         = signal - noise;
+		    GST_TRACE("SnR check, signal: %f, noise: %f, ratio: %f (threshold: %i)",
+			      signal, noise, ratio, this -> thresHold);
 	            if (ratio > this -> thresHold) {
-	               fprintf (stderr, "signal found %f %f\n", signal, noise);
-		       GST_DEBUG("Station found; signal: %f, noise: %f, ratio: %f",
-				 signal, noise, ratio);
+		       GST_DEBUG("Station found; signal: %f, noise: %f, ratio: %f (threshold: %i)",
+				 signal, noise, ratio, this -> thresHold);
 		       scanCallback(myRig -> getVFOFrequency(), scanUserdata);
 		       scanning = false;
 	            }

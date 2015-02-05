@@ -85,7 +85,8 @@ public:
 	DSPFLOAT	get_noiseStrength	(void);
 	DSPFLOAT	get_dcComponent		(void);
 	bool		isLocked		(void);
-	void		startScanning		(StationCallback callback, void *userdata);
+	void		startScanning		(StationCallback callback, void *userdata,
+						 int16_t thresHold = -1);
 	void		stopScanning		(void);
 	bool		isScanning		(void);
 	const char *	nameofDecoder	(void);

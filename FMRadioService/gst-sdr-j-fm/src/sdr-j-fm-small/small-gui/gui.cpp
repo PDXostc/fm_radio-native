@@ -243,7 +243,7 @@ void	RadioInterface::seek (int16_t threshold,
 
 	iterateSeekFrequency ();
 
-	myFMprocessor -> startScanning (&RadioInterface::stationCallback, this);
+	myFMprocessor -> startScanning (&RadioInterface::stationCallback, this, threshold);
 
 	periodicClockId	= gst_clock_new_periodic_id (systemClock,
 						     gst_clock_get_time(systemClock),
@@ -294,7 +294,9 @@ void	RadioInterface::stationCallback(int32_t frequency) {
 	StationCallback cb = seekCallback;
 	void *userdata = seekUserdata;
 
+	GST_DEBUG("Station found, cancelling seek timeout...");
 	cancelSeekTimeout ();
+	GST_DEBUG("...seek timeout cancelled");
 	resetSeekMembers ();
 
 	cb(frequency, userdata);
@@ -306,9 +308,12 @@ gboolean RadioInterface::seekTimeout (GstClock *clock, GstClockTime time,
 }
 
 gboolean RadioInterface::seekTimeout () {
-	if (!myFMprocessor -> isScanning ())
+	if (!myFMprocessor -> isScanning ()) {
+		GST_DEBUG("Seek timeout while not scanning; returning with final");
 		return FALSE;
+	}
 
+	GST_DEBUG("Seek timeout, iterating frequency");
 	iterateSeekFrequency ();
 
 	return TRUE;
