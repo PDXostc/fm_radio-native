@@ -43,6 +43,14 @@ In an Ubuntu shell:
 
             ## You will notice that the script also copies the "install_rpms.sh" script over.
 
+  * Make sure your FM radio dongle is up and running
+
+        sudo cp blacklist-rtlsdr.conf /etc/modprobe.d
+
+        sudo cp 99-librtlsdr.rules /etc/udev/rules.d
+
+        sudo reboot
+
 
 *** on TARGET DEVICE ***
 
