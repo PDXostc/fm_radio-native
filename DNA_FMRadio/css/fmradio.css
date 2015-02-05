@@ -11,7 +11,7 @@ body {
   font-size: 7rem;
 }
 
-#keypad-container {
+#presets-container {
   width: 925px;
   height: 312px;
   flex-direction: column;
@@ -19,6 +19,39 @@ body {
   justify-content: space-between;
   font-weight: bold;
   margin: 0 8%;
+}
+
+#keypad-container {
+  /* position: absolute for an out-of-band positionning */
+  position: absolute;
+  /* 'top' and 'left' coordinates will be set dynamically */
+  width: 350px;
+  height: 312px;
+  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  font-weight: bold;
+  margin: 0 8%;
+}
+
+/* z-index : "popup" (float) behavior
+ * pointer-events : still get click events on the pop-up */
+.overlay {
+  position: absolute:
+  pointer-events: none;
+  z-index: 100;
+}
+
+*html .overlay {
+  position: absolute;
+}
+
+.hidden {
+    visibility: hidden;
+}
+
+.absent {
+    display: none;
 }
 
 .flex-container-fm {
@@ -58,6 +91,10 @@ body {
   order: 3;
 }
 
+.fourth_position {
+  order: 4;
+}
+
 .flex-fm-row {
   font-family: letsGoDigital;
   flex-direction: row;
@@ -81,8 +118,44 @@ body {
   box-shadow: inset 5px -5px 9px 1px rgba(0, 0, 0, 0.59);
 }
 
+.keypad-box {
+  border: 1px solid #373636;
+  background-color: #202325;
+  padding: 5px;
+  font-family: letsGoDigital;
+  font-weight: 700;
+  font-size: 87px;
+  width: 62px;
+  height: 62px;
+  line-height: 62px;
+  text-align: center;
+  float: right;
+  margin: 0 10px;
+  -webkit-box-shadow: inset 5px -5px 9px 1px rgba(0, 0, 0, 0.5);
+  box-shadow: inset 5px -5px 9px 1px rgba(0, 0, 0, 0.59);
+}
+
+
+/* TODO: remove that !!
+// This class is used to tell clickable keypad-boxes from non-clickable ones 
+.clickable-key {
+  opacity: 1.0;
+}*/
+
 .cancel-sst {
   background-color: #ee3225;
+  color: #fff;
+  opacity: .8;
+  float: none;
+  font-size: 6rem;
+  line-height: 0;
+  box-shadow: inset -1px -1px 22px 1px rgba(0, 0, 0, 0.5);
+  display: block;
+  margin: 0 auto 70px;
+}
+
+.direct-tune-sst {
+  background-color: #555555;
   color: #fff;
   opacity: .8;
   float: none;

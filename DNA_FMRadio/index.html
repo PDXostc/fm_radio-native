@@ -8,85 +8,99 @@
  *
 -->
 <html>
-	<head>
-		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-		<title>FM RADIO</title>
-		<meta name="viewport" content="width=1080, height=1920, user-scalable=no" />
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <title>FM RADIO</title>
+        <meta name="viewport" content="width=1080, height=1920, user-scalable=no" />
 
-		<link rel="stylesheet" href="./DNA_common/css/style.css"/>
-		<link rel="stylesheet" href="./css/fmradio.css"/>
-		<script type="text/javascript" src="./DNA_common/components/jQuery/jquery-1.8.2.js"></script>
-		<script type="text/javascript" src="./DNA_common/js/init.js"></script>
+        <link rel="stylesheet" href="./DNA_common/css/style.css"/>
+        <link rel="stylesheet" href="./css/fmradio.css"/>
+        <script type="text/javascript" src="./DNA_common/components/jQuery/jquery-1.8.2.js"></script>
+        <script type="text/javascript" src="./DNA_common/js/init.js"></script>
 
-		 <script type="text/javascript">
-			<!--includeJs("./js/spectrumAnalyzer.js">;-->
+         <script type="text/javascript">
+            <!--includeJs("./js/spectrumAnalyzer.js">;-->
 
-			/*includeJs("./DNA_common/js/predefAppModel.js");
-			includeJs("./DNA_common/js/installedApps.js");
-			includeJs("./DNA_common/js/keyControl.js");
-			includeJs("./DNA_common/js/actionCatcher.js");
-			includeJs("./DNA_common/js/HomeScreenMain.js");*/
-			includeJs("./js/main.js");
-		</script>
-	</head>
-	<body>
-		<!-- Begin  #base -->
-		<div id="base">
-			<div id="topBar"></div>
-			<div id="app">
-				<div id="clockElement"></div>
-				<!-- BEGIN APP SPECIFIC ELEMENTS -->
-	<div class="flex-fm-row">
-		<div class="small-title title-reflect">FM RADIO</div>
-<div id="station-id" class="dna-orange station-id-reflect" data-station-id-number="">103.7<span class="fm-designation">FM</span></div>
-<button type="button" class="cancel-sst">CANCEL...</button><!-- visibility:hidden when not utilized for seek/scan/tune -->
-<div class="seek-scan-tune-wrapper">
-				<button id="SeekDownBtn" class="minus" type="button">-</button><span>SEEK</span><id="SeekUpBtn" button type="button">+</button>
-				<button id="ScanDownBtn" class="minus" type="button">-</button><span>SCAN</span><id="ScanUpBtn" button type="button">+</button>
-				<button id="TuneDownBtn" class="minus" type="button">-</button><span>TUNE</span><button id="TuneUpBtn" type="button">+</button>
-</div>
-			<div id="spectAnalyzer" class="spectrumAnalyzer">
-				<div class="eq">
-		<span class="bar"></span>
-		<span class="bar"></span>
-		<span class="bar"></span>
-		<span class="bar"></span>
-		<span class="bar"></span>
-				</div>
+            /*includeJs("./DNA_common/js/predefAppModel.js");
+            includeJs("./DNA_common/js/installedApps.js");
+            includeJs("./DNA_common/js/keyControl.js");
+            includeJs("./DNA_common/js/actionCatcher.js");
+            includeJs("./DNA_common/js/HomeScreenMain.js");*/
+            includeJs("./js/main.js");
+        </script>
+    </head>
+    <body>
+        <!-- Keypad modal container (pop-up) is positionned dynamically, so let's define it here out-of-base -->
+        <div id="keypad-container" class="flex-parent overlay hidden">
+            <div class="keypad-btn-row">
+                <div id="num_1" class="digits first_position"><div id="num1_preset"  index="1" class="contentFlexed keypad-box clickable-key dna-orange">1</div></div>
+                <div id="num_4" class="digits second_position"><div id="num4_preset" index="4" class="contentFlexed keypad-box clickable-key dna-orange">4</div></div>
+                <div id="num_7" class="digits third_position"><div id="num7_preset"  index="7" class="contentFlexed keypad-box clickable-key dna-orange">7</div></div>
+                <div id="key_DEL" class="digits fourth_position"><div id="numL_preset" index="DEL" class="contentFlexed keypad-box dna-orange">DEL</div></div>
+            </div>
+            <div class="keypad-btn-row">
+                <div id="num_2" class="digits first_position"><div id="num2_preset"  index="2" class="contentFlexed keypad-box clickable-key dna-orange">2</div></div>
+                <div id="num_5" class="digits second_position"><div id="num5_preset" index="5" class="contentFlexed keypad-box clickable-key dna-orange">5</div></div>
+                <div id="num_8" class="digits third_position"><div id="num8_preset"  index="8" class="contentFlexed keypad-box clickable-key dna-orange">8</div></div>
+                <div id="num_0" class="digits fourth_position"><div id="num0_preset" index="0" class="contentFlexed keypad-box clickable-key dna-orange">0</div></div>
+            </div>
+            <div class="keypad-btn-row">
+                <div id="num_3" class="digits first_position"><div id="num3_preset"  index="3" class="contentFlexed keypad-box clickable-key dna-orange">3</div></div>
+                <div id="num_6" class="digits second_position"><div id="num6_preset" index="6" class="contentFlexed keypad-box clickable-key dna-orange">6</div></div>
+                <div id="num_9" class="digits third_position"><div id="num9_preset"  index="9" class="contentFlexed keypad-box clickable-key dna-orange">9</div></div>
+                <div id="key_OK" class="digits fourth_position"><div id="numR_preset" index="OK" class="contentFlexed keypad-box dna-orange">OK</div></div>
+            </div>
+        </div>
 
+        <!-- Begin  #base -->
+        <div id="base">
+            <div id="topBar"></div>
+            <div id="app">
+                <div id="clockElement"></div>
+                <!-- BEGIN APP SPECIFIC ELEMENTS -->
+                <div class="flex-fm-row">
+                    <div class="small-title title-reflect">FM RADIO</div>
+                    <div id="station-id" class="dna-orange station-id-reflect" data-station-id-number="">103.7<span class="fm-designation">FM</span></div>
+                    <button type="button" id="smartBtn" class="cancel-sst hidden">CANCEL...</button><!-- visibility:hidden when not utilized for seek/scan/tune -->
+                    <div class="seek-scan-tune-wrapper">
+                        <button id="SeekDownBtn" class="minus" type="button">-</button><span>SEEK</span><button id="SeekUpBtn" class="plus" type="button">+</button>
+                        <button id="ScanDownBtn" class="minus" type="button">-</button><span>SCAN</span><button id="ScanUpBtn" class="plus" type="button">+</button>
+                        <button id="TuneDownBtn" class="minus" type="button">-</button><span>TUNE</span><button id="TuneUpBtn" class="plus" type="button">+</button>
+                    </div>
+                    <div id="spectAnalyzer" class="spectrumAnalyzer">
+                        <div class="eq">
+                            <span class="bar"></span>
+                            <span class="bar"></span>
+                            <span class="bar"></span>
+                            <span class="bar"></span>
+                            <span class="bar"></span>
+                        </div>
+                        <!-- <img src="images/spectrum-fake.png" alt="">-->
+                    </div>
 
+                <div id="presets-container" class="flex-parent shadowBck"><!-- flex parent for all presets-->
+                    <div class="preset-btn-row"><!-- flex parent for column of 2 numbers -->
+                        <div id="preset_1" class="digits first_position" ><div class="contentFlexed fm-radio-box dna-orange" index="1">100.7</div></div>
+                        <div id="preset_4" class="digits second_position"><div class="contentFlexed fm-radio-box fm-gray"    index="4">100.7</div></div>
+                    </div>
 
+                    <div class="preset-btn-row"><!-- flex parent for column of 2 numbers -->
+                        <div id="preset_2" class="digits first_position" ><div class="contentFlexed fm-radio-box dna-orange" index="2">100.7</div></div>
+                        <div id="preset_5" class="digits second_position"><div class="contentFlexed fm-radio-box fm-gray"    index="5">100.7</div></div>
+                    </div>
 
-				<!-- <img src="images/spectrum-fake.png" alt="">-->
-	      </div>
+                    <div class="preset-btn-row"><!-- flex parent for column of 2 numbers -->
+                        <div id="preset_3" class="digits first_position" ><div class="contentFlexed fm-radio-box dna-orange" index="3">100.7</div></div>
+                        <div id="preset_6" class="digits second_position"><div class="contentFlexed fm-radio-box fm-gray"    index="6">100.7</div></div>
+                    </div>
+                </div>
 
-<div id="keypad-container" class="flex-parent shadowBck"><!-- flex parent for all presets-->
-<div class="preset-btn-row"><!-- flex parent for row of 3 numbers -->
-	<div id="num_1" class="digits first_position"><div class="contentFlexed fm-radio-box dna-orange" data-preset-1="">107</div></div>
-	<div id="num_2" class="digits second_position"><div class="contentFlexed fm-radio-box fm-gray" data-preset-2="">EMPTY</div></div>
-	<div id="num_3" class="digits third_position"><div class="contentFlexed fm-radio-box fm-gray" data-preset-3="">EMPTY</div></div>
-</div>
-
-
-<div class="preset-btn-row"><!-- flex parent for row of 3 numbers -->
-	<div id="num_4" class="digits first_position"><div class="contentFlexed fm-radio-box dna-orange" data-preset-4="">98.7</div></div>
-	<div id="num_5" class="digits second_position"><div class="contentFlexed fm-radio-box fm-gray" data-preset-5="">EMPTY</div></div>
-	<div id="num_6" class="digits third_position"><div class="contentFlexed fm-radio-box fm-gray" data-preset-6="">EMPTY</div></div>
-</div>
-
-<div class="preset-btn-row"><!-- flex parent for row of 3 numbers -->
-	<div id="num_7" class="digits first_position"><div class="contentFlexed fm-radio-box dna-orange" data-preset-7="">103.7</div></div>
-	<div id="num_8" class="digits second_position"><div class="contentFlexed fm-radio-box fm-gray" data-preset-8="">EMPTY</div></div>
-	<div id="num_9" class="digits third_position"><div class="contentFlexed fm-radio-box fm-gray" data-preset-9="">EMPTY</div></div>
-</div>
-
-</div>
-</div> <!-- wrapper for parent flex of content-->
-				<!-- END APP SPECIFIC ELEMENTS -->
-			</div>
-			<!--end of #app -->
-			<div id="bottomBar" class="bottomPanel bottomPanelImg"></div>
-		</div>
-		<!-- End #base -->
-	</body>
+            </div> <!-- wrapper for parent flex of content-->
+            <!-- END APP SPECIFIC ELEMENTS -->
+        </div>
+        <!--end of #app -->
+        <div id="bottomBar" class="bottomPanel bottomPanelImg"></div>
+    </div>
+        <!-- End #base -->
+    </body>
 </html>

@@ -43,9 +43,21 @@ Requires:       libglib
 Requires:       libusb
 Requires:       libsndfile
 
-%global plugin_list extension_common BoilerPlateExtension wkb_client_ext FMRadioExtension
-%global autogen_list FMRadioService FMRadioService/gst-sdr-j-fm
-%global deps_list rtl-sdr fftw-3.3.4 libsamplerate-0.1.8
+# Some useful globals defining PATHS
+%global AGL_DIR ${RPM_BUILD_DIR}/${RPM_PACKAGE_NAME}-${RPM_PACKAGE_VERSION}
+%global FMRADIOSERVICE_PATH %{AGL_DIR}/FMRadioService
+%global GSTSDRJFM_PATH %{FMRADIOSERVICE_PATH}/gst-sdr-j-fm
+%global DEPS_PATH %{FMRADIOSERVICE_PATH}/deps
+%global RTLSDR_PATH %{DEPS_PATH}/rtl-sdr
+%global FFTW3_PATH %{DEPS_PATH}/fftw-3.3.4
+%global LIBSAMPLERATE_PATH %{DEPS_PATH}/libsamplerate-0.1.8
+
+# Xwalk extension plugin list
+%global plugin_list %{AGL_DIR}/extension_common %{AGL_DIR}/BoilerPlateExtension %{AGL_DIR}/wkb_client_ext %{AGL_DIR}/FMRadioExtension
+
+%global autogen_list %{FMRADIOSERVICE_PATH} %{GSTSDRJFM_PATH}
+%global deps_list %{RTLSDR_PATH} %{FFTW3_PATH} %{LIBSAMPLERATE_PATH}
+%global install_list %{RTLSDR_PATH}/build %{FFTW3_PATH} %{LIBSAMPLERATE_PATH} %{FMRADIOSERVICE_PATH} %{plugin_list}
 
 %description
 A collection of IVI software
@@ -80,110 +92,67 @@ Group: System/Audio
 %description gstsdrjfm
 Gstreamer element that demodulates FM radio signal.
 
-
 %prep
 %setup -q -n %{name}-%{version}
 echo "HOME : ${HOME} HOME: %{HOME}"
 
-%build
-######################################
-## Note :
-##
-## Since dependencies from deps_list
-## are not already packaged by tizen
-## they are provided here (tarballs)
-## and built and installed from source
-######################################
-
-# Build rtl-sdr CMAKE project
-ROOT_DIR=`pwd`
-FMRADIOSERVICE_PATH=${ROOT_DIR}/FMRadioService
-RTLSDR_PATH=${FMRADIOSERVICE_PATH}/deps/rtl-sdr
-LIBSAMPLERATE_PATH=${FMRADIOSERVICE_PATH}/deps/libsamplerate-0.1.8
-FFTW3_PATH=${FMRADIOSERVICE_PATH}/deps/fftw-3.3.4
-
-# First autotool project FMRadioService needs to be autogen'ed
+# Some projects need to be autogen'ed
 for file in %{autogen_list}; do
-	cd ${ROOT_DIR}/${file}
+	cd ${AGL_DIR}/${file}
 	./autogen.sh
 done
 
-
-# uncompress the deps
-cd ${FMRADIOSERVICE_PATH}/deps
+# Uncompress the deps
 for file in %{deps_list}; do
-	tar -xvf ${file}.tar.gz
+	tar -C %{DEPS_PATH}/ -xvf ${file}.tar.gz
 done
 
-# Build RTLSDR dep
-cd ${RTLSDR_PATH}
+%build
+## Since dependencies from deps_list are not already packaged by Tizen they
+## are provided here (tarballs) and built and installed from source
+
+# Build RTLSDR CMAKE dep
+cd %{RTLSDR_PATH}
 rm -fR build
 mkdir build
 cd build
 cmake .. -DCMAKE_C_FLAGS:STRING="%{optflags}" -DCMAKE_INSTALL_PREFIX=%{_prefix}
 make
-RTLSDR_LIBS="${RTLSDR_PATH}/src/librtlsdr.so"
-RTLSDR_INCLUDES="-I/${RTLSDR_PATH}/include"
+RTLSDR_LIBS="%{RTLSDR_PATH}/src/librtlsdr.so"
+RTLSDR_INCLUDES="-I/%{RTLSDR_PATH}/include"
 
 # Build FFTW dep
-cd ${FFTW3_PATH}
+cd %{FFTW3_PATH}
 ./configure --prefix=%{_prefix} --enable-single --enable-shared
 make
-FFTW3_LIBS="${FFTW3_PATH}/.libs/libfftw3f.la"
-FFTW3_INCLUDES="-I/${FFTW3_PATH}/api"
+FFTW3_LIBS="%{FFTW3_PATH}/.libs/libfftw3f.la"
+FFTW3_INCLUDES="-I/%{FFTW3_PATH}/api"
 
 # Build LIBSAMPLERATE dep
-cd ${LIBSAMPLERATE_PATH}
+cd %{LIBSAMPLERATE_PATH}
 ./configure --prefix=%{_prefix}
 make
-LIBSAMPLERATE_LIBS="${LIBSAMPLERATE_PATH}/src/.libs/libsamplerate.la"
-LIBSAMPLERATE_INCLUDES="-I/${LIBSAMPLERATE_PATH}/src"
+LIBSAMPLERATE_LIBS="%{LIBSAMPLERATE_PATH}/src/.libs/libsamplerate.la"
+LIBSAMPLERATE_INCLUDES="-I/%{LIBSAMPLERATE_PATH}/src"
 
 # Now build autotool-like FMRadioService and gstreamer gstsdrjfm plugin
-cd ${FMRADIOSERVICE_PATH}
-LD_LIBRARY_PATH=${RTLSDR_LIBPATH} RS_CFLAGS=${RTLSDR_INCLUDES} RS_LIBS=${RTLSDR_LIBS} SR_CFLAGS=${LIBSAMPLERATE_INCLUDES} SR_LIBS=${LIBSAMPLERATE_LIBS} FFTW_CFLAGS=${FFTW3_INCLUDES} FFTW_LIBS=${FFTW3_LIBS} ./configure --prefix=%{_prefix}
+cd %{FMRADIOSERVICE_PATH}
+LD_LIBRARY_PATH=%{RTLSDR_LIBPATH} RS_CFLAGS=${RTLSDR_INCLUDES} RS_LIBS=${RTLSDR_LIBS} SR_CFLAGS=${LIBSAMPLERATE_INCLUDES} SR_LIBS=${LIBSAMPLERATE_LIBS} FFTW_CFLAGS=${FFTW3_INCLUDES} FFTW_LIBS=${FFTW3_LIBS} ./configure --prefix=%{_prefix}
 make -n &> ~/make.log
 make
 
-cd ${ROOT_DIR}
 # Build all the xwalk extension plugins
 for folder in %{plugin_list}; do
 	make -C ${folder}
 done
 
-
 %install
-# Build rtl-sdr CMAKE project
-ROOT_DIR=`pwd`
-FMRADIOSERVICE_PATH=${ROOT_DIR}/FMRadioService
-RTLSDR_PATH=${FMRADIOSERVICE_PATH}/deps/rtl-sdr
-LIBSAMPLERATE_PATH=${FMRADIOSERVICE_PATH}/deps/libsamplerate-0.1.8
-FFTW3_PATH=${FMRADIOSERVICE_PATH}/deps/fftw-3.3.4
-
-# Install RTLSDR dep
-cd ${RTLSDR_PATH}/build
-make install DESTDIR=%{buildroot} PREFIX=%{_prefix}
-
-# Install FFTW dep
-cd ${FFTW3_PATH}
-make install DESTDIR=%{buildroot} PREFIX=%{_prefix}
-
-# Install LIBSAMPLERATE dep
-cd ${LIBSAMPLERATE_PATH}
-make install DESTDIR=%{buildroot} PREFIX=%{_prefix}
-
-# Install FMRadioService
-# manually add those paths that we are going to install
+# Manually add those paths that we are going to install
 mkdir -p %{buildroot}/usr/lib/systemd/user
 mkdir -p %{buildroot}/usr/share/dbus-1/services
-cd ${FMRADIOSERVICE_PATH}
-make install DESTDIR=%{buildroot} PREFIX=%{_prefix}
 
-cd ${FMRADIOSERVICE_PATH}/gst-sdr-j-fm
-
-# Install the the extension plugins
-cd ${ROOT_DIR}
-for folder in %{plugin_list}; do
+# Install everything
+for folder in %{install_list}; do
     make -C ${folder} install DESTDIR=%{buildroot} PREFIX=%{_prefix}
 done
 

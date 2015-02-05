@@ -6,19 +6,18 @@
 #include "fm_radio_instance.h"
 
 common::Extension* CreateExtension() {
-  return new FMRadioExtension();
+    return new FMRadioExtension();
 }
 
-// This will be generated from phone_api.js
 extern const char kSource_fm_radio_api[];
 
 FMRadioExtension::FMRadioExtension() {
-  SetExtensionName("fmradio");
-  SetJavaScriptAPI(kSource_fm_radio_api);
+    SetExtensionName("fmradio");
+    SetJavaScriptAPI(kSource_fm_radio_api);
 }
 
 FMRadioExtension::~FMRadioExtension() {}
 
 common::Instance* FMRadioExtension::CreateInstance() {
-  return new FMRadioInstance;
+    return new FMRadioInstance;
 }
