@@ -37,6 +37,18 @@
 var state = "STATE_NORMAL";
 
 /**
+ * Very simple mouse down/up states for tracking
+ * mousehold gestures.
+ * Possible states are :
+ *
+ * STATE_MOUSE_UP           : The mouse's left button is not pressed
+ * STATE_MOUSE_DOWN         : The mouse's left button is pressed
+ *
+@property state {String}
+ */
+var mouseState = "STATE_MOUSE_UP";
+
+/**
  * Temporary 'string' frequency when in DIRECT_TUNING state
 @property directTuningFreqStr {String}
  */
@@ -47,38 +59,29 @@ var directTuningFreqStr;
 @property constants {Object}
  */
 var constants = {
-    'FREQ_MAX_LIMIT': 108000000,
-    'FREQ_MIN_LIMIT': 88000000
+    'NUM_OF_PRESETS'           : 6,
+    'FREQ_MAX_LIMIT'           : 108000000,
+    'FREQ_MIN_LIMIT'           : 88000000,
+    'KEYCODE_ESC'              : 27,         // Keycode for "ESCAPE" character
+    'DIRECT_TUNING_FLASH_TIME' : 1000,       // Time to wait for direct tuning flashing timer
+    'MOUSE_HOLD_TIMEOUT_TIME'  : 2000        // Time to wait to consider a mousedown as a mousehold
 };
 
 /**
  * Station presets channel/frequency values
  * We use the actual {int} here for values, as we have to feed FMRadioService
- * with {int} frequencies
+ * There should be constants.NUM_OF_PRESETS presets in the array
+ * with {int} frequencies in Hz
 @property presets {Object}
  */
-var presets = {
-    'num_1': 100.7,
-    'num_2': 98.5,
-    'num_3': 94.3,
-    'num_4': 105.7,
-    'num_5': 89.3,
-    'num_6': 88.5
-};
-
-/**
- * Keycode Constant
- *
-@property KEYCODE_ESC {Number}
- */
-var KEYCODE_ESC = 27;
-
-/**
- * Time to wait for direct tuning flashing timer
- *
-@property DIRECT_TUNING_TIMER {Number} (in ms)
- */
-var DIRECT_TUNING_FLASH_TIME = 1000;
+var presets = [
+    100700000,
+     98500000,
+     94300000,
+    105700000,
+     92500000,
+     88500000
+];
 
 /**
  * Interval variable used to make Digits flash
@@ -88,6 +91,13 @@ var DIRECT_TUNING_FLASH_TIME = 1000;
 @property flashInterval {Object}
  */
 var flashInterval = null;
+
+/**
+ * Timeout variable used to track mousehold gestures
+ *
+@property flashInterval {Object}
+ */
+var mouseHoldTimeout = null;
 
 /**
  * Currently shown dash opacity in direct tuning animation
@@ -218,17 +228,11 @@ function setStationIdFrequency(freq, dash, opacity) {
             // Lastly, check for validity and set color and OK button accordingly.
             var okBtn = document.getElementById("numOK");
             if (!freqIsValid(element.innerHTML)) {
-                element.classList.remove("dna-green");
-                element.classList.add("dna-orange");
-
-                okBtn.classList.remove("dna-green");
-                okBtn.classList.add("dna-orange");
-            } else {
-                element.classList.add("dna-green");
-                element.classList.remove("dna-orange");
-
-                okBtn.classList.add("dna-green");
                 okBtn.classList.remove("dna-orange");
+                okBtn.classList.add("fm-gray");
+            } else {
+                okBtn.classList.add("dna-orange");
+                okBtn.classList.remove("fm-gray");
             }
         } else {
             element.innerHTML = freq;
@@ -345,7 +349,7 @@ function updateStationIdDigit(add, num_value) {
  * @static
  */
 function startFlash() {
-    flashInterval = setInterval(flashStationIdDigits, DIRECT_TUNING_FLASH_TIME);
+    flashInterval = setInterval(flashStationIdDigitsCB, constants.DIRECT_TUNING_FLASH_TIME);
 }
 
 /**
@@ -451,8 +455,11 @@ var init = function () {
             return;
         }
 
+        // Set initial statio-id frequency
+        // Since FMRadioService should never stop, the "last" station
+        // frequency is still rendering inside fmradio daemon, so we're
+        // just fetching that frequency and tune it in.
         try {
-            // Set initial statio-id frequency
             var frequency = fmradio.frequency();
         } catch(e) {
             console.error("FMRadio.frequency Exception caught : " + e);
@@ -460,6 +467,16 @@ var init = function () {
             return;
         }
         setStationIdFrequency(frequency);
+
+        // Load presets
+        // TODO: load the presets from persistent memory
+
+        // Set station memory slots presets frequencies
+        for (i = 0; i < presets.length; i++) {
+            var element = document.getElementById("preset_" + i);
+            var freqMHz = parseFloat(presets[i] / 1000000);
+            element.innerHTML = freqMHz;
+        }
     } else {
         // If underlying FMRadioService/Extension is not present, trouble!
         console.error("Could not find underlying FMRadioExtension !");
@@ -498,11 +515,28 @@ function setupSpeechRecognition() {
     });
 }
 
+
+/**
+ * Method that adjust class on a passed-in element to show user that
+ * he is interacting with this element.
+ * @method buttonUserFeedback
+ * @param object {Object} The Object on which to adjust classes
+ * @param beforeClass {String} The CSS class to remove
+ * @param afterClass {String} The CSS class to add
+ * @static
+ **/
+function buttonUserFeedback(object, beforeClass, afterClass) {
+    var element = document.getElementById(object.attr("id"));
+    element.classList.add(afterClass);
+    element.classList.remove(beforeClass);
+}
+
+
 /****************************************************************************
  * TIMER CALLBACKS    *******************************************************
  ****************************************************************************/
 
-function flashStationIdDigits() {
+function flashStationIdDigitsCB() {
 
     // we just toggle dash opacity while animating direct tuning
     if (curDashOpacity == 0)
@@ -513,6 +547,22 @@ function flashStationIdDigits() {
     setStationIdFrequency(directTuningFreqStr, true, curDashOpacity);
 }
 
+function mouseHoldCB(presetNumStr) {
+    // We have a mousehold on 'preset_num' button!
+    var presetNum = parseInt(presetNumStr);
+    presets[presetNum] = fmradio.frequency();
+
+    // Make the change appear on the fm-radio-box
+    var element = document.getElementById("preset_" + presetNumStr);
+    var freqMHz = parseFloat(presets[presetNum] / 1000000);
+    element.innerHTML = freqMHz;
+
+    // we kill the timer just to make sure
+    clearTimeout(mouseDownTimeout);
+    mouseDownTimeout = null;
+}
+
+
 /****************************************************************************
  * JQUERY EVENT HANDLERS    *************************************************
  ****************************************************************************/
@@ -522,10 +572,10 @@ function flashStationIdDigits() {
  *
  * @method keyup
  * @param  handler {function} Callback called when element is clicked
- * @static
+ * @istatic
  */
 $(document).keydown(function(e) {
-    if (e.keyCode == KEYCODE_ESC) {
+    if (e.keyCode == constants.KEYCODE_ESC) {
         if (state.indexOf("STATE_DIRECT_TUNING") >= 0) {
             goBackToNormal();
             setStationIdFrequency(fmradio.frequency());
@@ -659,4 +709,96 @@ $( "#key_OK" ).click(function() {
             goBackToNormal();
         }
     }
+});
+
+/**
+ * React to user *clicking* on the presets box CLASS
+ * When user "clicks" on a memory slots, means he wants to load 
+ * the station as current.
+ *
+ * @method  fm-radio-box.click()
+ * @param  handler {function} Callback called when element is clicked
+ * @static
+ */
+$( ".fm-radio-box" ).click(function() {
+    console.error("DEBUG: fm-radio-box CLICK");
+
+    // Extract pressed preset # from the element's id
+    var index = $(this).attr('preset');
+    var freqHz = presets[index];
+
+    // Tune-in the preset frequency
+    if (freqIsValid(freqHz)) {
+        setFMRadioFrequency(freqHz);
+        setStationIdFrequency(freqHz);
+    }
+});
+
+/**
+ * React to user *mousedown* on the presets box CLASS
+ * We are using mousedown and mouseup events here to implement the
+ * 2-second mousehold when user wants to save stations as presets
+ *
+ * @method  fm-radio-box.mousedown()
+ * @param  handler {function} Callback called when element is pressed-down
+ * @static
+ */
+$( ".fm-radio-box" ).mousedown(function() {
+    console.error("DEBUG: fm-radio-box MOUSEDOWN");
+    mouseState = "STATE_MOUSE_DOWN";
+
+    buttonUserFeedback($(this), "fm-gray", "dna-orange");
+
+    // sanity check. mouseDownTimeout should not be already set on mousedown
+    if (mouseHoldTimeout != null)
+        clearTimeout(mouseHoldTimeout);
+
+    mouseHoldTimeout = setTimeout(mouseHoldCB,
+                                  constants.MOUSE_HOLD_TIMEOUT_TIME,
+                                  $(this).attr('preset'));
+});
+
+/**
+ * React to user *mouseup* on the presets box CLASS
+ * We are using mousedown and mouseup events here to implement the
+ * 2-second mousehold when user wants to save stations as presets
+ *
+ * @method  fm-radio-box.mouseup()
+ * @param  handler {function} Callback called when element mouse is released
+ * @static
+ */
+$( ".fm-radio-box" ).mouseup(function() {
+    console.error("DEBUG: fm-radio-box MOUSEUP");
+    mouseState = "STATE_MOUSE_UP";
+
+    buttonUserFeedback($(this), "dna-orange", "fm-gray");
+
+    if (mouseHoldTimeout != null) {
+        clearTimeout(mouseHoldTimeout);
+        mouseHoldTimeout = null;
+    }
+});
+
+/**
+ * React to keypadbox mousedown
+ *
+ * @method  keypad-box.mousedown()
+ * @param  handler {function} Callback called when element is mousedowned
+ * @static
+ */
+$( ".keypad-box" ).mousedown(function() {
+    console.error("DEBUG: keypad-box MOUSEDOWN");
+    buttonUserFeedback($(this), "fm-gray", "dna-orange");
+});
+
+/**
+ * React to keypadbox mouseup
+ *
+ * @method  keypad-box.mouseup()
+ * @param  handler {function} Callback called when element is mouseuped
+ * @static
+ */
+$( ".keypad-box" ).mouseup(function() {
+    console.error("DEBUG: keypad-box MOUSEUP");
+    buttonUserFeedback($(this), "dna-orange", "fm-gray");
 });
