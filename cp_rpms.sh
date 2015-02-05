@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bach
 # This script copies all the newly built RPMS to target device's home. NOTE: Use *must* define TIZEN_IP in the environment (export) prior to calling this script
 
 # Some nice colors!

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # This script installs all the newly copied RPMSfrom target.
 # This script SHOULD REALLY be run on the target device !
 

@@ -35,11 +35,11 @@ In an Ubuntu shell:
             # This command will require your password and then you will be able to
             # use ssh and scp without a password from that user.
 
-        $ sh ./copy_rpms.sh
+        $ sh ./cp_rpms.sh
 
             # Additionally, if you want to ALSO copy the 'debug' rpms, do this instead :
 
-        $ sh ./copy_rpms.sh debug
+        $ sh ./cp_rpms.sh debug
 
             ## You will notice that the script also copies the "install_rpms.sh" script over.
 
