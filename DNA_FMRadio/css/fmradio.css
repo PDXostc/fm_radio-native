@@ -118,13 +118,23 @@ body {
   box-shadow: inset 5px -5px 9px 1px rgba(0, 0, 0, 0.59);
 }
 
+.keypad-num-font {
+  font-family: letsGoDigital;
+  font-weight: 700;
+  font-size: 87px;
+}
+
+.keypad-btn-font {
+  font-family: letsGoDigital;
+  font-weight: 700;
+  font-size: 60px;
+}
+
 .keypad-box {
   border: 1px solid #373636;
   background-color: #202325;
   padding: 5px;
-  font-family: letsGoDigital;
-  font-weight: 700;
-  font-size: 87px;
+
   width: 62px;
   height: 62px;
   line-height: 62px;
@@ -134,13 +144,6 @@ body {
   -webkit-box-shadow: inset 5px -5px 9px 1px rgba(0, 0, 0, 0.5);
   box-shadow: inset 5px -5px 9px 1px rgba(0, 0, 0, 0.59);
 }
-
-
-/* TODO: remove that !!
-// This class is used to tell clickable keypad-boxes from non-clickable ones 
-.clickable-key {
-  opacity: 1.0;
-}*/
 
 .cancel-sst {
   background-color: #ee3225;

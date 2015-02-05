@@ -451,8 +451,14 @@ var init = function () {
             return;
         }
 
-        // Set initial statio-id frequency
-        var frequency = fmradio.frequency();
+        try {
+            // Set initial statio-id frequency
+            var frequency = fmradio.frequency();
+        } catch(e) {
+            console.error("FMRadio.frequency Exception caught : " + e);
+            state = "STATE_ERROR";
+            return;
+        }
         setStationIdFrequency(frequency);
     } else {
         // If underlying FMRadioService/Extension is not present, trouble!
