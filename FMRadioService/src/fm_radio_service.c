@@ -30,9 +30,6 @@
 #include <dbus/dbus-glib-bindings.h>
 #include "../../extension_common/fm_radio_common.h"
 
-GST_DEBUG_CATEGORY (sdrjfm_debug);
-#define GST_CAT_DEFAULT sdrjfm_debug
-
 /**
  * Signal enum types.
  * Signal enums are used in g_signal_new as name/id.
@@ -388,6 +385,7 @@ server_enable (RadioServer *server, GError **error)
 
     if (!server->enabled) {
         sdrjfm_init(server, handle_on_enabled);
+        g_message("FMRadioService: server enabled");
     }
 
     // TODO: Return false and set error in case something went wrong.
@@ -408,6 +406,7 @@ server_setfrequency (RadioServer *server, gdouble value_in, GError **error)
     g_object_set (server->gstData->fmsrc, "frequency", (gint) value_in, NULL);
     server->frequency = value_in;
 
+    g_message("FMRadioService: frequency set to : %i", value_in);
     // TODO: Return false and set error in case something went wrong.
     return TRUE;
 }
@@ -616,8 +615,6 @@ main(int argc, char** argv)
         g_error("Failed to create one Value instance.", TRUE);
 
     gst_init(&argc, &argv);
-    GST_DEBUG_CATEGORY_INIT (sdrjfm_debug, "srdjfm", 0, "SDR-J FM plugin");
-    GST_DEBUG ("Starting dbus-service");
 
     /* Start service requests on the D-Bus */
     g_main_loop_run(mainloop);
