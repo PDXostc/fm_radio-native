@@ -3,7 +3,7 @@
 * Proprietary and confidential
 * Unauthorized copying of this file, via any medium, is strictly prohibited
 *
-* THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY 
+* THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
 * KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
 * IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
 * PARTICULAR PURPOSE.
@@ -145,7 +145,6 @@ function clip(n, lower, upper) {
  * @static
  */
 function freqIsValid(freq) {
-    console.error("DEBUG: freqIsValid(" + freq + ") called");
     var freqHz;
     if (typeof freq == "number" ) {
         // the 'Number' version assume freq. already in Hz
@@ -153,7 +152,6 @@ function freqIsValid(freq) {
     } else if (typeof freq == "string" ) {
         // basic initial checks
         if (freq.charAt(freq.length-1) == ".") {
-            console.error("DEBUG: freqIsValid : FALSE");
             return false;
         }
         freqHz = (parseFloat(freq)) * 1000000;
@@ -162,10 +160,8 @@ function freqIsValid(freq) {
     // then check against the freq range.
     if ((freqHz >= constants.FREQ_MIN_LIMIT) &&
         (freqHz <= constants.FREQ_MAX_LIMIT)) {
-        console.error("DEBUG: freqIsValid : TRUE");
         return true;
     } else {
-        console.error("DEBUG: freqIsValid : FALSE");
         return false;
     }
 }
@@ -470,6 +466,7 @@ var init = function () {
 
         // Load presets
         // TODO: load the presets from persistent memory
+        // var presetsStore = getLocations();
 
         // Set station memory slots presets frequencies
         for (i = 0; i < presets.length; i++) {
@@ -477,6 +474,7 @@ var init = function () {
             var freqMHz = parseFloat(presets[i] / 1000000);
             element.innerHTML = freqMHz;
         }
+
     } else {
         // If underlying FMRadioService/Extension is not present, trouble!
         console.error("Could not find underlying FMRadioExtension !");
@@ -515,6 +513,20 @@ function setupSpeechRecognition() {
     });
 }
 
+function saveLocationsList(locations) {
+    localStorage.setItem("locations", JSON.stringify(locations));
+}
+
+function getLocations() {
+    console.error("DEBUG : GetLocations called");
+    var locations_preParse = localStorage.getItem("locations");
+    console.error("DEBUG locations_preParse = " + locations_preParse);
+    var locations = JSON.parse();
+    console.error("DEBUG locations = " + locations);
+    if (locations == null)
+        locations = [];
+    return locations;
+}
 
 /**
  * Method that adjust class on a passed-in element to show user that
@@ -697,12 +709,10 @@ $( "#key_DEL" ).click(function() {
  * @static
  */
 $( "#key_OK" ).click(function() {
-    console.error("DEBUG: key_OK.click called..." + directTuningFreqStr);
     if (state == "STATE_DIRECT_TUNING_FULL") {
         // Changing the actual tuned frequency is only done
         // through setStationIdFrequency with Number parameter
         var freqHz = (parseFloat(directTuningFreqStr)) * 100000;
-        console.error("DEBUG: freqHz..." + freqHz);
         if (freqIsValid(freqHz)) {
             setFMRadioFrequency(freqHz);
             setStationIdFrequency(freqHz);
@@ -713,7 +723,7 @@ $( "#key_OK" ).click(function() {
 
 /**
  * React to user *clicking* on the presets box CLASS
- * When user "clicks" on a memory slots, means he wants to load 
+ * When user "clicks" on a memory slots, means he wants to load
  * the station as current.
  *
  * @method  fm-radio-box.click()
@@ -721,7 +731,6 @@ $( "#key_OK" ).click(function() {
  * @static
  */
 $( ".fm-radio-box" ).click(function() {
-    console.error("DEBUG: fm-radio-box CLICK");
 
     // Extract pressed preset # from the element's id
     var index = $(this).attr('preset');
@@ -744,7 +753,6 @@ $( ".fm-radio-box" ).click(function() {
  * @static
  */
 $( ".fm-radio-box" ).mousedown(function() {
-    console.error("DEBUG: fm-radio-box MOUSEDOWN");
     mouseState = "STATE_MOUSE_DOWN";
 
     buttonUserFeedback($(this), "fm-gray", "dna-orange");
@@ -768,7 +776,6 @@ $( ".fm-radio-box" ).mousedown(function() {
  * @static
  */
 $( ".fm-radio-box" ).mouseup(function() {
-    console.error("DEBUG: fm-radio-box MOUSEUP");
     mouseState = "STATE_MOUSE_UP";
 
     buttonUserFeedback($(this), "dna-orange", "fm-gray");
@@ -787,7 +794,6 @@ $( ".fm-radio-box" ).mouseup(function() {
  * @static
  */
 $( ".keypad-box" ).mousedown(function() {
-    console.error("DEBUG: keypad-box MOUSEDOWN");
     buttonUserFeedback($(this), "fm-gray", "dna-orange");
 });
 
@@ -799,6 +805,6 @@ $( ".keypad-box" ).mousedown(function() {
  * @static
  */
 $( ".keypad-box" ).mouseup(function() {
-    console.error("DEBUG: keypad-box MOUSEUP");
     buttonUserFeedback($(this), "dna-orange", "fm-gray");
 });
+
