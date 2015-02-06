@@ -44,12 +44,14 @@ In an Ubuntu shell:
             ## You will notice that the script also copies the "install_rpms.sh" script over.
 
   * Make sure your FM radio dongle is up and running
+        * For example, when using the R820T SDR&DVB-T from NooElec, do :
 
-        sudo cp blacklist-rtlsdr.conf /etc/modprobe.d
+        $ sudo cp blacklist-rtlsdr.conf /etc/modprobe.d
+        $ sudo cp 99-librtlsdr.rules /etc/udev/rules.d
 
-        sudo cp 99-librtlsdr.rules /etc/udev/rules.d
+  * Reboot your target device
 
-        sudo reboot
+        $ sudo reboot
 
 
 *** on TARGET DEVICE ***
@@ -69,7 +71,7 @@ In an Ubuntu shell:
 
 *** back on HOST SYSTEM ***
 
-  * Build ann run the DNA applications
+  * Build and run the DNA applications
 
         $ cd <X004_FMRadio git repo>
 
