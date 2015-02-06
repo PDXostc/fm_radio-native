@@ -587,7 +587,7 @@ function mouseHoldCB(presetNumStr) {
     savePresetsList();
 
     // we kill the timer just to make sure
-    clearTimeout(mouseDownTimeout);
+    clearTimeout(mouseHoldTimeout);
     mouseDownTimeout = null;
 }
 
@@ -828,7 +828,6 @@ $( ".keypad-box" ).mouseup(function() {
 
 // TODO: REMOVE THIS !
 $( ".small-title" ).click(function() {
-    console.error("DEBUG : clockElement clicked");
     localStorage.removeItem(constants.PRESET_PREFIX + "preset0");
     localStorage.removeItem(constants.PRESET_PREFIX + "preset1");
     localStorage.removeItem(constants.PRESET_PREFIX + "preset2");
