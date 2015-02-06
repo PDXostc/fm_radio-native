@@ -218,7 +218,7 @@ radio_server_create_properties(GObjectClass *gobject_class)
                              "Tells the current FMRadio frequency",
                              88000000,
                              108000000,
-                             88000000,
+                             88100000,
                              G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 
     g_object_class_install_properties(gobject_class,
