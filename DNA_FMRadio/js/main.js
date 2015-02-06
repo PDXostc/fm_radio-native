@@ -59,28 +59,30 @@ var directTuningFreqStr;
 @property constants {Object}
  */
 var constants = {
-    'NUM_OF_PRESETS'           : 6,
-    'FREQ_MAX_LIMIT'           : 108000000,
-    'FREQ_MIN_LIMIT'           : 88000000,
-    'KEYCODE_ESC'              : 27,         // Keycode for "ESCAPE" character
-    'DIRECT_TUNING_FLASH_TIME' : 1000,       // Time to wait for direct tuning flashing timer
-    'MOUSE_HOLD_TIMEOUT_TIME'  : 2000        // Time to wait to consider a mousedown as a mousehold
+    'NUM_OF_PRESETS'           : 6,                     // Number of presets to load
+    'FREQ_MAX_LIMIT'           : 108000000,             // Higher end of valid freq.
+    'FREQ_MIN_LIMIT'           : 88000000,              // Lower end of valid freq.
+    'KEYCODE_ESC'              : 27,                    // Keycode for "ESCAPE" char
+    'DIRECT_TUNING_FLASH_TIME' : 1000,                  // flashing timer timeout
+    'MOUSE_HOLD_TIMEOUT_TIME'  : 2000,                  // Time to wait for mousehold
+    'PRESET_PREFIX'            : "com.jlr.dna-fmradio." // presets localStorage pref.
 };
 
 /**
  * Station presets channel/frequency values
  * We use the actual {int} here for values, as we have to feed FMRadioService
  * There should be constants.NUM_OF_PRESETS presets in the array
+ * Value (-1) means the preset is not defined.
  * with {int} frequencies in Hz
 @property presets {Object}
  */
 var presets = [
-    100700000,
-     98500000,
-     94300000,
-    105700000,
-     92500000,
-     88500000
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1
 ];
 
 /**
@@ -466,13 +468,17 @@ var init = function () {
 
         // Load presets
         // TODO: load the presets from persistent memory
-        // var presetsStore = getLocations();
+        loadPresetsList();
 
         // Set station memory slots presets frequencies
         for (i = 0; i < presets.length; i++) {
             var element = document.getElementById("preset_" + i);
-            var freqMHz = parseFloat(presets[i] / 1000000);
-            element.innerHTML = freqMHz;
+            if (presets[i] != -1) {
+                var freqMHz = parseFloat(presets[i] / 1000000);
+                element.innerHTML = freqMHz;
+            } else {
+                element.innerHTML = "empty";
+            }
         }
 
     } else {
@@ -513,19 +519,27 @@ function setupSpeechRecognition() {
     });
 }
 
-function saveLocationsList(locations) {
-    localStorage.setItem("locations", JSON.stringify(locations));
+function savePresetsList() {
+    // frequencies in 'presets' should all valid Numbers (-1 when unset)
+    for (i = 0; i < presets.length; i++) {
+        localStorage.setItem(constants.PRESET_PREFIX + "preset" + i, presets[i]);
+    }
+    // TODO: use JSON instead !
+    // localStorage.setItem("locations", JSON.stringify(locations));
 }
 
-function getLocations() {
-    console.error("DEBUG : GetLocations called");
-    var locations_preParse = localStorage.getItem("locations");
-    console.error("DEBUG locations_preParse = " + locations_preParse);
+function loadPresetsList() {
+    for (i = 0; i < presets.length; i++) {
+        var val = localStorage.getItem(constants.PRESET_PREFIX + "preset" + i);
+        if ((val != null) && (!isNaN(val)))
+            presets[i] = val;
+    }
+    // TODO: use JSON instead !
+    /*var locations_preParse = localStorage.getItem("locations");
     var locations = JSON.parse();
-    console.error("DEBUG locations = " + locations);
     if (locations == null)
         locations = [];
-    return locations;
+    return presets;*/
 }
 
 /**
@@ -562,12 +576,15 @@ function flashStationIdDigitsCB() {
 function mouseHoldCB(presetNumStr) {
     // We have a mousehold on 'preset_num' button!
     var presetNum = parseInt(presetNumStr);
-    presets[presetNum] = fmradio.frequency();
+    presets[presetNum] = parseInt(fmradio.frequency());
 
     // Make the change appear on the fm-radio-box
     var element = document.getElementById("preset_" + presetNumStr);
     var freqMHz = parseFloat(presets[presetNum] / 1000000);
     element.innerHTML = freqMHz;
+
+    // we save the preset in localStore as soon as it's updated
+    savePresetsList();
 
     // we kill the timer just to make sure
     clearTimeout(mouseDownTimeout);
@@ -733,8 +750,9 @@ $( "#key_OK" ).click(function() {
 $( ".fm-radio-box" ).click(function() {
 
     // Extract pressed preset # from the element's id
+    // freqHz *must* be a number to feed freqIsValid()
     var index = $(this).attr('preset');
-    var freqHz = presets[index];
+    var freqHz = parseInt(presets[index]);
 
     // Tune-in the preset frequency
     if (freqIsValid(freqHz)) {
@@ -806,5 +824,16 @@ $( ".keypad-box" ).mousedown(function() {
  */
 $( ".keypad-box" ).mouseup(function() {
     buttonUserFeedback($(this), "dna-orange", "fm-gray");
+});
+
+// TODO: REMOVE THIS !
+$( ".small-title" ).click(function() {
+    console.error("DEBUG : clockElement clicked");
+    localStorage.removeItem(constants.PRESET_PREFIX + "preset0");
+    localStorage.removeItem(constants.PRESET_PREFIX + "preset1");
+    localStorage.removeItem(constants.PRESET_PREFIX + "preset2");
+    localStorage.removeItem(constants.PRESET_PREFIX + "preset3");
+    localStorage.removeItem(constants.PRESET_PREFIX + "preset4");
+    localStorage.removeItem(constants.PRESET_PREFIX + "preset5");
 });
 
