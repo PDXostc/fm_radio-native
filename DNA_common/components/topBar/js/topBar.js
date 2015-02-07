@@ -86,6 +86,7 @@ var registeredApps = {"Home Screen":"/DNA_common/images/return_arrow_inactive.pn
 						"Finger Print":"/DNA_common/images/fingerprint_inactive.png",
 						"Multimedia Player":"/DNA_common/images/mediaplayer_inactive.png",
 						"SmartDeviceLink":"/DNA_common/images/sdl_inactive.png",
+						"FMRADIO":"/DNA_common/images/fmradio_inactive.png",
 						"syspopup-app":"/DNA_common/images/syspopup-app_inactive.png",
 						"ApplicationVisibility":"/DNA_common/images/app_visibility_inactive.png",
 						"Dialer":"/DNA_common/images/dialer_inactive.png",
