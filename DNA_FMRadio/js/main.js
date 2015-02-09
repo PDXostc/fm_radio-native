@@ -3,12 +3,12 @@
 * Proprietary and confidential
 * Unauthorized copying of this file, via any medium, is strictly prohibited
 *
-* THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY 
+* THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
 * KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
 * IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
 * PARTICULAR PURPOSE.
 *
-* Filename:	            main.js
+* Filename:             main.js
 * Version:              1.0
 * Date:                 Feb. 2015
 * Project:              DNA_FMRadio
@@ -37,6 +37,18 @@
 var state = "STATE_NORMAL";
 
 /**
+ * Very simple mouse down/up states for tracking
+ * mousehold gestures.
+ * Possible states are :
+ *
+ * STATE_MOUSE_UP           : The mouse's left button is not pressed
+ * STATE_MOUSE_DOWN         : The mouse's left button is pressed
+ *
+@property state {String}
+ */
+var mouseState = "STATE_MOUSE_UP";
+
+/**
  * Temporary 'string' frequency when in DIRECT_TUNING state
 @property directTuningFreqStr {String}
  */
@@ -47,45 +59,47 @@ var directTuningFreqStr;
 @property constants {Object}
  */
 var constants = {
-    'FREQ_MAX_LIMIT': 108000000,
-    'FREQ_MIN_LIMIT': 88000000
+    'NUM_OF_PRESETS'           : 6,                     // Number of presets to load
+    'FREQ_MAX_LIMIT'           : 108000000,             // Higher end of valid freq.
+    'FREQ_MIN_LIMIT'           : 88000000,              // Lower end of valid freq.
+    'KEYCODE_ESC'              : 27,                    // Keycode for "ESCAPE" char
+    'DIRECT_TUNING_FLASH_TIME' : 1000,                  // flashing timer timeout
+    'MOUSE_HOLD_TIMEOUT_TIME'  : 2000,                  // Time to wait for mousehold
+    'PRESET_PREFIX'            : "com.jlr.dna-fmradio." // presets localStorage pref.
 };
 
 /**
  * Station presets channel/frequency values
  * We use the actual {int} here for values, as we have to feed FMRadioService
- * with {int} frequencies
+ * There should be constants.NUM_OF_PRESETS presets in the array
+ * Value (-1) means the preset is not defined.
+ * with {int} frequencies in Hz
 @property presets {Object}
  */
-var presets = {
-    'num_1': 100.7,
-    'num_2': 98.5,
-    'num_3': 94.3,
-    'num_4': 105.7,
-    'num_5': 89.3,
-    'num_6': 88.5
-};
-
-/**
- * Keycode Constant
- *
-@property KEYCODE_ESC {Number}
- */
-var KEYCODE_ESC = 27;
-
-/**
- * Time to wait for direct tuning flashing timer
- *
-@property DIRECT_TUNING_TIMER {Number} (in ms)
- */
-var DIRECT_TUNING_FLASH_TIME = 1000;
+var presets = [
+                -1,
+                -1,
+                -1,
+                -1,
+                -1,
+                -1
+];
 
 /**
  * Interval variable used to make Digits flash
+ * It is important to set the flashInterval to 'null' when
+ * not in use to indicate that there's no animation going on
  *
 @property flashInterval {Object}
  */
-var flashInterval;
+var flashInterval = null;
+
+/**
+ * Timeout variable used to track mousehold gestures
+ *
+@property flashInterval {Object}
+ */
+var mouseHoldTimeout = null;
 
 /**
  * Currently shown dash opacity in direct tuning animation
@@ -109,6 +123,71 @@ function setCharAt(str, index, chr) {
 }
 
 /**
+ * Helper function to clip a number between two limits
+ *
+ * @method clip
+ * @param  n     {Number} The number to clip
+ * @param  lower {Number} The lower limit
+ * @param  upper {Number} The upper limit
+ * @static
+ */
+function clip(n, lower, upper) {
+  return Math.max(lower, Math.min(n, upper));
+}
+
+/**
+ * Validates if the passed-in frequency (String) is in the correct
+ * range / follows the right format.
+ * This function supports input freq. as a number OR as a string.
+ * If freq. is a number : it is assumed in Hz and validation is against range only
+ * If freq. is a string : it is assumed string representation of a float (with .)
+ *
+ * @method freqIsValid
+ * @param  freq {String} Frequency to validate.
+ * @static
+ */
+function freqIsValid(freq) {
+    var freqHz;
+    if (typeof freq == "number" ) {
+        // the 'Number' version assume freq. already in Hz
+        freqHz = freq;
+    } else if (typeof freq == "string" ) {
+        // basic initial checks
+        if (freq.charAt(freq.length-1) == ".") {
+            return false;
+        }
+        freqHz = (parseFloat(freq)) * 1000000;
+    }
+
+    // then check against the freq range.
+    if ((freqHz >= constants.FREQ_MIN_LIMIT) &&
+        (freqHz <= constants.FREQ_MAX_LIMIT)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+/**
+ * Set the actual FMRadio frequency (tune-in)
+ *
+ * @method setFMRadioFrequency
+ * @param  freqHz {Number}
+ * @static
+ */
+function setFMRadioFrequency(freqHz) {
+    if (fmradio) {
+        try {
+            fmradio.setFrequency(freqHz, function(error) {
+                console.error("fmradio.setFrequency error : " + error.message);
+            });
+        } catch(e) {
+            console.error("setFMRadioFrequency error catch : " + e);
+        }
+    }
+}
+
+/**
  * Set StationID Big Digits frequency value
  * This function supports input freq. as a number OR as a string.
  * If freq. is a number : automatic truncation will happen to fit XXX.X
@@ -123,8 +202,8 @@ function setStationIdFrequency(freq, dash, opacity) {
 
     var element = document.getElementById("station-id");
     if (typeof freq == "number" ) {
-	    var freqMHz = freq / 1000000;
-	    element.innerHTML = freqMHz.toFixed(1);
+        var freqMHz = freq / 1000000;
+        element.innerHTML = freqMHz.toFixed(1);
     } else if (typeof freq == "string" ) {
         var strLength = freq.length;
         if (strLength > 0) {
@@ -144,6 +223,15 @@ function setStationIdFrequency(freq, dash, opacity) {
                 element.innerHTML += freq.charAt(freq.length-1);
             }
 
+            // Lastly, check for validity and set color and OK button accordingly.
+            var okBtn = document.getElementById("numOK");
+            if (!freqIsValid(element.innerHTML)) {
+                okBtn.classList.remove("dna-orange");
+                okBtn.classList.add("fm-gray");
+            } else {
+                okBtn.classList.add("dna-orange");
+                okBtn.classList.remove("fm-gray");
+            }
         } else {
             element.innerHTML = freq;
         }
@@ -208,8 +296,10 @@ function updateStationIdDigit(add, num_value) {
                     directTuningFreqStr += num_value;
                     if (directTuningFreqStr.charAt(0) == "1")
                         state = "STATE_DIRECT_TUNING_4";
-                    else
+                    else {
+                        stopFlash();
                         state = "STATE_DIRECT_TUNING_FULL";
+                    }
                 } else {
                     directTuningFreqStr = directTuningFreqStr.substring(0, strLength-1);
                     state = "STATE_DIRECT_TUNING_2";
@@ -218,6 +308,7 @@ function updateStationIdDigit(add, num_value) {
             case "STATE_DIRECT_TUNING_4":
                 if (add) {
                     directTuningFreqStr += num_value;
+                    stopFlash();
                     state = "STATE_DIRECT_TUNING_FULL";
                 } else {
                     directTuningFreqStr = directTuningFreqStr.substring(0, strLength-1);
@@ -227,6 +318,7 @@ function updateStationIdDigit(add, num_value) {
             case "STATE_DIRECT_TUNING_FULL":
                 // We can't enter any more digits at this point.
                 if (!add) {
+                    startFlash();
                     directTuningFreqStr = directTuningFreqStr.substring(0, strLength-1);
                     if (directTuningFreqStr.charAt(0) == "1")
                         state = "STATE_DIRECT_TUNING_4";
@@ -246,6 +338,55 @@ function updateStationIdDigit(add, num_value) {
         console.error("updateStationIdDigit should be called only when in" +
                       "one of the STATE_DIRECT_TUNING_XX modes!");
     }
+}
+
+/**
+ * Start "flashing dash" interval timer animation
+ *
+ * @method startFlash
+ * @static
+ */
+function startFlash() {
+    flashInterval = setInterval(flashStationIdDigitsCB, constants.DIRECT_TUNING_FLASH_TIME);
+}
+
+/**
+ * Stop "flashing dash" interval timer animation
+ *
+ * @method stopFlash
+ * @static
+ */
+function stopFlash() {
+    clearInterval(flashInterval);
+    flashInterval = null;
+}
+
+/**
+ * Put state back to Normal state.
+ *
+ * @method goBackToNormal
+ * @param  num_value {Number} Numerical value of the single digit to set
+ * @static
+ */
+function goBackToNormal() {
+    var keypad = document.getElementById("keypad-container");
+    var preset = document.getElementById("presets-container");
+    var okBtn = document.getElementById("numOK");
+    var stationId = document.getElementById("station-id");
+
+    // Show/Hide/Stop back
+    keypad.classList.add("hidden");
+    preset.classList.remove("hidden");
+    stopFlash();
+
+    // Put state back to normal
+    state = "STATE_NORMAL";
+
+    // Put colors back
+    okBtn.classList.remove("dna-green");
+    okBtn.classList.add("dna-orange");
+    stationId.classList.remove("dna-green");
+    stationId.classList.add("dna-orange");
 }
 
 /* faked audio visualizer */
@@ -269,7 +410,7 @@ function fluctuate(bar) {
  */
 var init = function () {
 
-	$(".bar").each(function(i) {
+    $(".bar").each(function(i) {
         fluctuate($(this));
     });
 
@@ -285,37 +426,62 @@ var init = function () {
     }
 
     var bootstrap = new Bootstrap(function (status) {
-    	$("#topBarIcons").topBarIconsPlugin('init', 'news');
-    	$("#clockElement").ClockPlugin('init', 5);
-    	$("#clockElement").ClockPlugin('startTimer');
-    	$('#bottomPanel').bottomPanel('init');
+        $("#topBarIcons").topBarIconsPlugin('init', 'news');
+        $("#clockElement").ClockPlugin('init', 5);
+        $("#clockElement").ClockPlugin('startTimer');
+        $('#bottomPanel').bottomPanel('init');
 
-    	if (tizen.speech) {
-    	    setupSpeechRecognition();
-    	} else {
-    	    console.log("Store: Speech Recognition not running, " +
+        if (tizen.speech) {
+            setupSpeechRecognition();
+        } else {
+            console.log("Store: Speech Recognition not running, " +
                         "voice control will be unavailable");
-    	}
+        }
     });
 
-	if (fmradio) {
-		// We are initializing (enabling) the FMRadioService at boot-up time.
-		try {
-			fmradio.enable(function(error) {
-				console.error("FMRadio.enable internal error : " + error.message);
+    if (fmradio) {
+        // We are initializing (enabling) the FMRadioService at boot-up time.
+        try {
+            fmradio.enable(function(error) {
+                console.error("FMRadio.enable internal error : " + error.message);
                 state = "STATE_ERROR";
                 return;
-			});
-	    } catch(e) {
+            });
+        } catch(e) {
             console.error("FMRadio.enable Exception caught : " + e);
             state = "STATE_ERROR";
             return;
-	    }
+        }
 
-		// Set initial statio-id frequency
-		var frequency = fmradio.frequency();
-		setStationIdFrequency(frequency);
-	} else {
+        // Set initial statio-id frequency
+        // Since FMRadioService should never stop, the "last" station
+        // frequency is still rendering inside fmradio daemon, so we're
+        // just fetching that frequency and tune it in.
+        try {
+            var frequency = fmradio.frequency();
+        } catch(e) {
+            console.error("FMRadio.frequency Exception caught : " + e);
+            state = "STATE_ERROR";
+            return;
+        }
+        setStationIdFrequency(frequency);
+
+        // Load presets
+        // TODO: load the presets from persistent memory
+        loadPresetsList();
+
+        // Set station memory slots presets frequencies
+        for (i = 0; i < presets.length; i++) {
+            var element = document.getElementById("preset_" + i);
+            if (presets[i] != -1) {
+                var freqMHz = parseFloat(presets[i] / 1000000);
+                element.innerHTML = freqMHz;
+            } else {
+                element.innerHTML = "empty";
+            }
+        }
+
+    } else {
         // If underlying FMRadioService/Extension is not present, trouble!
         console.error("Could not find underlying FMRadioExtension !");
 
@@ -335,29 +501,68 @@ var init = function () {
 $(document).ready(init);
 
 function setupSpeechRecognition() {
-	console.log("Store setupSpeechRecognition");
-	Speech.addVoiceRecognitionListener({
-		onapplicationinstall : function() {
-			console.log("Speech application install invoked");
-			if (_applicationDetail.id !== undefined) {
-				StoreLibrary.installApp(_applicationDetail.id);
-			}
-		},
-		onapplicationuninstall : function() {
-			console.log("Speech application uninstall invoked");
-			if (_applicationDetail.id !== undefined) {
-				StoreLibrary.uninstallApp(_applicationDetail.id);
-			}
-		}
+    console.log("Store setupSpeechRecognition");
+    Speech.addVoiceRecognitionListener({
+        onapplicationinstall : function() {
+            console.log("Speech application install invoked");
+            if (_applicationDetail.id !== undefined) {
+                StoreLibrary.installApp(_applicationDetail.id);
+            }
+        },
+        onapplicationuninstall : function() {
+            console.log("Speech application uninstall invoked");
+            if (_applicationDetail.id !== undefined) {
+                StoreLibrary.uninstallApp(_applicationDetail.id);
+            }
+        }
 
-	});
+    });
 }
+
+function savePresetsList() {
+    // frequencies in 'presets' should all valid Numbers (-1 when unset)
+    for (i = 0; i < presets.length; i++) {
+        localStorage.setItem(constants.PRESET_PREFIX + "preset" + i, presets[i]);
+    }
+    // TODO: use JSON instead !
+    // localStorage.setItem("locations", JSON.stringify(locations));
+}
+
+function loadPresetsList() {
+    for (i = 0; i < presets.length; i++) {
+        var val = localStorage.getItem(constants.PRESET_PREFIX + "preset" + i);
+        if ((val != null) && (!isNaN(val)))
+            presets[i] = val;
+    }
+    // TODO: use JSON instead !
+    /*var locations_preParse = localStorage.getItem("locations");
+    var locations = JSON.parse();
+    if (locations == null)
+        locations = [];
+    return presets;*/
+}
+
+/**
+ * Method that adjust class on a passed-in element to show user that
+ * he is interacting with this element.
+ * @method buttonUserFeedback
+ * @param object {Object} The Object on which to adjust classes
+ * @param beforeClass {String} The CSS class to remove
+ * @param afterClass {String} The CSS class to add
+ * @static
+ **/
+function buttonUserFeedback(object, beforeClass, afterClass) {
+    var element = document.getElementById(object.attr("id"));
+    element.classList.add(afterClass);
+    element.classList.remove(beforeClass);
+}
+
 
 /****************************************************************************
  * TIMER CALLBACKS    *******************************************************
  ****************************************************************************/
 
-function flashStationIdDigits() {
+function flashStationIdDigitsCB() {
 
     // we just toggle dash opacity while animating direct tuning
     if (curDashOpacity == 0)
@@ -368,6 +573,25 @@ function flashStationIdDigits() {
     setStationIdFrequency(directTuningFreqStr, true, curDashOpacity);
 }
 
+function mouseHoldCB(presetNumStr) {
+    // We have a mousehold on 'preset_num' button!
+    var presetNum = parseInt(presetNumStr);
+    presets[presetNum] = parseInt(fmradio.frequency());
+
+    // Make the change appear on the fm-radio-box
+    var element = document.getElementById("preset_" + presetNumStr);
+    var freqMHz = parseFloat(presets[presetNum] / 1000000);
+    element.innerHTML = freqMHz;
+
+    // we save the preset in localStore as soon as it's updated
+    savePresetsList();
+
+    // we kill the timer just to make sure
+    clearTimeout(mouseHoldTimeout);
+    mouseDownTimeout = null;
+}
+
+
 /****************************************************************************
  * JQUERY EVENT HANDLERS    *************************************************
  ****************************************************************************/
@@ -377,17 +601,12 @@ function flashStationIdDigits() {
  *
  * @method keyup
  * @param  handler {function} Callback called when element is clicked
- * @static
+ * @istatic
  */
 $(document).keydown(function(e) {
-    if (e.keyCode == KEYCODE_ESC) {
+    if (e.keyCode == constants.KEYCODE_ESC) {
         if (state.indexOf("STATE_DIRECT_TUNING") >= 0) {
-            var keypad = document.getElementById("keypad-container");
-            var preset = document.getElementById("presets-container");
-            keypad.classList.add("hidden");
-            preset.classList.remove("hidden");
-            clearInterval(flashInterval);
-            state = "STATE_NORMAL";
+            goBackToNormal();
             setStationIdFrequency(fmradio.frequency());
         }
     }
@@ -403,25 +622,17 @@ $(document).keydown(function(e) {
 $( "#TuneDownBtn" ).click(function() {
     // Interaction with 'manual tuning' is only possible on STATE_NORMAL
     if (state == "STATE_NORMAL") {
-    	var frequency = fmradio.frequency() - 100000;
-    	if (frequency < constants.FREQ_MIN_LIMIT) {
-    		frequency = constants.FREQ_MAX_LIMIT;
-    	}
-    	console.log("main.js : setting frequency to " + frequency);
+        var frequency = fmradio.frequency() - 100000;
 
-    	if (fmradio) {
-    		try {
-    			fmradio.setFrequency(frequency, function(error) {
-    				console.log("<br>main.js : " + error.message);
-    	        });
-    		} catch(e) {
-    			printError("<br>main.js:radio.SetFrequency catch : " + e);
-    		}
-    	}
+        if (frequency < constants.FREQ_MIN_LIMIT)
+            frequency = constants.FREQ_MAX_LIMIT;
 
-    	// Change the Station ID from the JS layer for now
-    	// TODO: check if better to update from a onFrequenyChanged handler
-    	setStationIdFrequency(frequency);
+        setFMRadioFrequency(frequency);
+        console.log("main.js : setting frequency to " + frequency);
+
+        // Change the Station ID from the JS layer for now
+        // TODO: check if better to update from a onFrequenyChanged handler
+        setStationIdFrequency(frequency);
     }
 });
 
@@ -436,25 +647,19 @@ $( "#TuneDownBtn" ).click(function() {
 $( "#TuneUpBtn" ).click(function() {
     // Interaction with 'manual tuning' is only possible on STATE_NORMAL
     if (state == "STATE_NORMAL") {
-    	var frequency = fmradio.frequency() + 100000;
-    	if (frequency > constants.FREQ_MAX_LIMIT) {
-    		frequency = constants.FREQ_MIN_LIMIT;
-    	}
-    	console.log("main.js : setting frequency to " + frequency);
+        var frequency = fmradio.frequency() + 100000;
 
-    	if (fmradio) {
-    		try {
-    			fmradio.setFrequency(frequency, function(error) {
-    				console.log("<br>main.js : " + error.message);
-    	        });
-    		} catch(e) {
-    			printError("<br>main.js:radio.SetFrequency catch : " + e);
-    		}
-    	}
+        if (frequency > constants.FREQ_MAX_LIMIT)
+            frequency = constants.FREQ_MIN_LIMIT;
 
-    	// Change the Station ID from the JS layer for now
-    	// TODO: check if better to update from a onFrequenyChanged handler
-    	setStationIdFrequency(frequency);
+        frequency = clip (frequency, constants.FREQ_MIN_LIMIT,
+                                     constants.FREQ_MAX_LIMIT);
+        setFMRadioFrequency(frequency);
+        console.log("main.js : setting frequency to " + frequency);
+
+        // Change the Station ID from the JS layer for now
+        // TODO: check if better to update from a onFrequenyChanged handler
+        setStationIdFrequency(frequency);
     }
 });
 
@@ -480,9 +685,9 @@ $( "#station-id" ).click(function() {
             preset.classList.add("hidden");
             keypad.classList.remove("hidden");
             directTuningFreqStr = "";
+            startFlash();
             curDashOpacity = 1;
             setStationIdFrequency(directTuningFreqStr, true, curDashOpacity);
-            flashInterval = setInterval(flashStationIdDigits, DIRECT_TUNING_FLASH_TIME);
             break;
         default:
             console.log("MODAL keypad is currently shown. Can't click here")
@@ -502,7 +707,6 @@ $( ".clickable-key" ).click(function() {
     updateStationIdDigit(true, num);
 });
 
-
 /**
  * React to user clicking on the DEL keypad button
  *
@@ -513,3 +717,122 @@ $( ".clickable-key" ).click(function() {
 $( "#key_DEL" ).click(function() {
     updateStationIdDigit(false);
 });
+
+/**
+ * React to user clicking on the OK keypad button
+ *
+ * @method key_OK.click
+ * @param  handler {function} Callback called when element is clicked
+ * @static
+ */
+$( "#key_OK" ).click(function() {
+    if (state == "STATE_DIRECT_TUNING_FULL") {
+        // Changing the actual tuned frequency is only done
+        // through setStationIdFrequency with Number parameter
+        var freqHz = (parseFloat(directTuningFreqStr)) * 100000;
+        if (freqIsValid(freqHz)) {
+            setFMRadioFrequency(freqHz);
+            setStationIdFrequency(freqHz);
+            goBackToNormal();
+        }
+    }
+});
+
+/**
+ * React to user *clicking* on the presets box CLASS
+ * When user "clicks" on a memory slots, means he wants to load
+ * the station as current.
+ *
+ * @method  fm-radio-box.click()
+ * @param  handler {function} Callback called when element is clicked
+ * @static
+ */
+$( ".fm-radio-box" ).click(function() {
+
+    // Extract pressed preset # from the element's id
+    // freqHz *must* be a number to feed freqIsValid()
+    var index = $(this).attr('preset');
+    var freqHz = parseInt(presets[index]);
+
+    // Tune-in the preset frequency
+    if (freqIsValid(freqHz)) {
+        setFMRadioFrequency(freqHz);
+        setStationIdFrequency(freqHz);
+    }
+});
+
+/**
+ * React to user *mousedown* on the presets box CLASS
+ * We are using mousedown and mouseup events here to implement the
+ * 2-second mousehold when user wants to save stations as presets
+ *
+ * @method  fm-radio-box.mousedown()
+ * @param  handler {function} Callback called when element is pressed-down
+ * @static
+ */
+$( ".fm-radio-box" ).mousedown(function() {
+    mouseState = "STATE_MOUSE_DOWN";
+
+    buttonUserFeedback($(this), "fm-gray", "dna-orange");
+
+    // sanity check. mouseDownTimeout should not be already set on mousedown
+    if (mouseHoldTimeout != null)
+        clearTimeout(mouseHoldTimeout);
+
+    mouseHoldTimeout = setTimeout(mouseHoldCB,
+                                  constants.MOUSE_HOLD_TIMEOUT_TIME,
+                                  $(this).attr('preset'));
+});
+
+/**
+ * React to user *mouseup* on the presets box CLASS
+ * We are using mousedown and mouseup events here to implement the
+ * 2-second mousehold when user wants to save stations as presets
+ *
+ * @method  fm-radio-box.mouseup()
+ * @param  handler {function} Callback called when element mouse is released
+ * @static
+ */
+$( ".fm-radio-box" ).mouseup(function() {
+    mouseState = "STATE_MOUSE_UP";
+
+    buttonUserFeedback($(this), "dna-orange", "fm-gray");
+
+    if (mouseHoldTimeout != null) {
+        clearTimeout(mouseHoldTimeout);
+        mouseHoldTimeout = null;
+    }
+});
+
+/**
+ * React to keypadbox mousedown
+ *
+ * @method  keypad-box.mousedown()
+ * @param  handler {function} Callback called when element is mousedowned
+ * @static
+ */
+$( ".keypad-box" ).mousedown(function() {
+    buttonUserFeedback($(this), "fm-gray", "dna-orange");
+});
+
+/**
+ * React to keypadbox mouseup
+ *
+ * @method  keypad-box.mouseup()
+ * @param  handler {function} Callback called when element is mouseuped
+ * @static
+ */
+$( ".keypad-box" ).mouseup(function() {
+    buttonUserFeedback($(this), "dna-orange", "fm-gray");
+});
+
+// TODO: REMOVE THIS !
+$( ".small-title" ).click(function() {
+    localStorage.removeItem(constants.PRESET_PREFIX + "preset0");
+    localStorage.removeItem(constants.PRESET_PREFIX + "preset1");
+    localStorage.removeItem(constants.PRESET_PREFIX + "preset2");
+    localStorage.removeItem(constants.PRESET_PREFIX + "preset3");
+    localStorage.removeItem(constants.PRESET_PREFIX + "preset4");
+    localStorage.removeItem(constants.PRESET_PREFIX + "preset5");
+});
+

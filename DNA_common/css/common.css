@@ -435,7 +435,7 @@ section {
 .switch-large {
   width: 450px;
   height: 150px;
-} 
+}
 
 .switch-small {
   width: 225px;
@@ -466,7 +466,7 @@ section {
   background-size: 100% 100%;
   background-image: url(../images/switchcontrol.svg);
   -webkit-filter: drop-shadow(4px 4px 5px rgba(0,0,0,0.35));
-} 
+}
 
 /* On/Off Styles for Background Plate */
 
