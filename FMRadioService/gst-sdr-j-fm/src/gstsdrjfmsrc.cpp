@@ -54,7 +54,7 @@ GST_DEBUG_CATEGORY_EXTERN (sdrjfm_debug);
 #define DEFAULT_FREQUENCY_STEP     100000
 #define DEFAULT_FREQUENCY        96700000
 #define DEFAULT_INTERVAL             1000
-#define DEFAULT_THRESHOLD              20
+#define DEFAULT_THRESHOLD              30
 
 enum
 {

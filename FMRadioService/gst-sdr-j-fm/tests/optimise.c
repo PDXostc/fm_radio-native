@@ -21,11 +21,8 @@ struct _OptimisationParameters
   gint step;
 };
 
-// The order here is significant; we use the default threshold for the
-// interval optimisation run and then optimise the threshold using the
-// optimised interval value
 const OptimisationParameters OPTIMISATION_PARAMETERS[] = 
-  { { "threshold", 20, 50, 1 },
+  { //{ "threshold", 20, 50, 1 },
     { "interval", 500, 5, -5 },
     { NULL, 0, 0, 0 }
   };
