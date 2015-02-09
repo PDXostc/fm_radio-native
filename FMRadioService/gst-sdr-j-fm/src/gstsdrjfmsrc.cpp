@@ -212,8 +212,8 @@ gst_sdrjfm_src_init (GstSdrjfmSrc * self)
 
   self->frequency = DEFAULT_FREQUENCY;
 
-  //basrc->latency_time = 132000; /* base on buffer size */
-  //basrc->buffer_time = 8 * basrc->latency_time;
+  basrc->latency_time = 2000000;
+  basrc->buffer_time = 8 * basrc->latency_time;
 
   gst_audio_base_src_set_provide_clock (basrc, FALSE);
 }
