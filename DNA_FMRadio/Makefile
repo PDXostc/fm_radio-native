@@ -8,7 +8,7 @@ SEND := ~/send
 
  # TIZEN_IP must be exported from the env if set to anything else than NUC
 ifndef TIZEN_IP
-TIZEN_IP=TizenNuc
+TIZEN_IP=TizenVTC
 endif
 
 wgtPkg: clean
@@ -24,6 +24,10 @@ wgt:
 	zip -r $(PROJECT).wgt $(WRT_FILES)
 
 run: install
+	ssh app@$(TIZEN_IP) "export DBUS_SESSION_BUS_ADDRESS='unix:path=/run/user/5000/dbus/user_bus_socket' && xwalkctl | egrep -e 'FMRADIO' | awk '{print $1}' | xargs --no-run-if-empty xwalk-launcher"
+
+debug: install
+	ssh app@$(TIZEN_IP) "export DBUS_SESSION_BUS_ADDRESS='unix:path=/run/user/5000/dbus/user_bus_socket' && xwalkctl -d 9888"
 	ssh app@$(TIZEN_IP) "export DBUS_SESSION_BUS_ADDRESS='unix:path=/run/user/5000/dbus/user_bus_socket' && xwalkctl | egrep -e 'FMRADIO' | awk '{print $1}' | xargs --no-run-if-empty xwalk-launcher -d"
 
 install: deploy

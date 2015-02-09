@@ -37,19 +37,20 @@ In an Ubuntu shell:
 
         $ sh ./cp_rpms.sh
 
-            # Additionally, if you want to ALSO copy the 'debug' rpms, do this instead :
+                # Additionally, if you want to ALSO copy the 'debug' rpms, do this INSTEAD :
+                  $ ./cp_rpms.sh debug
 
-        $ sh ./cp_rpms.sh debug
-
-            ## You will notice that the script also copies the "install_rpms.sh" script over.
+          ## You will notice that the script also copies the "install_rpms.sh" script over.
 
   * Make sure your FM radio dongle is up and running
+        * For example, when using the R820T SDR&DVB-T from NooElec, do :
 
-        sudo cp blacklist-rtlsdr.conf /etc/modprobe.d
+        $ sudo cp blacklist-rtlsdr.conf /etc/modprobe.d
+        $ sudo cp 99-librtlsdr.rules /etc/udev/rules.d
 
-        sudo cp 99-librtlsdr.rules /etc/udev/rules.d
+  * Reboot your target device
 
-        sudo reboot
+        $ sudo reboot
 
 
 *** on TARGET DEVICE ***
@@ -57,21 +58,21 @@ In an Ubuntu shell:
   * Install the copied rpms
 
         $ cd ~/
-        $ sudo sh ./install_rpms.sh
+        $ sudo ./install_rpms.sh
 
             # If the package is installed for the first time, you'll get error messages about
             # not being able to 'un'install, but just ignore those messages
 
-            # Additionally, if you want to ALSO copy the 'debug' rpms, do this instead :
-
-        $ sudo sh ./install_rpms.sh debug
+                    # Additionally, if you want to ALSO copy the 'debug' rpms, do this INSTEAD :
+                    $ sudo ./install_rpms.sh debug
 
 
 *** back on HOST SYSTEM ***
 
-  * Build ann run the DNA applications
+  * Build and run the DNA applications
 
         $ cd <X004_FMRadio git repo>
+        ** please note this is the ROOT X004_FMRadio folder.
 
         $ make install
 

@@ -698,6 +698,7 @@ function onAppRecallSuccess(list) {
 						   Tizen:"./DNA_common/images/tizen_inactive.png",
 						   Voiceprint:"./DNA_common/images/voiceprint_inactive.png",
 						   Weather:"./DNA_common/images/weather_inactive.png",
+						   FMRADIO:"./DNA_common/images/fmradio_inactive.png",
 						   gestureGame:"./DNA_common/images/gesture_game_inactive.png",
 						   saythis:"./DNA_common/images/say_this_inactive.png"};
 	var i = 0;
