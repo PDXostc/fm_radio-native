@@ -14,6 +14,18 @@ STEPS TO BUILD AND RUN
 *************************************
 In an Ubuntu shell:
 
+*** on TARGET DEVICE ***
+
+  * Make sure your FM radio dongle is up and running
+        * For example, when using the R820T SDR&DVB-T from NooElec, do :
+
+        $ sudo cp blacklist-rtlsdr.conf /etc/modprobe.d
+        $ sudo cp 99-librtlsdr.rules /etc/udev/rules.d
+
+  * reboot the device
+        $ sudo reboot
+
+
 *** on HOST SYSTEM ***
 
         $ cd <X004_FMRadio git repo>
@@ -41,16 +53,6 @@ In an Ubuntu shell:
                   $ ./cp_rpms.sh debug
 
           ## You will notice that the script also copies the "install_rpms.sh" script over.
-
-  * Make sure your FM radio dongle is up and running
-        * For example, when using the R820T SDR&DVB-T from NooElec, do :
-
-        $ sudo cp blacklist-rtlsdr.conf /etc/modprobe.d
-        $ sudo cp 99-librtlsdr.rules /etc/udev/rules.d
-
-  * Reboot your target device
-
-        $ sudo reboot
 
 
 *** on TARGET DEVICE ***
