@@ -1,59 +1,90 @@
+<!-- wifi page template file -->
+
 <div id="WifiPage" class="tabs WifiPage hidden">
 
-	<div id="tabsTopSubPanel" class="tabsTopSubPanel">
- 
-		<div id="tabsCloseSubPanelWifiButton" class="tabsCloseSubPanelButton"></div>
-		<div class="tabsSubPanelArea">
-			<div id="tabsTopSubPanelTitle">
-				<div class="boxIconRectangleSmall bgColorTheme"></div>
-				<div class="boxIconCaptionSmall boxCaptionText">SETTINGS</div>
-			</div>
-			<div id="tabsTopSubPanelSubtitle" class="componentHeader">WIFI</div>
-			<div class="tabsTabClear">
-			</div>
-		</div>
-		<div id="wifiPowerButton" class="subPanelToggleButton subPanelToggleButtonWide">
-			<!-- wifi on/off button style here, hexagon slider instead of text -->
-			<!-- <div class="fontColorNormal fontSizeMedium fontWeightBold toggleButtonText">TURN ON</div> -->
+	<div class="component-top"> 
+		<div class="component-head">
+			<div id="wifiBackArrow" class="settings-back-arrow"></div>
+			<div class="blue-rectangle"></div>
+			<div class="blue-caption-text">SETTINGS</div>
+			<div class="component-title">WIFI</div>
+			<div class="settings-clear">	</div>
+		</div>		
+		<div id="wifiPowerButton" class="settings-switch">
 			<div class="switch off switch-xsmall">
 			  <div class="switch-plate">
 			    <div class="switch-control"></div>
 			  </div>
 			</div>
 		</div>
-		<div id="loadingSpinnerWifi" class="loadingSpinnerWifi loading-container loading-container-small">
-			<div class="loading loading-small"></div>
-		</div>
-	</div>
-	<div id="tabsTopSubPanel" class="tabsTopSubPanel">
-
-		<!-- start of wifi tabsContent portion-->
-		<div id="tabsContent" class="tabsContent wifiContent">
-			<div id="wifiNetworksList"><!-- name --></div>
-			<div class="fontColorNormal fontSizeMedium fontWeightBold">TETHERING IS ON</div>
-			<div class="buttonsArea">
-				<div id="wifiRefreshButton" class="wifiRefreshButton">
-				</div>
-				<div id="addNetworkButton" class="addNetworkButton">
+		<div class="component-subhead border">
+			<h3 class="hidden">Wifi Connections Available</h3>
+			<h4 id="" class="hidden">Hotspot tethering is on</h4>
+			<div id="spinner" class="hidden">
+				<div id="loadingSpinnerWifi" class="loadingSpinnerWifi loading-container loading-container-small">
+					<div class="loading loading-small"></div>
 				</div>
 			</div>
 		</div>
 	</div>
+
+	<div class="component-content">	
+		<div id="wifiNetworksList">
+			<div id="wifiDeviceTemplate" class="networkElement">
+			<!-- template information inserts here -->
+			</div>
+		</div>
+		<div class="buttonsArea">
+			<div id="wifiRefreshButton" class="networkRefreshButton"></div>
+			<div id="addNetworkButton" class="addNetworkButton"></div>
+		</div>
+	</div>
+
+		<!-- wifi add a network modal --> 
+	<div id="AddNetworkModal" class="modal hidden">
+		<div class="modal-bkgrnd box-out-orange">
+			<div id="AddNetworkExitModal" class="close-button"></div>
+			<h2>Add a Network</h2>
+			<div class="input-group">
+				<label for="" class="component-label">SSID</label>
+				<input id="inputSsid" type="text" name="focus" class="text-input input-white" placeholder="Enter network name">
+				<div class="delete-button" type="reset"></div>					
+			</div>
+			<div class="input-group">
+				<label for="" class="component-label">Security</label>
+				<input type="text" name="focus" class="text-input input-white" id="inputSsid" placeholder="No security">
+				<!-- tap the next-button replace the previous input field's placeholder text with WEP, WPA, or WPA2 and fold out password field: -->
+				<div class="next-button" id="buttonNextSecurity" type=""></div>
+				<!-- this toggles to the following and no security/password field: -->
+				<div class="previous-button" id="buttonPreviousSecurity" type=""></div>
+			</div>
+			<div class="password-field off">	
+				<div class="input-group">
+					<label for="" class="component-label">PASSWORD</label>	
+					<input type="password" name="focus" class="text-input input-white" id="inputPassword" placeholder="Enter password">
+					<div class="delete-button" type="reset"></div>					
+				</div>
+			</div>		
+			<div class="center">
+				<input type="button" class="no-margin" value="Add" id="" >  
+			</div>            
+		</div>
+	</div>
 </div>
 
-<div id="WifiDeviceTemplate" class="wifiElement borderColorTheme">
-	<div class="wifiElementInfoBox">
-		<div class="wifiElementTitle fontSizeLarge fontColorNormal fontWeightBold"><!-- name --></div>
-		<div class="wifiElementSubtitle fontSizeSmaller fontColorNormal"></div>
-		<div class="wifiElementDescription fontSizeSmaller fontColorNormal"></div>
-		<div class="wifiElementMore fontSizeSmaller fontColorNormal"></div>
-		<div class="wifiElementMore fontSizeSmaller fontColorSelected fontWeightBold"></div>
-		<div class="wifiElementMore fontSizeSmaller fontColorSelected fontWeightBold"></div>
+<template>
+	<div id="wifiDeviceTemplate" class="networkElement">
+		<div class="networkElementInfoBox">
+			<div class="networkElementTitle"><!-- SSID -->NGI-DEV</div>
+			<div class="networkElementSubtitle"><!-- Signal -->Signal: AVERAGE</div>
+			<div class="networkElementDescription"><!-- Encryption -->Encryption: AES</div>
+			<div class="networkElementMore selected"><!-- Security -->Security: PSK</div>
+			<div class="networkElementMore selected"><!-- Connection-->Connected</div>
+			<div class="networkElementMore alert">NO INTERNET ACCESS</div>
+		</div>
+		<div class="networkElementButton">
+			<button class="">CONNECT</button>
+			<button class="button-green hidden">DISCONNECT</button>
+		</div>
 	</div>
-	
-	<div class="toggleButton wifiElementButton">
-		<div class="connectWhite connectGreen toggleButton toggleButtonBackground"></div>
-		<div class="fontColorNormal fontSizeMedium fontWeightBold"></div>
-	</div>
-</div>
- 
+</template>

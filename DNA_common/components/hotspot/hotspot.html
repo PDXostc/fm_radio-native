@@ -1,0 +1,58 @@
+<!-- wifi tethering/hotspot page template file -->
+
+<div id="hotspotPage" class="tabs hotspotPage hidden">
+
+	<div class="component-top"> 
+		<div class="component-head">
+			<div id="hotspotBackArrow" class="settings-back-arrow"></div>
+			<div class="blue-rectangle"></div>
+			<div class="blue-caption-text">SETTINGS</div>
+			<div class="component-title">hotspot</div>
+			<div class="settings-clear">	</div>
+		</div>
+		<div id="hotspotPowerButton" class="settings-switch">
+			<div class="switch off switch-xsmall">
+			  <div class="switch-plate">
+			    <div class="switch-control"></div>
+			  </div>
+			</div>
+		</div>
+		<div class="component-subhead border">
+			<h2>Wifi Tethering/Hotspot</h2>
+			<div id="spinner" class="hidden">
+				<div id="loadingSpinnerWifi" class="loadingSpinnerWifi loading-container loading-container-small">
+					<div class="loading loading-small"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="component-content">
+		<form id="" class="component-form">
+			<div class="input-group">
+				<label class="component-label" for="">Name/SSID</label>
+				<input id="" type="text" name="focus" class="text-input input-white"  placeholder="Enter network name">
+				<div class="delete-button" type="reset"></div>
+			</div>
+			<div class="input-group">
+				<label class="component-label" for="">Security</label>
+				<input id="" type="text" name="focus" class="text-input input-white" placeholder="WPA2">
+				<!-- tap the next-button replace the previous input field's placeholder text with WEP, WPA, or WPA2 and fold out password field: -->
+				<div class="next-button" id="buttonNextSecurity" type=""></div>
+				<!-- this toggles to the following and no security/password field: -->
+				<!-- <div class="previous-button" id="buttonPreviousSecurity" type=""></div> -->
+			</div>
+			<div class="input-group">
+				<label class="component-label" for="">Password</label>
+				<input id="" type="text" name="focus" class="text-input input-white"  placeholder="Enter password">
+				<div class="delete-button" type="reset"></div>
+			</div>
+			<div class="center">
+				<input id="" type="button" class="submit" value="submit">  
+			</div> 
+		</form>
+	</div>
+<!-- wifi tethering/hotspot modal or alert -->
+<div class="modal-bkgrnd box-out-orange hidden"></div>
+
+</div>
