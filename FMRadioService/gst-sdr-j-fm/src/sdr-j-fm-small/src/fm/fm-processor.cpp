@@ -70,6 +70,8 @@ GST_DEBUG_CATEGORY_EXTERN (sdrjfm_debug);
 
 	pthread_mutex_init (&this -> scanLock, NULL);
 	this	-> scanning		= false;
+  	this	-> scan_fft		= new common_fft (1024);
+  	this	-> scanPointer		= 0;
 
 	this	-> localOscillator	= new Oscillator (inputRate);
 	this	-> mySinCos		= new SinCos (fmRate);
@@ -332,6 +334,79 @@ void	fmProcessor::unlockScan() {
 	pthread_mutex_unlock (&this -> scanLock);
 }
 
+bool	fmProcessor::checkStation(DSPCOMPLEX v) {
+	bool ret = false;
+	lockScan();
+	if (scanning) {
+	   ret = true;
+	   DSPCOMPLEX *scanBuffer = scan_fft -> getVector ();
+	   scanBuffer [scanPointer ++] = v;
+	   if (scanPointer >= SCAN_BLOCK_SIZE) {
+	      scanPointer	= 0;
+	      scan_fft -> do_FFT ();
+	      float signal	= get_db (getSignal	(scanBuffer, SCAN_BLOCK_SIZE), 256);
+	      float noise	= get_db (getNoise	(scanBuffer, SCAN_BLOCK_SIZE), 256);
+	      float ratio	= signal - noise;
+	      GST_TRACE("SnR check, signal: %f, noise: %f, ratio: %f (threshold: %i)",
+			      signal, noise, ratio, this -> thresHold);
+	      if (ratio > this -> thresHold) {
+		 GST_DEBUG("Station found; signal: %f, noise: %f, ratio: %f (threshold: %i)",
+				 signal, noise, ratio, this -> thresHold);
+
+		 addStation (ratio);
+
+	      } else if (!stations.empty ()) {
+		 finishScan ();
+	      }
+	   }
+	}
+	unlockScan();
+
+	return ret;
+}
+
+void	fmProcessor::addStation(float ratio) {
+	const int32_t frequency = myRig -> getVFOFrequency();
+
+	if (stations.empty () || stations.back().frequency != frequency) {
+	   StationData data;
+	   data.frequency = frequency;
+	   data.snr = ratio;
+	   data.count = 1;
+	   stations . push_back (data);
+	} else {
+	   StationData &existing = stations.back ();
+	   existing.snr += ratio;
+	   ++existing.count;
+	}
+}
+
+void	fmProcessor::finishScan() {
+
+	const int size = stations.size();
+	int ind = size/2;
+
+	// Calculate average snr from accumulated values
+	StationData &mid = stations[ind];
+	mid.snr /= mid.count;
+
+	// If there's even size, there's two middle frequencies, pick the one
+	// with the best signal-to-noise ratio
+	if (size % 2 == 0) {
+	   StationData &first = stations[ind-1];
+	   first.snr /= first.count;
+	   
+	   if (first.snr > mid.snr)
+		   ind -= 1;
+	}
+
+	StationData &data = stations[ind];
+
+	scanCallback(data.frequency, scanUserdata);
+	stations.clear();
+	scanning = false;
+}
+
 void	fmProcessor::run (void) {
 DSPCOMPLEX	result;
 DSPFLOAT 	rdsData;
@@ -343,9 +418,6 @@ DSPCOMPLEX	pcmSample;
 int32_t		a;
 squelch		mySquelch (1, audioRate / 10, audioRate / 20, audioRate); 
 float		audioGainAverage	= 0;
-int32_t		scanPointer	= 0;
-common_fft	*scan_fft  	= new common_fft (1024);
-DSPCOMPLEX	*scanBuffer	= scan_fft -> getVector ();
 bool		pilotExists;
 DSPCOMPLEX	pcmSamples [256];
 int16_t		audioIndex	= 0;
@@ -389,29 +461,7 @@ int16_t		audioIndex	= 0;
 
 	      v = v * DSPFLOAT (Gain);
 //	second step: if we are scanning, do the scan
-	      bool cont = false;
-	      lockScan();
-	      if (scanning) {
-		 cont = true;
-	         scanBuffer [scanPointer ++] = v;
-	         if (scanPointer >= 1024) {
-	            scanPointer	= 0;
-	            scan_fft -> do_FFT ();
-	            float signal	= get_db (getSignal	(scanBuffer, 1024), 256);
-	            float noise		= get_db (getNoise	(scanBuffer, 1024), 256);
-		    float ratio         = signal - noise;
-		    GST_TRACE("SnR check, signal: %f, noise: %f, ratio: %f (threshold: %i)",
-			      signal, noise, ratio, this -> thresHold);
-	            if (ratio > this -> thresHold) {
-		       GST_DEBUG("Station found; signal: %f, noise: %f, ratio: %f (threshold: %i)",
-				 signal, noise, ratio, this -> thresHold);
-		       scanCallback(myRig -> getVFOFrequency(), scanUserdata);
-		       scanning = false;
-	            }
-	         }
-	      }
-	      unlockScan();
-	      if (cont)
+	      if (checkStation (v))
 	         continue;	// no signal processing!!!!
 
 //	Now we have the signal ready for decoding

@@ -9,6 +9,7 @@ GST_DEBUG_CATEGORY (sdrjfm_optimise_debug);
 
 #define KNOWN_GOOD_STATION_FREQUENCY 105900000
 #define START_OFFSET (-1000000)
+#define MAX_GAP_WITHOUT_STATION 500000
 #define CONFIRMATIONS 9
 #define SEEK_DELAY 333
 
@@ -22,8 +23,8 @@ struct _OptimisationParameters
 };
 
 const OptimisationParameters OPTIMISATION_PARAMETERS[] = 
-  { //{ "threshold", 20, 50, 1 },
-    { "interval", 500, 5, -5 },
+  { { "threshold", 25, 50, 1 },
+    { "interval", 500, 5, -20 },
     { NULL, 0, 0, 0 }
   };
 
@@ -121,8 +122,8 @@ next_optimisation (TestData *data)
 static void
 frequency_changed (TestData *data, gint frequency)
 {
-  if ((START_OFFSET > 0 && frequency < data->target)
-    || (START_OFFSET < 0 && frequency > data->target))
+  if ((START_OFFSET > 0 && frequency < (data->target - MAX_GAP_WITHOUT_STATION))
+      || (START_OFFSET < 0 && frequency > (data->target + MAX_GAP_WITHOUT_STATION)))
     {
       GST_DEBUG_OBJECT (data->fmsrc, "Seek frequency %i missed target %i; station not found",
 			frequency, data->target);

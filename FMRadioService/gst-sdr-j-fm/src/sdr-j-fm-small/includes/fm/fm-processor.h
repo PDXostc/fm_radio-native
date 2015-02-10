@@ -29,6 +29,7 @@
 #define	__FM_PROCESSOR
 
 #include	<sndfile.h>
+#include	<vector>
 #include	"fm-constants.h"
 #include	"fir-filters.h"
 #include	"fft-filters.h"
@@ -39,6 +40,7 @@
 #include	"oscillator.h"
 #include	"resampler.h"
 
+#define SCAN_BLOCK_SIZE 1024
 
 /** Callback type for scanning
  * \param frequency The frequency on which a station has been found, in Hz
@@ -105,6 +107,14 @@ public:
 
 	void		set_squelchValue	(int16_t);
 private:
+	/** This holds data on a station found while scanning */
+	struct StationData {
+	  int32_t frequency;
+	  float   snr;
+	  int     count;
+	};
+	typedef std::vector<StationData> StationDataList;
+
         static void *   c_run (void * userdata);
         void		start		(void);
 	void		run		(void);
@@ -121,7 +131,17 @@ private:
 	pthread_mutex_t scanLock;
 	void		lockScan();
 	void		unlockScan();
+	/** Run the scan check for a single sample */
+	bool            checkStation(DSPCOMPLEX);
+	/** Add a found station to the list of found frequencies */
+	void            addStation(float);
+	/** Locate the central frequency of those found and issue
+	 * the station callback, finishing the scan */
+	void            finishScan();
 	bool		scanning;
+	common_fft	*scan_fft;
+	int32_t		scanPointer;
+	StationDataList stations;
 	StationCallback	scanCallback;
 	void *		scanUserdata;
 	DSPFLOAT	getSignal	(DSPCOMPLEX *, int32_t);
