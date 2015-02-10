@@ -528,12 +528,12 @@ bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
 
         case GST_MESSAGE_ERROR:
             gst_message_parse_error (message, &error, NULL);
-            g_assert_no_error (error);
+	    GST_WARNING ("Error from bus: %s", error->message);
         break;
 
         case GST_MESSAGE_WARNING:
             gst_message_parse_warning (message, &error, NULL);
-            g_assert_no_error (error);
+	    GST_WARNING ("Warning from bus: %s", error->message);
         break;
 
         default:
