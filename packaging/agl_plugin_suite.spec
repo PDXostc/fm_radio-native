@@ -53,7 +53,7 @@ Requires:       libsndfile
 %global LIBSAMPLERATE_PATH %{DEPS_PATH}/libsamplerate-0.1.8
 
 # Xwalk extension plugin list
-%global plugin_list %{AGL_DIR}/extension_common %{AGL_DIR}/BoilerPlateExtension %{AGL_DIR}/wkb_client_ext %{AGL_DIR}/FMRadioExtension
+%global plugin_list %{AGL_DIR}/extension_common %{AGL_DIR}/BoilerPlateExtension %{AGL_DIR}/FMRadioExtension
 
 %global autogen_list %{FMRADIOSERVICE_PATH} %{GSTSDRJFM_PATH}
 %global deps_list %{RTLSDR_PATH} %{FFTW3_PATH} %{LIBSAMPLERATE_PATH}
@@ -166,19 +166,7 @@ done
 
 %files
 %{_prefix}/lib/tizen-extensions-crosswalk/libbp.so
-%{_prefix}/lib/tizen-extensions-crosswalk/libwkb_client.so
 %{_prefix}/lib/tizen-extensions-crosswalk/lib_fmradio.so
-%{_prefix}/share/X11/xkb/symbols/wkb
-%{_prefix}/local/sbin/kb_inst
-%{_prefix}/share/weekeyboard/blue_1080.edj
-%{_prefix}/share/weekeyboard/blue_720.edj
-%{_prefix}/share/weekeyboard/blue_600.edj
-%{_prefix}/share/weekeyboard/green_1080.edj
-%{_prefix}/share/weekeyboard/green_720.edj
-%{_prefix}/share/weekeyboard/green_600.edj
-%{_prefix}/share/weekeyboard/amber_1080.edj
-%{_prefix}/share/weekeyboard/amber_720.edj
-%{_prefix}/share/weekeyboard/amber_600.edj
 
 %files rtl-sdr
 %{_prefix}/bin/rtl_adsb
