@@ -40,23 +40,8 @@ struct _TestData
 
   gint best;
   gint current_count;
-
-  GMutex lock;
 };
 
-static void
-lock (TestData *data)
-{
-  //g_mutex_lock (&data->lock);
-}
-
-static void
-unlock (TestData *data)
-{
-  //g_mutex_unlock (&data->lock);
-}
-
-// Must be locked
 static const OptimisationParameters *
 get_current_params(TestData *data)
 {
@@ -68,12 +53,10 @@ do_seek (void *user_data)
 {
   TestData *data = user_data;
 
-  lock (data);
   const gint start_freq = data->target + START_OFFSET;
   g_object_set (data->fmsrc, "frequency", start_freq, NULL);
 
   g_signal_emit_by_name (data->fmsrc, data->seek_signal_name);
-  unlock (data);
 
   return FALSE;
 }
@@ -85,7 +68,6 @@ seek (TestData *data)
   g_timeout_add (SEEK_DELAY, do_seek, data);
 }
 
-// Must be locked
 static void
 optimise (TestData *data)
 {
@@ -102,7 +84,6 @@ optimise (TestData *data)
   seek (data);
 }
 
-// Must be locked
 static void
 next_optimisation (TestData *data)
 {
@@ -131,8 +112,6 @@ frequency_changed (TestData *data, gint frequency)
       g_signal_emit_by_name (data->fmsrc, "cancel-seek");
 
       // We previously found the best value
-      lock (data);
-
       const OptimisationParameters * params = get_current_params (data);
       if (data->best == -1)
 	{
@@ -145,12 +124,9 @@ frequency_changed (TestData *data, gint frequency)
       printf("Best value for property `%s': %i\n", params->name, data->best);
 
       next_optimisation (data);
-
-      unlock (data);
     }
 }
 
-// Must be locked
 static void
 iterate (TestData *data, const OptimisationParameters * params)
 {
@@ -180,8 +156,6 @@ station_found (TestData *data, gint frequency)
   gint current_value;
   GST_DEBUG_OBJECT (data->fmsrc, "Found station at frequency %i", frequency);
 
-  lock (data);
-
   const OptimisationParameters * params = get_current_params (data);
 
   if (frequency != data->target)
@@ -193,7 +167,6 @@ station_found (TestData *data, gint frequency)
 			frequency);
       data->best = -1;
       iterate (data, params);
-      unlock (data);
       return;
     }
 
@@ -211,8 +184,6 @@ station_found (TestData *data, gint frequency)
 			params->name, current_value, data->current_count);
       seek (data);
     }
-
-  unlock (data);
 }
 
 static gboolean
@@ -288,8 +259,6 @@ tearup ()
   else
     data->seek_signal_name = "seek_up";
 
-  g_mutex_init (&data->lock);
-
   bus = gst_pipeline_get_bus (GST_PIPELINE (data->pipeline));
   gst_bus_add_watch (bus, bus_cb, data);
   g_object_unref (bus);
@@ -308,7 +277,6 @@ teardown (TestData *data)
   g_object_unref (data->fmsrc);
   g_object_unref (data->pipeline);
   g_main_loop_unref (data->loop);
-  g_mutex_clear (&data->lock);
   g_slice_free (TestData, data);
 }
 
