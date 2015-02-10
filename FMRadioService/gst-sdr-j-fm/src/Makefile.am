@@ -1,4 +1,4 @@
-plugin_LTLIBRARIES = libgstsdrjfm.la
+plugin_LTLIBRARIES = cp-common libgstsdrjfm.la
 
 libgstsdrjfm_la_SOURCES = \
 	sdr-j-fm-small/src/various/iir-filters.cpp \
@@ -59,3 +59,6 @@ noinst_HEADERS = \
 	sdr-j-fm-small/small-gui/virtual-input.h \
 	sdr-j-fm-small/small-gui/gui.h \
 	gstsdrjfmsrc.h
+
+cp-common:
+	cp ../../../extension_common/fm_radio_common.h ./

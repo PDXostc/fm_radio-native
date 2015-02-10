@@ -69,9 +69,8 @@ struct _GstData
     GstElement *fmsrc;
     void *server;
     void (*playing_cb) (GstData*);
-
-    /* TODO: Implement this ! */
-    /* void (*freq_changed_cb) (GstData*,gint);*/
+    void (*frequency_changed_cb) (GstData*,gint);
+    void (*station_found_cb) (GstData*,gint);
 };
 
 /** Main GObject RadioServer object. */
@@ -216,9 +215,9 @@ radio_server_create_properties(GObjectClass *gobject_class)
         g_param_spec_double ("frequency",
                              "frequency",
                              "Tells the current FMRadio frequency",
-                             88000000,
-                             108000000,
-                             88100000,
+                             FM_RADIO_SERVICE_MIN_FREQ,
+                             FM_RADIO_SERVICE_MAX_FREQ,
+                             FM_RADIO_SERVICE_DEF_FREQ,
                              G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 
     g_object_class_install_properties(gobject_class,
@@ -507,22 +506,23 @@ bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
 
         case GST_MESSAGE_ELEMENT:
             if (GST_MESSAGE_SRC (message) == GST_OBJECT (data->fmsrc)) {
-                /*const GstStructure *s = gst_message_get_structure (message);
+                const GstStructure *s = gst_message_get_structure (message);
 
-                g_assert (gst_structure_has_name
-                         (s, "srdjrmsrc-frequency-changed"));
-                g_assert (gst_structure_has_field_typed
-                         (s, "frequency", G_TYPE_INT));
+                g_assert (gst_structure_has_field_typed (s, "frequency", G_TYPE_INT));
 
-                if (data->freq_changed_cb) {
-                    gint freq;
-                    gst_structure_get_int (s, "frequency", &freq);
+                gint freq;
+                gst_structure_get_int (s, "frequency", &freq);
+                g_assert_cmpint (freq, >=, FM_RADIO_SERVICE_MIN_FREQ);
+                g_assert_cmpint (freq, <=, FM_RADIO_SERVICE_MAX_FREQ);
 
-                    g_assert_cmpint (freq, >=, MIN_FREQ);
-                    g_assert_cmpint (freq, <=, MAX_FREQ);
 
-                    data->freq_changed_cb (data, freq);
-                }*/
+                if (gst_structure_has_name (s, "sdrjfmsrc-frequency-changed")) {
+                    if (data->frequency_changed_cb)
+                        data->frequency_changed_cb (data, freq);
+                } else if (gst_structure_has_name (s, "sdrjfmsrc-station-found")) {
+                    if (data->station_found_cb)
+                        data->station_found_cb (data, freq);
+                }
             }
         break;
 

@@ -19,6 +19,10 @@
  *  Author : Frederic Plourde <frederic.plourde@collabora.co.uk>
  */
 
+#define FM_RADIO_SERVICE_MIN_FREQ  88000000
+#define FM_RADIO_SERVICE_MAX_FREQ 108000000
+#define FM_RADIO_SERVICE_DEF_FREQ  88100000
+
 #define FM_RADIO_SERVICE_DBUS_NAME  "com.jlr.fmradioservice"
 #define FM_RADIO_SERVICE_DBUS_PATH  "/com/jlr/fmradioservice"
 #define FM_RADIO_SERVICE_DBUS_IFACE "com.jlr.fmradioservice"
