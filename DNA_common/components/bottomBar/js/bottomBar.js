@@ -45,6 +45,7 @@ BottomBar.pageUpdate = function () {
 		$("body").mouseup(function(e){
 			Slide.mousedown=0; Slide.button=0;
 		});
+		depenancyMet("BottomBar.settingsIcon");
 	}
 
 BottomBar.includeHTMLSucess = function(linkobj) {

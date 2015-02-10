@@ -1,4 +1,10 @@
-					
+console.log("start of wifi.js");
+
+/*
+$(document).on("click", "#wifi-button .switch-plate", function() {
+	  $(this).closest(".switch").toggleClass("on off");
+	})
+*/					
 var WifiSettingsPage={};
 WifiSettingsPage.TemplateHTML = "DNA_common/components/wifi/wifi.html";
 
@@ -6,6 +12,11 @@ WifiSettingsPage.ShowPage = function() {
 		console.log('wifi page show_click();');
 		$('#settingsPageList').addClass('hidden');
 		$('#WifiPage').removeClass('hidden');
+
+
+	   $.when(loadComponents()).then(function(p){
+    		wifiInit();
+	   	});
 	};
 
 WifiSettingsPage.HidePage = function() { 
@@ -23,7 +34,13 @@ WifiSettingsPage.pageUpdate = function() {
 	else {
 		$("#settingsPage").append(WifiSettingsPage.import.getElementById('WifiPage'));
 		Settings.addUpdateSettingsPage('wifi','settings',WifiSettingsPage.ShowPage);
-		var close_button = document.getElementById('tabsCloseSubPanelWifiButton').onclick = WifiSettingsPage.HidePage;
+	   document.querySelector('#addNetworkButton').onclick = function() {
+				$('#AddNetworkModal').removeClass("hidden");
+		   };
+	   document.querySelector('#AddNetworkExitModal').onclick = function() {
+				$('#AddNetworkModal').addClass("hidden");
+		   };
+		var close_button = document.getElementById('wifiBackArrow').onclick = WifiSettingsPage.HidePage;
 	}
 };
 
@@ -32,11 +49,13 @@ WifiSettingsPage.includeHTMLSucess = function(linkobj) {
    WifiSettingsPage.import = linkobj.path[0].import;
    WifiSettingsPage.wifiPageHTML = WifiSettingsPage.import.getElementById('WifiPage');
    WifiSettingsPage.WifiDeviceHTML = WifiSettingsPage.import.getElementById('WifiDeviceTemplate');
+   WifiSettingsPage.WifiAddNetworkModalHTML = WifiSettingsPage.import.getElementById('AddNetworkModal');
+   $("#WifiPage").append(WifiSettingsPage.WifiAddNetworkModalHTML);
    //$("#settingsPage").append(WifiSettingsPage.import.getElementById('WifiPage'));
    //$("body").append(WifiSettingsPage.import.getElementById('WifiPage'));
    //var close_button = document.getElementById('tabsCloseSubPanelWifiButton').onclick = WifiSettingsPage.HidePage;
-   
-   WifiSettingsPage.pageUpdate();
+   onDepenancy("Settings.settingsPage",WifiSettingsPage.pageUpdate,"Wifi");
+   //WifiSettingsPage.pageUpdate();
 };
 
 WifiSettingsPage.includeHTMLFailed = function(linkobj) {
@@ -54,7 +73,7 @@ console.log("end of wifi.js");
 function loadComponents(){
 	var promise = $.Deferred();
 
-	Wifi.TemplateHTML = "DNA_common/components/wifi/wifi.html";
+	//Wifi.TemplateHTML = "DNA_common/components/wifi/wifi.html";
 	Wifi.connman = "DNA_common/components/settings/js/api-connman.js";
 	Wifi.ws = "DNA_common/components/settings/js/websocket.js";
 
@@ -64,10 +83,7 @@ function loadComponents(){
 		}); //include connman	
 	}); 
 
-	
-	
-
-	return promise
+	return promise;
 }
 
 wifiInit = function(){
@@ -82,20 +98,23 @@ wifiInit = function(){
 
 		return w.loadDefaultAdapter();
 	}).then(function(input){
-		
-	}).then(function(){
+	
+		//setup wifi on/off button click event
+		$("#wifiPowerButton .switch").click(function(ev){
+			w.wifi.technology.setPowered(!w.wifi.prop.Powered,function(){
+				console.log("setting wifi powered prop to inverse");
+				w.wifi.prop.Powered = !w.wifi.prop.Powered;
+				w.displayPoweredState();
+			});
+		});
 
 	});
 
+	//Setup Wifi control button
+}
 
-
-
-
-	/*
-	connect.then(function(r){
-		console.log(r);
-	})
-	*/
+handlePropertyChanged = function(event){
+	console.log("Handling property change");
 }
 
 WifiSettings = function(){
@@ -109,11 +128,11 @@ WifiSettings = function(){
 
 		wsAPI.connect('ws://localhost:16000/', 'http-only', function() {
 				console.log('Settings daemon connected');
-				/*
+				
 				wsAPI.subscribeEvents(function(event) {
 					self.connmanEventReceived(event);
 				});
-
+				/*
 				self.loadDefaultAdapter(function(err) {
 					error = err;
 					if (!!callback) {
@@ -146,11 +165,11 @@ WifiSettings = function(){
 		})
 	}
 
-	this.isPowered = function(){
-		if( self.wifi && self.wifi.prop.Powered != undefined){
-			return true;
-		}else{
-			return false;
+	this.displayPoweredState = function(){
+		if(self.wifi.prop.Powered == false){
+			$("#wifiPowerButton .switch").removeClass("on").addClass("off");
+		}else if(self.wifi.prop.Powered == true){
+			$("#wifiPowerButton .switch").removeClass("off").addClass("on");
 		}
 	}
 
@@ -182,7 +201,11 @@ WifiSettings = function(){
 				var technology = technologies[i];
 				if (technology.prop.Type === 'wifi') {
 					console.log('Connman technology found: ', technology);
-					self.wifi = technology;
+					self.wifi = { 
+									id:technology.id,
+									prop:technology.prop,
+									technology:technology
+								}
 					break;
 				}
 			}
@@ -204,13 +227,14 @@ WifiSettings = function(){
 			self.networks = tempServices;
 		}
 		//self.networks = networkSet;
+		this.displayNetworks();
 	}
 
 	//Lists networks on the settings wifi panel 
 	this.displayNetworks = function(){
 		
 		if($("#wifiNetworksList div.wifiElement").length > 0){
-			$("#wifiNetworksList div.wifiElement")
+			$("#wifiNetworksList div.wifiElement").remove();
 		}
 
 
