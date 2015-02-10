@@ -30,7 +30,7 @@ In an Ubuntu shell:
             # In the following, to avoid typing a password for each scp or ssh command you need to copy
             # your public key over
             #
-            # $ ssh-copy-id app@TIZEN_IP
+            # $ ssh-copy-id app@$TIZEN_IP
             #
             # This command will require your password and then you will be able to
             # use ssh and scp without a password from that user.
