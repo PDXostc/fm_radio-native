@@ -398,7 +398,11 @@ void	fmProcessor::finishScan() {
 	   
 	   if (first.snr > mid.snr)
 		   ind -= 1;
-	}
+
+	   GST_DEBUG("Choosing station with highest ratio from middle 2 out of %i", size);
+	} else {
+	   GST_DEBUG("Choosing middle station out of %i", size);
+	} 
 
 	StationData &data = stations[ind];
 
