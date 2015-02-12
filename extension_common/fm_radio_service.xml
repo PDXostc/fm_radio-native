@@ -25,24 +25,13 @@
 		</signal>
 		<signal name="ondisabled">
 		</signal>
-		<signal name="onantennachanged">
-		</signal>
 		<signal name="onfrequencychanged">
 			<arg name="frequency" type="d"/>
 		</signal>
 
 		<!-- boolean (b) property 'enabled' -->
 		<property name="enabled" type="b" access="read"/>
-		<!-- boolean (b) property 'antennaavailable' -->
-		<property name="antennaavailable" type="b" access="read"/>
 		<!-- double (d) property 'frequency' -->
 		<property name="frequency" type="d" access="read"/>
-		<!-- double (d) property 'frequencyupperbound' -->
-		<property name="frequencyupperbound" type="d" access="read"/>
-		<!-- double (d) property 'frequencylowerbound' -->
-		<property name="frequencylowerbound" type="d" access="read"/>
-		<!-- unsigned byte (y) property 'channel width X 100' -->
-		<!-- If the channelwidth is, say, 0.5, the passed-in value will be 50 -->
-		<property name="channelwidth" type="y" access="read"/>
 	</interface>
 </node>

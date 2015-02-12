@@ -31,5 +31,4 @@
    These need to map into the D-Bus signal names. */
 #define SIGNAL_ON_ENABLED           "onenabled"
 #define SIGNAL_ON_DISABLED          "ondisabled"
-#define SIGNAL_ON_ANTENNA_CHANGED   "onantennachanged"
 #define SIGNAL_ON_FREQUENCY_CHANGED "onfrequencychanged"

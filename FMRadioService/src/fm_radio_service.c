@@ -37,7 +37,6 @@
 typedef enum {
     E_SIGNAL_ON_ENABLED,
     E_SIGNAL_ON_DISABLED,
-    E_SIGNAL_ON_ANTENNA_CHANGED,
     E_SIGNAL_ON_FREQUENCY_CHANGED,
 
     E_SIGNAL_COUNT              /**< E_SIGNAL_COUNT is not an actual signal */
@@ -52,7 +51,6 @@ typedef enum {
     E_PROP_0,                   /**< first prop_enum (0) has a special meaning */
 
     E_PROP_ENABLED,
-    E_PROP_ANTENNA_AVAILABLE,
     E_PROP_FREQUENCY,
 
     E_PROP_COUNT                /**< E_PROP_COUNT is not an actual property */
@@ -69,8 +67,8 @@ struct _GstData
     GstElement *fmsrc;
     void *server;
     void (*playing_cb) (GstData*);
-    void (*frequency_changed_cb) (GstData*,gint);
-    void (*station_found_cb) (GstData*,gint);
+    void (*frequency_changed_cb) (GstData*, gint);
+    void (*station_found_cb) (GstData*, gint);
 };
 
 /** Main GObject RadioServer object. */
@@ -79,7 +77,6 @@ typedef struct {
 
     /* Actual properties */
     gboolean enabled;
-    gboolean antennaavailable;
     gdouble  frequency;         /**< frequency is in Hz */
 
     GstData *gstData;
@@ -121,7 +118,9 @@ gboolean server_setfrequency (RadioServer *server, gdouble value_in,
 static GParamSpec *obj_properties[E_PROP_COUNT] = {NULL,};
 
 static GstData *sdrjfm_init (RadioServer *server,
-                             void (*playing_cb) (GstData*));
+                             void (*playing_cb) (GstData*),
+                             void (*frequency_changed_cb) (GstData*, gint freq),
+                             void (*station_found_cb) (GstData*, gint freq));
 static void radio_set_property (GObject *object, uint property_id,
                                 const GValue *value, GParamSpec *pspec);
 static void radio_get_property (GObject *object, guint property_id,
@@ -137,7 +136,6 @@ radio_server_create_signals(RadioServerClass *klass)
     const gchar* signal_names[E_SIGNAL_COUNT] = {
         SIGNAL_ON_ENABLED,
         SIGNAL_ON_DISABLED,
-        SIGNAL_ON_ANTENNA_CHANGED,
         SIGNAL_ON_FREQUENCY_CHANGED
     };
 
@@ -165,17 +163,6 @@ radio_server_create_signals(RadioServerClass *klass)
                              0);
     klass->signals[E_SIGNAL_ON_DISABLED] = signal_id;
 
-    signal_id = g_signal_new(signal_names[E_SIGNAL_ON_ANTENNA_CHANGED],
-                             G_OBJECT_CLASS_TYPE(klass),
-                             G_SIGNAL_RUN_LAST,
-                             0,
-                             NULL,
-                             NULL,
-                             g_cclosure_marshal_VOID__VOID,
-                             G_TYPE_NONE,
-                             0);
-    klass->signals[E_SIGNAL_ON_ANTENNA_CHANGED] = signal_id;
-
     signal_id = g_signal_new(signal_names[E_SIGNAL_ON_FREQUENCY_CHANGED],
                              G_OBJECT_CLASS_TYPE(klass),
                              G_SIGNAL_RUN_LAST,
@@ -185,7 +172,7 @@ radio_server_create_signals(RadioServerClass *klass)
                              g_cclosure_marshal_VOID__VOID,
                              G_TYPE_NONE,
                              1,
-                             G_TYPE_UINT);
+                             G_TYPE_DOUBLE);
     klass->signals[E_SIGNAL_ON_FREQUENCY_CHANGED] = signal_id;
 }
 
@@ -204,20 +191,13 @@ radio_server_create_properties(GObjectClass *gobject_class)
                               FALSE,
                               G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 
-    obj_properties[E_PROP_ANTENNA_AVAILABLE] =
-        g_param_spec_boolean ("antennaavailable",
-                              "radio-antenna-available-state",
-                              "Tells if FMRadio Antenna available yet",
-                              FALSE,
-                              G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
-
     obj_properties[E_PROP_FREQUENCY] =
         g_param_spec_double ("frequency",
                              "frequency",
                              "Tells the current FMRadio frequency",
-                             FM_RADIO_SERVICE_MIN_FREQ,
-                             FM_RADIO_SERVICE_MAX_FREQ,
-                             FM_RADIO_SERVICE_DEF_FREQ,
+                             (gdouble) FM_RADIO_SERVICE_MIN_FREQ,
+                             (gdouble) FM_RADIO_SERVICE_MAX_FREQ,
+                             (gdouble) FM_RADIO_SERVICE_DEF_FREQ,
                              G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
 
     g_object_class_install_properties(gobject_class,
@@ -263,6 +243,7 @@ radio_server_class_init(RadioServerClass *klass)
 static void
 radio_server_init(RadioServer *server)
 {
+    g_message("radio_server_init");
     GError *error = NULL;
     DBusGProxy *driver_proxy;
     RadioServerClass *klass = RADIO_SERVER_GET_CLASS (server);
@@ -297,6 +278,7 @@ radio_server_init(RadioServer *server)
 void
 handle_on_enabled(GstData *data)
 {
+    g_message("handle_on_enabled");
     //GError *error = NULL;
     RadioServer *server;
 
@@ -314,52 +296,48 @@ handle_on_enabled(GstData *data)
 * Handle called when the radio is just been disabled.
 * @param data GstData structure.
 */
-gboolean
-handle_on_disabled(gpointer data)
+void
+handle_on_disabled(GstData* data)
 {
     RadioServer *server;
-    server = (RadioServer *) data;
+    server = (RadioServer *) data->server;
     RadioServerClass* klass = RADIO_SERVER_GET_CLASS(server);
 
     g_signal_emit(server,
                   klass->signals[E_SIGNAL_ON_DISABLED],
                   0);
-    return FALSE;
-}
-
-/**
-* Handler called when the antenna has been changed.
-* @param data GstData structure.
-*/
-gboolean
-handle_on_antenna_changed(gpointer data)
-{
-    RadioServer *server;
-    server = (RadioServer *) data;
-    RadioServerClass* klass = RADIO_SERVER_GET_CLASS(server);
-
-    g_signal_emit(server,
-                  klass->signals[E_SIGNAL_ON_ANTENNA_CHANGED],
-                  0);
-    return FALSE;
 }
 
 /**
 * Handler called when the frequency has been changed.
 * @param data GstData structure.
+* @param freq gint.
 */
-gboolean
-handle_on_frequency_changed(gpointer data)
+void
+handle_on_frequency_changed(GstData* data, gint freq)
 {
+    g_message("handle_on_frequency_changed");
     RadioServer *server;
-    server = (RadioServer *) data;
+    server = (RadioServer *) data->server;
     RadioServerClass* klass = RADIO_SERVER_GET_CLASS(server);
 
+    server->frequency = (gdouble)freq;
     g_signal_emit(server,
                   klass->signals[E_SIGNAL_ON_FREQUENCY_CHANGED],
                   0,
                   server->frequency);
-    return FALSE;
+}
+
+/**
+* Handler called when a station has been found by a GST slement seek.
+* @param data GstData structure.
+* @param freq gint.
+*/
+void
+handle_on_station_found(GstData* data, gint freq)
+{
+    g_message("handle_on_station_found");
+    // NOT IMPLEMENTED YET
 }
 
 // **********************************************************
@@ -377,17 +355,22 @@ gboolean
 server_enable (RadioServer *server, GError **error)
 {
 
+    g_message("server_enable");
     /* Enabling FM Radio is a two-step async process.
        We first enable our sdrjfm GST element in here,
        then, the GST bus GST_MESSAGE_STATE_CHANGED callback will
        send the "enabled" signal if gst's state is set to GST_STATE_PLAYING */
 
     if (!server->enabled) {
-        sdrjfm_init(server, handle_on_enabled);
+        sdrjfm_init(server,
+                    handle_on_enabled,
+                    handle_on_frequency_changed,
+                    handle_on_station_found);
         g_message("FMRadioService: server enabled");
     }
 
     // TODO: Return false and set error in case something went wrong.
+    g_message("DEBUG1 : server_enable, cb = %p", server->gstData->frequency_changed_cb);
     return TRUE;
 }
 
@@ -401,9 +384,12 @@ server_enable (RadioServer *server, GError **error)
 gboolean
 server_setfrequency (RadioServer *server, gdouble value_in, GError **error)
 {
-    // Set the frequency down the road first
+    g_message("server_setfrequency");
+    // Set the GST element frequency
     g_object_set (server->gstData->fmsrc, "frequency", (gint) value_in, NULL);
-    server->frequency = value_in;
+    // FIXME:
+    // server->frequency should be set via
+    // GST_ELEMENT frequency_changed cb server->frequency = value_in;
 
     g_message("FMRadioService: frequency set to : %f", value_in);
     // TODO: Return false and set error in case something went wrong.
@@ -430,10 +416,6 @@ radio_get_property (GObject    *object,
     switch (property_id) {
         case E_PROP_ENABLED:
             g_value_set_boolean (value, server->enabled);
-        break;
-
-        case E_PROP_ANTENNA_AVAILABLE:
-            g_value_set_boolean (value, server->antennaavailable);
         break;
 
         case E_PROP_FREQUENCY:
@@ -466,13 +448,10 @@ radio_set_property (GObject       *object,
             server->enabled = g_value_get_boolean(value);
         break;
 
-        case E_PROP_ANTENNA_AVAILABLE:
-            server->antennaavailable = g_value_get_boolean(value);
-        break;
-
         case E_PROP_FREQUENCY:
             server->frequency = g_value_get_double(value);
-            handle_on_frequency_changed(server);
+            // TODO: remove
+            // handle_on_frequency_changed(server);
         break;
 
         default:
@@ -491,11 +470,13 @@ radio_set_property (GObject       *object,
 static gboolean
 bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
 {
-    GstData *data = user_data;
+    GstData *data = (GstData*)user_data;
     GError *error = NULL;
 
+    g_message("DEBUG : bus_cb, cb = %p", data->frequency_changed_cb);
     switch (message->type) {
         case GST_MESSAGE_STATE_CHANGED:
+            g_message("bus_cb - GST_MESSAGE_STATE_CHANGED");
             if (GST_MESSAGE_SRC (message) == GST_OBJECT (data->pipeline)) {
                 GstState state;
                 gst_message_parse_state_changed (message, NULL, &state, NULL);
@@ -505,20 +486,31 @@ bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
         break;
 
         case GST_MESSAGE_ELEMENT:
+            g_message("DEBUG2 : bus_cb, cb = %p", data->frequency_changed_cb);
+            g_message("bus_cb - GST_MESSAGE_ELEMENT");
             if (GST_MESSAGE_SRC (message) == GST_OBJECT (data->fmsrc)) {
+                g_message("DEBUG3 : bus_cb, cb = %p", data->frequency_changed_cb);
                 const GstStructure *s = gst_message_get_structure (message);
 
                 g_assert (gst_structure_has_field_typed (s, "frequency", G_TYPE_INT));
+                g_message("DEBUG4 : bus_cb, cb = %p", data->frequency_changed_cb);
 
                 gint freq;
                 gst_structure_get_int (s, "frequency", &freq);
                 g_assert_cmpint (freq, >=, FM_RADIO_SERVICE_MIN_FREQ);
                 g_assert_cmpint (freq, <=, FM_RADIO_SERVICE_MAX_FREQ);
+                g_message("DEBUG5 : bus_cb, cb = %p", data->frequency_changed_cb);
 
 
                 if (gst_structure_has_name (s, "sdrjfmsrc-frequency-changed")) {
-                    if (data->frequency_changed_cb)
+                    g_message("DEBUG6 : bus_cb, cb = %p", data->frequency_changed_cb);
+                    g_message("bus_cb - GST_MESSAGE_ELEMENT - sdrjfmsrc-frequency-changed");
+                    if (data->frequency_changed_cb) {
+                        g_message("bus_cb - GST_MESSAGE_ELEMENT - sdrjfmsrc-frequency-changed - freq = %i", freq);
                         data->frequency_changed_cb (data, freq);
+                    } else {
+                        g_message("bus_cb - GST_MESSAGE_ELEMENT - sdrjfmsrc-frequency-changed - NO CALLBACK");
+                    }
                 } else if (gst_structure_has_name (s, "sdrjfmsrc-station-found")) {
                     if (data->station_found_cb)
                         data->station_found_cb (data, freq);
@@ -550,8 +542,11 @@ bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
 * @param Pointer to GstData struct filled-in with all required fields.
 */
 static GstData *
-sdrjfm_init (RadioServer *server, void (*playing_cb) (GstData*))
+sdrjfm_init (RadioServer *server, void (*playing_cb) (GstData*),
+                                  void (*frequency_changed_cb) (GstData*, gint freq),
+                                  void (*station_found_cb) (GstData*, gint freq))
 {
+    g_message("sdrjfm_init");
     GError *error = NULL;
     GstData *data = g_slice_new0 (GstData);
     GstBus *bus;
@@ -568,20 +563,24 @@ sdrjfm_init (RadioServer *server, void (*playing_cb) (GstData*))
     g_assert(data->fmsrc != NULL);
 
     data->playing_cb = playing_cb;
-    //TODO: data->freq_changed_cb = freq_changed_cb;
+    data->frequency_changed_cb = frequency_changed_cb;
+    data->station_found_cb = station_found_cb;
 
+    g_message("DEBUG1 : sdrjfm_init, cb = %p", data->frequency_changed_cb);
     bus = gst_pipeline_get_bus (GST_PIPELINE (data->pipeline));
     gst_bus_add_watch (bus, bus_cb, data);
-    g_object_unref (bus);
 
     gst_element_set_state (data->pipeline, GST_STATE_PLAYING);
-    g_object_set(data->server, "enabled", TRUE, NULL);
+    g_object_set(server, "enabled", TRUE, NULL);
 
     /* Default frequency : We don't want to send a frequencyChanged event here,
        so just set server->frequency */
     g_object_set (server->gstData->fmsrc, "frequency",
         (gint) server->frequency, NULL);
 
+    g_object_unref (bus);
+
+    g_message("DEBUG2 : sdrjfm_init, cb = %p", data->frequency_changed_cb);
     return data;
 }
 
