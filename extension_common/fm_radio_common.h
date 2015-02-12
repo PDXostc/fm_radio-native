@@ -32,3 +32,4 @@
 #define SIGNAL_ON_ENABLED           "onenabled"
 #define SIGNAL_ON_DISABLED          "ondisabled"
 #define SIGNAL_ON_FREQUENCY_CHANGED "onfrequencychanged"
+#define SIGNAL_ON_STATION_FOUND     "onstationfound"

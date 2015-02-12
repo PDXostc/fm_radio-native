@@ -28,7 +28,8 @@
  * STATE_DIRECT_TUNING_3    : User has entered digit2, ready to input digit 3
  * STATE_DIRECT_TUNING_4    : User has entered digit3, ready to input digit 4
  * STATE_DIRECT_TUNING_FULL : User has entered digit4, no more digits can be entered
- * STATE_SCANNING_SCAN      : User has entered scanning mode. waiting for a channel
+ * STATE_SEEKING            : User has launched a seek. waiting for a stationFound
+ * STATE_SCANNING_SEEK      : User has entered scanning mode. waiting for a channel
  * STATE_SCANNING_SHOW      : System found a station and is rendering for 5 seconds.
  * STATE_ERROR              : FMRadio{Service,Extension} had an unrecoverable error
  *
@@ -169,25 +170,6 @@ function freqIsValid(freq) {
 }
 
 /**
- * Set the actual FMRadio frequency (tune-in)
- *
- * @method setFMRadioFrequency
- * @param  freqHz {Number}
- * @static
- */
-function setFMRadioFrequency(freqHz) {
-    if (fmradio) {
-        try {
-            fmradio.setFrequency(freqHz, function(error) {
-                console.error("fmradio.setFrequency error : " + error.message);
-            });
-        } catch(e) {
-            console.error("setFMRadioFrequency error catch : " + e);
-        }
-    }
-}
-
-/**
  * Set StationID Big Digits frequency value
  * This function supports input freq. as a number OR as a string.
  * If freq. is a number : automatic truncation will happen to fit XXX.X
@@ -198,6 +180,8 @@ function setFMRadioFrequency(freqHz) {
  * @static
  */
 function setStationIdFrequency(freq, dash, opacity) {
+    console.error("DEBUG: entered setStationIdFrequency");
+
     if(typeof(dash)==='undefined') dash = false;
 
     var element = document.getElementById("station-id");
@@ -259,6 +243,8 @@ function setStationIdFrequency(freq, dash, opacity) {
  * @static
  */
 function updateStationIdDigit(add, num_value) {
+    console.error("DEBUG: entered updateStationIdDigit");
+
 
     if (state.indexOf("DIRECT_TUNING") > -1) {
         var strLength = directTuningFreqStr.length;
@@ -369,6 +355,8 @@ function stopFlash() {
  * @static
  */
 function goBackToNormal() {
+    console.error("DEBUG: entered goBackToNormal");
+
     var keypad = document.getElementById("keypad-container");
     var preset = document.getElementById("presets-container");
     var okBtn = document.getElementById("numOK");
@@ -403,6 +391,8 @@ function fluctuate(bar) {
 }
 
 function addSignalListeners() {
+    console.error("DEBUG: entered addSignalListeners");
+
     try {
         fmradio.addOnFrequencyChangedListener(function(signal_value){
             console.log("DEBUG : frequencychanged SIGNAL received : " + signal_value);
@@ -410,6 +400,23 @@ function addSignalListeners() {
         });
     } catch(e) {
         console.error("addFrequencyChangedListener failed with error : " + e);
+    }
+
+    try {
+        fmradio.addOnStationFoundListener(function(signal_value){
+            console.log("DEBUG : StationFound SIGNAL received : " + signal_value);
+
+            // update the state with regard to current seek/scan state
+            if (state == "STATE_SEEKING") {
+                state = "STATE_NORMAL";
+                buttonUserFeedback("smartCancelBtn", "", "hidden");
+            } else {
+                // TODO: implement behavior during a scan
+            }
+            setStationIdFrequency(signal_value);
+        });
+    } catch(e) {
+        console.error("addStationFoundListener failed with error : " + e);
     }
 }
 
@@ -420,6 +427,7 @@ function addSignalListeners() {
  * @static
  */
 var init = function () {
+    console.error("DEBUG: entered init");
 
     $(".bar").each(function(i) {
         fluctuate($(this));
@@ -455,30 +463,10 @@ var init = function () {
         addSignalListeners();
 
         // We are initializing (enabling) the FMRadioService at boot-up time.
-        try {
-            fmradio.enable(function(error) {
-                console.error("FMRadio.enable internal error : " + error.message);
-                state = "STATE_ERROR";
-                return;
-            });
-        } catch(e) {
-            console.error("FMRadio.enable Exception caught : " + e);
+        if (!callEnable()) {
             state = "STATE_ERROR";
             return;
         }
-
-        // Set initial statio-id frequency
-        // Since FMRadioService should never stop, the "last" station
-        // frequency is still rendering inside fmradio daemon, so we're
-        // just fetching that frequency and tune it in.
-        /*try {
-            var frequency = fmradio.frequency();
-        } catch(e) {
-            console.error("FMRadio.frequency Exception caught : " + e);
-            state = "STATE_ERROR";
-            return;
-        }*/
-        //setStationIdFrequency(frequency);
 
         // Load presets
         // TODO: load the presets from persistent memory
@@ -534,6 +522,8 @@ function setupSpeechRecognition() {
 }
 
 function savePresetsList() {
+    console.error("DEBUG: entered savePresetsList");
+
     // frequencies in 'presets' should all valid Numbers (-1 when unset)
     for (i = 0; i < presets.length; i++) {
         localStorage.setItem(constants.PRESET_PREFIX + "preset" + i, presets[i]);
@@ -543,6 +533,8 @@ function savePresetsList() {
 }
 
 function loadPresetsList() {
+    console.error("DEBUG: entered loadPresetsList");
+
     for (i = 0; i < presets.length; i++) {
         var val = localStorage.getItem(constants.PRESET_PREFIX + "preset" + i);
         if ((val != null) && (!isNaN(val)))
@@ -560,23 +552,128 @@ function loadPresetsList() {
  * Method that adjust class on a passed-in element to show user that
  * he is interacting with this element.
  * @method buttonUserFeedback
- * @param object {Object} The Object on which to adjust classes
+ * @param objectOrId {Object,String} The Object or Id (string)
  * @param beforeClass {String} The CSS class to remove
  * @param afterClass {String} The CSS class to add
  * @static
  **/
-function buttonUserFeedback(object, beforeClass, afterClass) {
-    var element = document.getElementById(object.attr("id"));
-    element.classList.add(afterClass);
-    element.classList.remove(beforeClass);
+function buttonUserFeedback(objectOrId, beforeClass, afterClass) {
+    console.error("DEBUG: entered buttonUserFeedback");
+
+    var element;
+    if (typeof objectOrId == "string" ) {
+        element = document.getElementById(objectOrId);
+    } else {
+        element = document.getElementById(objectOrId.attr("id"));
+    }
+    if (beforeClass != "")
+        element.classList.remove(beforeClass);
+    if (afterClass != "")
+        element.classList.add(afterClass);
 }
 
+/****************************************************************************
+ * CALLS TO FMRadioExtension methods ****************************************
+ ****************************************************************************/
+
+/**
+ * Call FMRadioService enablement
+ *
+ * @method callEnable
+ * @static
+ */
+function callEnable() {
+    try {
+        fmradio.enable(function(error) {
+            console.error("FMRadio.enable internal error : " + error.message);
+            return false;
+        });
+    } catch(e) {
+        console.error("FMRadio.enable Exception caught : " + e);
+        return false;
+    }
+    return true;
+}
+
+/**
+ * Set the actual FMRadio frequency (tune-in)
+ *
+ * @method callSetFrequency
+ * @param  freqHz {Number}
+ * @static
+ */
+function callSetFrequency(freqHz) {
+    console.error("DEBUG: entered callSetFrequency");
+
+    try {
+        fmradio.setFrequency(freqHz, function(error) {
+            console.error("fmradio.setFrequency error : " + error.message);
+        });
+    } catch(e) {
+        console.error("callSetFrequency error catch : " + e);
+        return false;
+    }
+    return true;
+}
+
+/**
+ * Seek down or seek up
+ *
+ * @method callSeek
+ * @param  direction {Boolean}
+ * @static
+ */
+function callSeek(direction) {
+    console.error("DEBUG: entered callSeek");
+
+    try {
+        if (direction) {
+            console.log("DEBUG2");
+            fmradio.seekup(function(error) {
+                console.log("DEBUG3");
+                console.error("fmradio.seekup error : " + error.message);
+            });
+        } else {
+            console.log("DEBUG4");
+            fmradio.seekdown(function(error) {
+                console.log("DEBUG5");
+                console.error("fmradio.seekdown error : " + error.message);
+            });
+        }
+    } catch(e) {
+        console.log("DEBUG6");
+        console.error("callSeek error catch : " + e);
+        return false;
+    }
+    console.log("DEBUG7");
+    return true;
+}
+
+/**
+ * Call Seek cancellation in the service
+ *
+ * @method callCancelSeek
+ * @static
+ */
+function callCancelSeek() {
+    try {
+        fmradio.cancelSeek(function(error) {
+            console.error("FMRadio.cancelSeek internal error : " + error.message);
+            return false;
+        });
+    } catch(e) {
+        console.error("FMRadio.cancelSeek Exception caught : " + e);
+        return false;
+    }
+    return true;
+}
 
 /****************************************************************************
  * TIMER CALLBACKS    *******************************************************
  ****************************************************************************/
 
 function flashStationIdDigitsCB() {
+    console.error("DEBUG: entered flashStationIdDigitsCB");
 
     // we just toggle dash opacity while animating direct tuning
     if (curDashOpacity == 0)
@@ -588,6 +685,8 @@ function flashStationIdDigitsCB() {
 }
 
 function mouseHoldCB(presetNumStr) {
+    console.error("DEBUG: entered mouseHoldCB");
+
     // We have a mousehold on 'preset_num' button!
     var presetNum = parseInt(presetNumStr);
     presets[presetNum] = parseInt(fmradio.frequency());
@@ -618,6 +717,8 @@ function mouseHoldCB(presetNumStr) {
  * @istatic
  */
 $(document).keydown(function(e) {
+    console.error("DEBUG: entered $(document).keydown");
+
     if (e.keyCode == constants.KEYCODE_ESC) {
         if (state.indexOf("STATE_DIRECT_TUNING") >= 0) {
             goBackToNormal();
@@ -634,6 +735,8 @@ $(document).keydown(function(e) {
  * @static
  */
 $( "#TuneDownBtn" ).click(function() {
+    console.error("DEBUG: entered $( \"#TuneDownBtn\" ).click");
+
     // Interaction with 'manual tuning' is only possible on STATE_NORMAL
     if (state == "STATE_NORMAL") {
         // TODO:
@@ -643,8 +746,7 @@ $( "#TuneDownBtn" ).click(function() {
         if (frequency < constants.FREQ_MIN_LIMIT)
             frequency = constants.FREQ_MAX_LIMIT;
 
-        setFMRadioFrequency(frequency);
-        console.log("main.js : setting frequency to " + frequency);
+        callSetFrequency(frequency);
 
         // Change the Station ID from the JS layer for now
         // TODO: check if better to update from a onFrequenyChanged handler
@@ -661,6 +763,8 @@ $( "#TuneDownBtn" ).click(function() {
  * @static
  */
 $( "#TuneUpBtn" ).click(function() {
+    console.error("DEBUG: entered $( \"#TuneUpBtn\" ).click");
+
     // Interaction with 'manual tuning' is only possible on STATE_NORMAL
     if (state == "STATE_NORMAL") {
         var frequency = fmradio.frequency() + 100000;
@@ -668,14 +772,53 @@ $( "#TuneUpBtn" ).click(function() {
         if (frequency > constants.FREQ_MAX_LIMIT)
             frequency = constants.FREQ_MIN_LIMIT;
 
-        frequency = clip (frequency, constants.FREQ_MIN_LIMIT,
-                                     constants.FREQ_MAX_LIMIT);
-        setFMRadioFrequency(frequency);
-        console.log("main.js : setting frequency to " + frequency);
+        callSetFrequency(frequency);
 
         // Change the Station ID from the JS layer for now
         // TODO: check if better to update from a onFrequenyChanged handler
         //setStationIdFrequency(frequency);
+    }
+});
+
+/**
+ * Seek down
+ *
+ * @method SeekDownBth.click
+ * @param  handler {function} Callback called when element is clicked
+ * @static
+ */
+$( "#SeekDownBtn" ).click(function() {
+    console.error("DEBUG: entered $( \"#SeekDownBtn\" ).click");
+
+    // Interaction with 'seek' is only possible on STATE_NORMAL
+    if (state == "STATE_NORMAL") {
+
+        if (callSeek(false)) {
+            state = "STATE_SEEKING";
+            buttonUserFeedback("smartCancelBtn", "hidden", "");
+            cancelBtn.innerHTML = "Cancel Seek ...";
+        }
+    }
+});
+
+/**
+ * Seek up
+ *
+ * @method SeekUpBth.click
+ * @param  handler {function} Callback called when element is clicked
+ * @static
+ */
+$( "#SeekUpBtn" ).click(function() {
+    console.error("DEBUG: entered $( \"#SeekUpBtn\" ).click");
+
+    // Interaction with 'seek' is only possible on STATE_NORMAL
+    if (state == "STATE_NORMAL") {
+
+        if (callSeek(true)) {
+            state = "STATE_SEEKING";
+            buttonUserFeedback("smartCancelBtn", "hidden", "");
+            cancelBtn.innerHTML = "Cancel Seek ...";
+        }
     }
 });
 
@@ -689,6 +832,8 @@ $( "#TuneUpBtn" ).click(function() {
  * @static
  */
 $( "#station-id" ).click(function() {
+    console.error("DEBUG: entered $( \"#station-id\" ).click");
+
     var keypad = document.getElementById("keypad-container");
     var preset = document.getElementById("presets-container");
 
@@ -718,6 +863,8 @@ $( "#station-id" ).click(function() {
  * @static
  */
 $( ".clickable-key" ).click(function() {
+    console.error("DEBUG: entered $( \".clickable-key\" ).click");
+
     // the clicked element's index
     var num = $(this).attr('index');
     updateStationIdDigit(true, num);
@@ -731,6 +878,8 @@ $( ".clickable-key" ).click(function() {
  * @static
  */
 $( "#key_DEL" ).click(function() {
+    console.error("DEBUG: entered $( \"#key_DEL\" ).click");
+
     updateStationIdDigit(false);
 });
 
@@ -742,13 +891,14 @@ $( "#key_DEL" ).click(function() {
  * @static
  */
 $( "#key_OK" ).click(function() {
+    console.error("DEBUG: entered $( \"#key_OK\" ).click");
+
     if (state == "STATE_DIRECT_TUNING_FULL") {
         // Changing the actual tuned frequency is only done
         // through setStationIdFrequency with Number parameter
         var freqHz = (parseFloat(directTuningFreqStr)) * 100000;
         if (freqIsValid(freqHz)) {
-            setFMRadioFrequency(freqHz);
-            //setStationIdFrequency(freqHz);
+            callSetFrequency(freqHz);
             goBackToNormal();
         }
     }
@@ -764,6 +914,7 @@ $( "#key_OK" ).click(function() {
  * @static
  */
 $( ".fm-radio-box" ).click(function() {
+    console.error("DEBUG: entered $( \".fm-radio-box\" ).click");
 
     // Extract pressed preset # from the element's id
     // freqHz *must* be a number to feed freqIsValid()
@@ -772,8 +923,7 @@ $( ".fm-radio-box" ).click(function() {
 
     // Tune-in the preset frequency
     if (freqIsValid(freqHz)) {
-        setFMRadioFrequency(freqHz);
-        //setStationIdFrequency(freqHz);
+        callSetFrequency(freqHz);
     }
 });
 
@@ -787,8 +937,9 @@ $( ".fm-radio-box" ).click(function() {
  * @static
  */
 $( ".fm-radio-box" ).mousedown(function() {
-    mouseState = "STATE_MOUSE_DOWN";
+    console.error("DEBUG: entered $( \".fm-radio-box\" ).mousedown");
 
+    mouseState = "STATE_MOUSE_DOWN";
     buttonUserFeedback($(this), "fm-gray", "dna-orange");
 
     // sanity check. mouseDownTimeout should not be already set on mousedown
@@ -810,8 +961,9 @@ $( ".fm-radio-box" ).mousedown(function() {
  * @static
  */
 $( ".fm-radio-box" ).mouseup(function() {
-    mouseState = "STATE_MOUSE_UP";
+    console.error("DEBUG: entered $(\".fm-radio-box\" ).mouseup");
 
+    mouseState = "STATE_MOUSE_UP";
     buttonUserFeedback($(this), "dna-orange", "fm-gray");
 
     if (mouseHoldTimeout != null) {
@@ -828,6 +980,8 @@ $( ".fm-radio-box" ).mouseup(function() {
  * @static
  */
 $( ".keypad-box" ).mousedown(function() {
+    console.error("DEBUG: entered $( \".keypad-box\" ).mousedown");
+
     buttonUserFeedback($(this), "fm-gray", "dna-orange");
 });
 
@@ -839,16 +993,28 @@ $( ".keypad-box" ).mousedown(function() {
  * @static
  */
 $( ".keypad-box" ).mouseup(function() {
+    console.error("DEBUG: entered $( \".keypad-box\" ).mouseup");
+
     buttonUserFeedback($(this), "dna-orange", "fm-gray");
 });
 
-// TODO: REMOVE THIS !
-$( ".small-title" ).click(function() {
-    localStorage.removeItem(constants.PRESET_PREFIX + "preset0");
-    localStorage.removeItem(constants.PRESET_PREFIX + "preset1");
-    localStorage.removeItem(constants.PRESET_PREFIX + "preset2");
-    localStorage.removeItem(constants.PRESET_PREFIX + "preset3");
-    localStorage.removeItem(constants.PRESET_PREFIX + "preset4");
-    localStorage.removeItem(constants.PRESET_PREFIX + "preset5");
-});
+/**
+ * React to smartCancelButton (cancel seek/scan)
+ *
+ * @method smartCancelBtn.click
+ * @param  handler {function} Callback called when element is mouseuped
+ * @static
+ */
+$( "#smartCancelBtn" ).click(function() {
+    console.error("DEBUG: entered $( \"smartCancelBtn\" ).click");
 
+    // We can only cancel an ongoing "seek"
+    if (state == "STATE_SEEKING") {
+        if (callCancelSeek()) {
+            state = "STATE_NORMAL";
+            buttonUserFeedback($(this), "", "hidden");
+        }
+    } else if (state == "STATE_SCANNING_SEEK") {
+        // TODO: implement stop scanning here
+    }
+});

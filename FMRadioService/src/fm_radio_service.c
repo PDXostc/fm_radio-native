@@ -38,6 +38,7 @@ typedef enum {
     E_SIGNAL_ON_ENABLED,
     E_SIGNAL_ON_DISABLED,
     E_SIGNAL_ON_FREQUENCY_CHANGED,
+    E_SIGNAL_ON_STATION_FOUND,
 
     E_SIGNAL_COUNT              /**< E_SIGNAL_COUNT is not an actual signal */
 } signal_enum;
@@ -80,6 +81,8 @@ typedef struct {
     gdouble  frequency;         /**< frequency is in Hz */
 
     GstData *gstData;
+
+    gboolean ongoingSeek;
 } RadioServer;
 
 /** Main GObject RadioServerClass class. */
@@ -113,6 +116,10 @@ G_DEFINE_TYPE(RadioServer, radio_server, G_TYPE_OBJECT)
 gboolean server_enable (RadioServer *server, GError **error);
 gboolean server_setfrequency (RadioServer *server, gdouble value_in,
                               GError **error);
+gboolean server_seek (RadioServer *server, gboolean value_in,
+                      GError **error);
+gboolean server_cancelseek (RadioServer *server, GError **error);
+
 #include "server-bindings.h"
 
 static GParamSpec *obj_properties[E_PROP_COUNT] = {NULL,};
@@ -136,7 +143,8 @@ radio_server_create_signals(RadioServerClass *klass)
     const gchar* signal_names[E_SIGNAL_COUNT] = {
         SIGNAL_ON_ENABLED,
         SIGNAL_ON_DISABLED,
-        SIGNAL_ON_FREQUENCY_CHANGED
+        SIGNAL_ON_FREQUENCY_CHANGED,
+        SIGNAL_ON_STATION_FOUND
     };
 
     guint signal_id;
@@ -174,6 +182,18 @@ radio_server_create_signals(RadioServerClass *klass)
                              1,
                              G_TYPE_DOUBLE);
     klass->signals[E_SIGNAL_ON_FREQUENCY_CHANGED] = signal_id;
+
+    signal_id = g_signal_new(signal_names[E_SIGNAL_ON_STATION_FOUND],
+                             G_OBJECT_CLASS_TYPE(klass),
+                             G_SIGNAL_RUN_LAST,
+                             0,
+                             NULL,
+                             NULL,
+                             g_cclosure_marshal_VOID__VOID,
+                             G_TYPE_NONE,
+                             1,
+                             G_TYPE_DOUBLE);
+    klass->signals[E_SIGNAL_ON_STATION_FOUND] = signal_id;
 }
 
 /**
@@ -244,6 +264,7 @@ static void
 radio_server_init(RadioServer *server)
 {
     g_message("radio_server_init");
+
     GError *error = NULL;
     DBusGProxy *driver_proxy;
     RadioServerClass *klass = RADIO_SERVER_GET_CLASS (server);
@@ -269,6 +290,8 @@ radio_server_init(RadioServer *server)
     dbus_g_connection_register_g_object (klass->connection,
                                          FM_RADIO_SERVICE_DBUS_PATH,
                                          G_OBJECT (server));
+
+    server->ongoingSeek = FALSE;
 }
 
 /**
@@ -279,6 +302,7 @@ void
 handle_on_enabled(GstData *data)
 {
     g_message("handle_on_enabled");
+
     //GError *error = NULL;
     RadioServer *server;
 
@@ -317,11 +341,12 @@ void
 handle_on_frequency_changed(GstData* data, gint freq)
 {
     g_message("handle_on_frequency_changed");
+
     RadioServer *server;
     server = (RadioServer *) data->server;
     RadioServerClass* klass = RADIO_SERVER_GET_CLASS(server);
 
-    server->frequency = (gdouble)freq;
+    server->frequency = (gdouble) freq;
     g_signal_emit(server,
                   klass->signals[E_SIGNAL_ON_FREQUENCY_CHANGED],
                   0,
@@ -337,7 +362,17 @@ void
 handle_on_station_found(GstData* data, gint freq)
 {
     g_message("handle_on_station_found");
-    // NOT IMPLEMENTED YET
+
+    RadioServer *server;
+    server = (RadioServer *) data->server;
+    RadioServerClass* klass = RADIO_SERVER_GET_CLASS(server);
+
+    server->ongoingSeek = FALSE;
+    server->frequency = (gdouble) freq;
+    g_signal_emit(server,
+                  klass->signals[E_SIGNAL_ON_STATION_FOUND],
+                  0,
+                  server->frequency);
 }
 
 // **********************************************************
@@ -354,8 +389,8 @@ handle_on_station_found(GstData* data, gint freq)
 gboolean
 server_enable (RadioServer *server, GError **error)
 {
-
     g_message("server_enable");
+
     /* Enabling FM Radio is a two-step async process.
        We first enable our sdrjfm GST element in here,
        then, the GST bus GST_MESSAGE_STATE_CHANGED callback will
@@ -367,10 +402,20 @@ server_enable (RadioServer *server, GError **error)
                     handle_on_frequency_changed,
                     handle_on_station_found);
         g_message("FMRadioService: server enabled");
+    } else {
+        // We still broadcast our current frequency
+        RadioServerClass* klass = RADIO_SERVER_GET_CLASS(server);
+        g_signal_emit(server,
+                      klass->signals[E_SIGNAL_ON_ENABLED],
+                      0);
+        g_signal_emit(server,
+                      klass->signals[E_SIGNAL_ON_FREQUENCY_CHANGED],
+                      0,
+                      server->frequency);
+        g_message("FMRadioService: server already enabled");
     }
 
     // TODO: Return false and set error in case something went wrong.
-    g_message("DEBUG1 : server_enable, cb = %p", server->gstData->frequency_changed_cb);
     return TRUE;
 }
 
@@ -385,13 +430,55 @@ gboolean
 server_setfrequency (RadioServer *server, gdouble value_in, GError **error)
 {
     g_message("server_setfrequency");
+
     // Set the GST element frequency
     g_object_set (server->gstData->fmsrc, "frequency", (gint) value_in, NULL);
-    // FIXME:
-    // server->frequency should be set via
-    // GST_ELEMENT frequency_changed cb server->frequency = value_in;
-
     g_message("FMRadioService: frequency set to : %f", value_in);
+
+    // TODO: Return false and set error in case something went wrong.
+    return TRUE;
+}
+
+/**
+* Launch a seek operation in the GST element
+* @param server Main server object.
+* @param value_in Direction of the seek. 0=down 1=up
+* @param error GError containing code and message for calling dbus client.
+* @return TRUE is successful.
+*/
+gboolean
+server_seek (RadioServer *server, gboolean value_in, GError **error)
+{
+    g_message("server_seek");
+
+    // Call the Seek on our gstjsdrsrc element
+    if (value_in)
+        g_signal_emit_by_name (server->gstData->fmsrc, "seek-up");
+    else
+        g_signal_emit_by_name (server->gstData->fmsrc, "seek-down");
+
+    server->ongoingSeek = TRUE;
+
+    // TODO: Return false and set error in case something went wrong.
+    return TRUE;
+}
+
+/**
+* Cancel an ongoing seek (if there's a seek going on)
+* @param server Main server object.
+* @param error GError containing code and message for calling dbus client.
+* @return TRUE is successful.
+*/
+gboolean
+server_cancelseek (RadioServer *server, GError **error)
+{
+    g_message("server_cancelseek");
+
+    // We can only cancel a seek if GST element is currently seeking
+    if (server->ongoingSeek) {
+        g_signal_emit_by_name (server->gstData->fmsrc, "cancel-seek");
+    }
+
     // TODO: Return false and set error in case something went wrong.
     return TRUE;
 }
@@ -473,7 +560,6 @@ bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
     GstData *data = (GstData*)user_data;
     GError *error = NULL;
 
-    g_message("DEBUG : bus_cb, cb = %p", data->frequency_changed_cb);
     switch (message->type) {
         case GST_MESSAGE_STATE_CHANGED:
             g_message("bus_cb - GST_MESSAGE_STATE_CHANGED");
@@ -486,32 +572,21 @@ bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
         break;
 
         case GST_MESSAGE_ELEMENT:
-            g_message("DEBUG2 : bus_cb, cb = %p", data->frequency_changed_cb);
             g_message("bus_cb - GST_MESSAGE_ELEMENT");
             if (GST_MESSAGE_SRC (message) == GST_OBJECT (data->fmsrc)) {
-                g_message("DEBUG3 : bus_cb, cb = %p", data->frequency_changed_cb);
                 const GstStructure *s = gst_message_get_structure (message);
 
-                if (!gst_structure_has_field_typed (s, "frequency", G_TYPE_INT))
-		  break;
-                g_message("DEBUG4 : bus_cb, cb = %p", data->frequency_changed_cb);
+                g_assert (gst_structure_has_field_typed (s, "frequency", G_TYPE_INT));
 
                 gint freq;
                 gst_structure_get_int (s, "frequency", &freq);
                 g_assert_cmpint (freq, >=, FM_RADIO_SERVICE_MIN_FREQ);
                 g_assert_cmpint (freq, <=, FM_RADIO_SERVICE_MAX_FREQ);
-                g_message("DEBUG5 : bus_cb, cb = %p", data->frequency_changed_cb);
 
 
                 if (gst_structure_has_name (s, "sdrjfmsrc-frequency-changed")) {
-                    g_message("DEBUG6 : bus_cb, cb = %p", data->frequency_changed_cb);
-                    g_message("bus_cb - GST_MESSAGE_ELEMENT - sdrjfmsrc-frequency-changed");
-                    if (data->frequency_changed_cb) {
-                        g_message("bus_cb - GST_MESSAGE_ELEMENT - sdrjfmsrc-frequency-changed - freq = %i", freq);
+                    if (data->frequency_changed_cb)
                         data->frequency_changed_cb (data, freq);
-                    } else {
-                        g_message("bus_cb - GST_MESSAGE_ELEMENT - sdrjfmsrc-frequency-changed - NO CALLBACK");
-                    }
                 } else if (gst_structure_has_name (s, "sdrjfmsrc-station-found")) {
                     if (data->station_found_cb)
                         data->station_found_cb (data, freq);
@@ -548,6 +623,7 @@ sdrjfm_init (RadioServer *server, void (*playing_cb) (GstData*),
                                   void (*station_found_cb) (GstData*, gint freq))
 {
     g_message("sdrjfm_init");
+
     GError *error = NULL;
     GstData *data = g_slice_new0 (GstData);
     GstBus *bus;
@@ -567,7 +643,6 @@ sdrjfm_init (RadioServer *server, void (*playing_cb) (GstData*),
     data->frequency_changed_cb = frequency_changed_cb;
     data->station_found_cb = station_found_cb;
 
-    g_message("DEBUG1 : sdrjfm_init, cb = %p", data->frequency_changed_cb);
     bus = gst_pipeline_get_bus (GST_PIPELINE (data->pipeline));
     gst_bus_add_watch (bus, bus_cb, data);
 
@@ -581,7 +656,6 @@ sdrjfm_init (RadioServer *server, void (*playing_cb) (GstData*),
 
     g_object_unref (bus);
 
-    g_message("DEBUG2 : sdrjfm_init, cb = %p", data->frequency_changed_cb);
     return data;
 }
 
