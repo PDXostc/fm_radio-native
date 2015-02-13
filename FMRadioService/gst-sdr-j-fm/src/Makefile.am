@@ -26,7 +26,7 @@ libgstsdrjfm_la_SOURCES = \
 
 
 libgstsdrjfm_la_CXXFLAGS = \
-	-I$(top_srcdir)/src/sdr-j-fm-small/{small-gui{,/dabstick},includes{,/{fm,output,rds,various}}} \
+	 -I$(top_srcdir)/../../extension_common -I$(top_srcdir)/src/sdr-j-fm-small/{small-gui{,/dabstick},includes{,/{fm,output,rds,various}}} \
 	 $(GST_CFLAGS) $(RS_CFLAGS) $(SR_CFLAGS) $(FFTW_CFLAGS)
 libgstsdrjfm_la_LIBADD = $(GST_LIBS) $(RS_LIBS) $(SR_LIBS) $(FFTW_LIBS)
 libgstsdrjfm_la_LDFLAGS = $(GST_PLUGIN_LDFLAGS)

@@ -1,13 +1,15 @@
 /* ==== ==== ==== init top bar js code ==== ==== ==== */
 
 var TopBar = {};
+var first=true;
 
 TopBar.TemplateHTML = "DNA_common/components/topBar/topBar.html";
 
 TopBar.topbarBack = function() {
 	if(tizen.application.getCurrentApplication().appInfo.packageId != "JLRPOCX001"){
 		tizen.application.launch('JLRPOCX001.HomeScreen', TopBar.backButtonWin, TopBar.backButtonFail);
-		tizen.application.getCurrentApplication().exit();
+		//Uncomment for Singletasking mode
+		//tizen.application.getCurrentApplication().exit();
 	}
 }
 
@@ -20,7 +22,6 @@ topbarTouchstart = function(event){
 		return false;
 	}
 }
-$("body").on('touchstart', topbarTouchstart); // PREVENT MULTITOUCH ZOOM BUBBLING
 
 TopBar.pageUpdate = function() {
 	$('#topBar').replaceWith(TopBar.topBarHTML.valueOf());
@@ -83,10 +84,9 @@ var registeredApps = {"Home Screen":"/DNA_common/images/return_arrow_inactive.pn
 						"AMB Simulator":"/DNA_common/images/amb_simulator_inactive.png",
 						"Audio Settings":"/DNA_common/images/audio_settings_inactive.png",
 					    "MOST AUDIO":"./DNA_common/images/audio_settings_inactive.png",
-						"Finger Print":"/DNA_common/images/fingerprint_inactive.png",
+						"Fingerprint":"/DNA_common/images/fingerprint_inactive.png",
 						"Multimedia Player":"/DNA_common/images/mediaplayer_inactive.png",
 						"SmartDeviceLink":"/DNA_common/images/sdl_inactive.png",
-						"FMRADIO":"/DNA_common/images/fmradio_inactive.png",
 						"syspopup-app":"/DNA_common/images/syspopup-app_inactive.png",
 						"ApplicationVisibility":"/DNA_common/images/app_visibility_inactive.png",
 						"Dialer":"/DNA_common/images/dialer_inactive.png",
@@ -94,7 +94,9 @@ var registeredApps = {"Home Screen":"/DNA_common/images/return_arrow_inactive.pn
 						"MiniBrowser":"/DNA_common/images/mini_browser_inactive.png", 
 						"Tizen":"/DNA_common/images/tizen_inactive.png",
 						"gestureGame":"/DNA_common/images/gesture_game_inactive.png",
-						"saythis":"/DNA_common/images/say_this_inactive.png"
+						"saythis":"/DNA_common/images/say_this_inactive.png",
+						"Cameras":"/DNA_common/images/camera_icon.png",
+						"FMRADIO":"/DNA_common/images/fmradio.png"
 						};
 
 function launchApplication(id) {
@@ -208,7 +210,7 @@ function insertAppFrame(appFrame) {
 	var rootDiv = $("<div></div>").addClass("homeScrAppGridFrame").data("app-data", appFrame).click(function() {
 		onFrameClick($(this).data("app-data"));
 	});
-	var innerDiv = $("<span></span>").addClass("homeScrAppGridImg").appendTo(rootDiv);
+	var innerDiv = $("<span></span>").addClass("homeScrAppGridImg").attr("id","hex"+$(".homeScrAppGridFrame").size()).appendTo(rootDiv);
 	$("<img />").data("src", appFrame.iconPath).appendTo(innerDiv);
 	$("<br />").appendTo(innerDiv);
 	var textDiv = $("<span />").addClass("homeScrAppGridText").appendTo(rootDiv);
@@ -228,6 +230,7 @@ function insertAppFrame(appFrame) {
 		$("span.homeScrAppGridImg img").each(function() {
 			if ($(this).data("src") === appFrame.iconPath && Right(appFrame.iconPath,4)=='.png') {
 				$(this)[0].src = ctx.canvas.toDataURL();
+				$(this).attr("class", "draggable");
 			}
 		});
 	};
@@ -249,41 +252,40 @@ function insertAppFrame(appFrame) {
 
 function onAppInfoSuccess(list) {
 	"use strict";
-	try {
+	try { 
+	if(first){
 		var applications = [];
-/*
-		applications.push({
+		/*applications.push({
 			id: "http://com.intel.tizen/intelPocSettings",
 			appName: "Settings",
 			show: true,
 			iconPath: "./DNA_common/components/settings/icon.png"
-		});
-*/
+		});*/
 		list.sort(function(x, y) {
 			return x.appName > y.appName ? 1 : -1;
 		});
 
-	//empty the topbar array
-	toptasks=[];
-	//enumerate the topbar array
-	$(list).each(function(index){
-		var name = list[index].name;
-		if( name != HomeScreenName ){
-			icon = list[index].iconPath;
-			id = list[index].id;
-			if(registeredApps[name]){
-				icon = registeredApps[name];
+		//empty the topbar array
+		toptasks=[];
+		//enumerate the topbar array
+		$(list).each(function(index){
+			var name = list[index].name;
+			if( name != HomeScreenName ){
+				icon = list[index].iconPath;
+				id = list[index].id;
+				if(registeredApps[name]){
+					icon = registeredApps[name];
+				}
+				toptasks.push({"icon":icon,"id":id});
 			}
-			toptasks.push({"icon":icon,"id":id});
-		}
-	});
-	//populate the topbar using the topbar tasks array
-	$(toptasks).each(function(index){
-		$("#topTask"+index+" img").attr("src", toptasks[index].icon);
-		$("#topTask"+index+" img").on('click', function(){launchApplication(toptasks[index].id)});
-	});
-	
-	//console.log(appList); //for grid
+		});
+		//populate the topbar using the topbar tasks array
+		$(toptasks).each(function(index){
+			$("#topTask"+index+" img").attr("src", toptasks[index].icon);
+			$("#topTask"+index+" img").attr("class", "draggable");
+			$("#topTask"+index+" img").on('click', function(){launchApplication(toptasks[index].id)});
+		});
+		//console.log(appList); //for grid
 		for (i = 0; i < list.length; i++) {
 
 			var app = list[i];
@@ -336,7 +338,7 @@ function onAppInfoSuccess(list) {
 			if(Divisible(applications.length-offset,5)){
 				$('#hexGridView #hexGrid').append($("<div></div>").addClass("hexrow"));
 			}
-			if(true){
+			if(false){
 				for (j=0;j<5-(applications.length-offset)%5;j++){
 					insertAppFrame({iconPath:'',appName:'',id:0});
 					extras++;
@@ -349,6 +351,52 @@ function onAppInfoSuccess(list) {
 					}
 				}
 			}
+		}
+	}first=false;//(!first)
+		if (jQuery.ui) {
+			$(".topTask img").draggable({
+				opacity:0.7,delay:1000,zIndex:2000,scroll:false,
+				helper:"clone",appendTo:"body",
+				revert:function(valid){
+					if(!valid){
+						dnaDropLaunch(this);//this.contents().replaceWith("<img>");
+						onUpdateTopBar();
+					}
+					return false; // might this be better served by event.preventDefault, or event.stopPropagation, or !valid?
+				},
+				start: function(event,ui){
+					$(this).css("visibility","hidden");
+					ui.helper.animate({width:115,height:115},0);
+					ui.helper.animate({width:150,height:150});
+				},
+				stop: function(){
+					$(this).css("visibility","visible");
+				}
+
+			});
+			$(".homeScrAppGridImg img").draggable({
+				opacity:0.7,delay:1000,zIndex:2000,scroll:false,
+				helper:"clone",appendTo:"body",
+				revert:"invalid",
+				start: function(event,ui){
+					$(this).css("visibility","hidden");
+					ui.helper.animate({width:115,height:115},0);
+					ui.helper.animate({width:150,height:150});
+				},
+				stop: function(){
+					$(this).css("visibility","visible");
+				}
+			});
+			$(".droppable").droppable({
+				tolerance:"intersect",
+				drop: function(event,ui){
+					if(ui.helper.context.parentElement.classList[0]=="homeScrAppGridImg")
+						dnaGridLaunch(ui.helper.context.parentElement.id,event.target.id);
+					else
+						dnaSwitchLaunch(ui.helper.context.parentElement.id,event.target.id);
+					onUpdateTopBar(); //this line placed here seems to make topbar apps unclickable...
+				}
+			});
 		}
 	} catch (exc) {
 		console.log(exc.message);
@@ -418,11 +466,151 @@ function onTaskInfoSuccess(list){
 		}
 
 		for (i = 0; i < 7; i++) {
-			var taskDiv = $("<div><img /></div>").addClass("topTask");
+			var taskDiv = $("<div></div>").addClass("topTask droppable");
 			$(taskDiv).attr('id','topTask'+i);
 			$("#topBar").append(taskDiv);
 		}
 	} catch (exc) {
 		console.error(exc.message);
+	}
+	onStartTopBar();
+	return true;
+}
+function isPopulated(id){
+	return (typeof $("#topTask"+id+" img").attr("src")===typeof undefined);
+}
+function incrementId(id){
+	return (id.substring(0, id.length - 1)+(parseInt(rightMost(id))+1));
+}
+function shiftLeft(){
+	console.log("f:shiftleft");
+	var id2=0;
+	var lastBlank=false, recheck=false, flush=false;
+	while(flush==false){
+		for(var id=1;id<=6;id++){
+			id2=id-1;
+			if(!isPopulated(id) && isPopulated(id2)){
+				$("#topTask"+id2).html($("#topTask"+id).html());
+				$("#topTask"+id).html("");
+				if(lastBlank==true) recheck=true;
+				$("#topTask"+id2).find("img").css("visibility", "visible");
+			}else{
+				lastBlank=true;
+			}
+		}
+		flush=!recheck;
+		recheck=false;
+	}
+	return true;
+}
+function removeClones(id){
+	//removes all duplicates of the icon at the given id number
+	for(var id2=0;id2<=6;id2++){
+		if(id2!=id){ //don't remove the id itself
+			if($("#topTask"+id2).find("img").attr("src")==$("#topTask"+id).find("img").attr("src")){
+				$("#topTask"+id2).html("");
+			}
+		}
+	}
+}
+
+function rightMost(text){
+	return text.slice(-1);
+}
+function dnaGridLaunch(id1,id2){
+	//Adding from App Grid
+	var x=$("#"+id1).contents().slice(0,1).clone().css("visibility","visible");
+	$("#"+id2).html(x);
+	$("#"+id2).click(function(){
+		$("#"+id1).parent().click();
+	});
+	console.log(id2+" handler now points to parent of "+id1);
+	removeClones(rightMost(id2));
+	shiftLeft();
+	return true;
+}
+function dnaSwitchLaunch(id1,id2){
+	//Moving from topbar
+	if(id1!==id2){
+		var x=$("#"+id1).contents();
+		$("#"+id2).html(x);
+		$("#"+id1).html("");
+	}
+	removeClones(rightMost(id2));
+	shiftLeft();
+	return true;
+}
+function dnaDropLaunch(element){
+	//Dragging off topbar
+	element.parent().html("");
+	shiftLeft();
+	return true;
+}
+
+function supports_html5_storage() {
+	//Check for html5 localstorage support: Returns true or false
+  try {
+    return 'localStorage' in window && window['localStorage'] !== null;
+  } catch (e) {
+    return false;
+  }
+}
+
+var dataResolved=false;
+var updateText='resolved';
+var name="";
+
+function addLineToFile(file, line){
+
+}
+function getLineFromFile(file, line){
+
+}
+
+function setIcons(id,text){
+	addLineToFile('./Documents/.topbar.ini',id)
+	addLineToFile('./Documents/.topbar.ini',text)
+	return localStorage.setItem(x,JSON.stringify(y));
+}
+function getIcons(id){
+	return JSON.parse(localStorage.getItem(id) || getFile('./Documents/.topbar.ini',id) || null);
+}
+
+function onStartTopBar(){
+	//check for the existence of the data and repopulate
+	try {
+		//read the data
+		for(tasks=0;tasks<7;tasks++){
+			name="topTask"+tasks;
+			//replace icons
+			$('#'+name).html(getIcons(name));
+			updateText+="Retrieved ::"+name+" : "+getIcons(name);
+		}
+		console.log(updateText);
+		dataResolved=true;
+	} catch (exc) {
+		console.log(':: No data was retrieved for customizable topbar. '+exc.message);
+	}
+}
+
+function onUpdateTopBar(){
+	//add/move/remove? save data
+	if(dataResolved){
+	console.log(':: Updating topbar data object');
+	updateText="";
+		try {
+			//overwrite data
+			for(tasks=0;tasks<7;tasks++){
+				name="topTask"+tasks;
+				//save icons
+				setIcons(name,$('#'+name).html());
+				
+				//check icons
+				updateText+="Saved ::"+name+" : "+getIcons(name);
+			}
+			console.log('updated'+updateText);
+		} catch (exc) {
+			console.log(':: Could not save data during top bar update: ' + exc.message);
+		}
 	}
 }

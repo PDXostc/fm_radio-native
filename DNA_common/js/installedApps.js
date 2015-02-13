@@ -195,7 +195,6 @@ function onAppInfoSuccess(list) {
 						   Phone:"/DNA_common/images/phone_icon.png",
 						   Dashboard:"/DNA_common/images/dashboard_icon.png",
 						   Weather:"/DNA_common/images/weather_icon.png",
-						   FMRADIO:"/DNA_common/images/fmradio_icon.png",
 						   Handwriting:"/DNA_common/images/handwriting_icon.png"};
 	var i = 0;
 	//console.log("onAppInfoSuccess(list)");

@@ -9,10 +9,6 @@ var _on_disabled_listeners = {};
 var _on_disabled_listener_id = 0;
 var _on_disabled_listeners_count = 0
 
-var _on_antenna_changed_listeners = {};
-var _on_antenna_changed_listener_id = 0;
-var _on_antenna_changed_listeners_count = 0
-
 var _on_frequency_changed_listeners = {};
 var _on_frequency_changed_listener_id = 0;
 var _on_frequency_changed_listeners_count = 0
@@ -56,9 +52,6 @@ extension.setMessageListener(function(msg) {
         } else if (m.signal_name === 'ondisabled') {
             console.log('fm_radio_api.js: messageListener Disabled');
             handleOnDisabledSignal(m);
-        } else if (m.signal_name === 'onantennachanged') {
-            console.log('fm_radio_api.js: messageListener AntennaChanged');
-            handleOnAntennaChangedSignal(m);
         } else if (m.signal_name === 'onfrequencychanged') {
             console.log('fm_radio_api.js: messageListener FrequencyChanged');
             handleOnFrequencyChangedSignal(m);
@@ -95,25 +88,15 @@ function handleOnDisabledSignal(msg) {
     }
 }
 
-function handleOnAntennaChangedSignal(msg) {
-    for (var key in _on_antenna_changed_listeners) {
-        var cb = _on_antenna_changed_listeners[key];
-        if (!cb || typeof(cb) !== 'function') {
-            console.error('No antennachanged listener found for id ' + key);
-        }
-        cb(msg.signal_name);
-    }
-}
-
 function handleOnFrequencyChangedSignal(msg) {
     for (var key in _on_frequency_changed_listeners) {
         var cb = _on_frequency_changed_listeners[key];
         if (!cb || typeof(cb) !== 'function') {
             console.error('No frequencychanged listener found for id ' + key);
         }
-        console.log("<br>fm_radio_api.js: handleOnFrequencyChange : " +
+        console.log("fm_radio_api.js: handleOnFrequencyChange : " +
                     msg.signal_params);
-        cb(msg.signal_name);
+        cb(msg.signal_params);
     }
 }
 
@@ -218,34 +201,6 @@ exports.addOnDisabledListener = function(listener) {
     return _on_disabled_listener_id;
 };
 
-exports.addOnAntennaChangedListener = function(listener) {
-    console.log("fm_radio_api.js: entered export.addAntennaChangedListener");
-    if (!(listener instanceof Function) && listener != undefined) {
-        console.error('fm_radio_api.js: AddAntennaChangedListener failed');
-        return;
-    }
-
-    for (var key in _on_antenna_changed_listeners) {
-        if (_on_antenna_changed_listeners[key] == listener) {
-            console.log('fm_radio_api.js: same listener added');
-            return key;
-        }
-    }
-
-    _on_antenna_changed_listeners[++_on_antenna_changed_listener_id] = listener;
-    _on_antenna_changed_listeners_count++;
-    if (_on_antenna_changed_listeners_count == 1) {
-        var msg = { cmd: 'AddOnAntennaChangedListener' };
-        postMessage(msg, function(result) {
-            if (result.isError) {
-                console.error('fm_radio_api.js: AddAntennaChangedList. failed');
-            }
-        });
-    }
-
-    return _on_antenna_changed_listener_id;
-};
-
 exports.addOnFrequencyChangedListener = function(listener) {
     console.log("fm_radio_api.js: entered export.addFrequencyChangedListener");
     if (!(listener instanceof Function) && listener != undefined) {
@@ -293,19 +248,6 @@ exports.enabled = function () {
     return null;
 };
 
-/* TODO: Check whether we leave that API there or not */
-/*exports.antennaAvailable = function () {
-    var msg = { cmd: 'GetAntennaAvailable' };
-    var ret = extension.internal.sendSyncMessage(JSON.stringify(msg));
-    if ((ret != undefined)) {
-        var m = JSON.parse(ret);
-        if (m.result != undefined) {
-            return m.result;
-        }
-    }
-    return null;
-};*/
-
 exports.frequency = function () {
     var result = sendSyncMessage({ cmd: 'GetFrequency' });
     if (result.isError) {
@@ -316,6 +258,6 @@ exports.frequency = function () {
     if (result.value != undefined) {
         return result.value["frequency"];
     }
-    console.log("<br>fm_radio_api.js: exports.frequency failed!");
+    console.log("fm_radio_api.js: exports.frequency failed!");
     return null;
 };

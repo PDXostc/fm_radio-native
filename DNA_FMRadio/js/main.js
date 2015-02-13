@@ -402,6 +402,17 @@ function fluctuate(bar) {
     });
 }
 
+function addSignalListeners() {
+    try {
+        fmradio.addOnFrequencyChangedListener(function(signal_value){
+            console.log("DEBUG : frequencychanged SIGNAL received : " + signal_value);
+            setStationIdFrequency(signal_value);
+        });
+    } catch(e) {
+        console.error("addFrequencyChangedListener failed with error : " + e);
+    }
+}
+
 /**
  * Initialize application components and register button events.
  *
@@ -440,6 +451,9 @@ var init = function () {
     });
 
     if (fmradio) {
+        // We start by registering our various signal listeners
+        addSignalListeners();
+
         // We are initializing (enabling) the FMRadioService at boot-up time.
         try {
             fmradio.enable(function(error) {
@@ -457,14 +471,14 @@ var init = function () {
         // Since FMRadioService should never stop, the "last" station
         // frequency is still rendering inside fmradio daemon, so we're
         // just fetching that frequency and tune it in.
-        try {
+        /*try {
             var frequency = fmradio.frequency();
         } catch(e) {
             console.error("FMRadio.frequency Exception caught : " + e);
             state = "STATE_ERROR";
             return;
-        }
-        setStationIdFrequency(frequency);
+        }*/
+        //setStationIdFrequency(frequency);
 
         // Load presets
         // TODO: load the presets from persistent memory
@@ -622,6 +636,8 @@ $(document).keydown(function(e) {
 $( "#TuneDownBtn" ).click(function() {
     // Interaction with 'manual tuning' is only possible on STATE_NORMAL
     if (state == "STATE_NORMAL") {
+        // TODO:
+        // fetch interval from WebAPI interval
         var frequency = fmradio.frequency() - 100000;
 
         if (frequency < constants.FREQ_MIN_LIMIT)
@@ -632,7 +648,7 @@ $( "#TuneDownBtn" ).click(function() {
 
         // Change the Station ID from the JS layer for now
         // TODO: check if better to update from a onFrequenyChanged handler
-        setStationIdFrequency(frequency);
+        //setStationIdFrequency(frequency);
     }
 });
 
@@ -659,7 +675,7 @@ $( "#TuneUpBtn" ).click(function() {
 
         // Change the Station ID from the JS layer for now
         // TODO: check if better to update from a onFrequenyChanged handler
-        setStationIdFrequency(frequency);
+        //setStationIdFrequency(frequency);
     }
 });
 
@@ -732,7 +748,7 @@ $( "#key_OK" ).click(function() {
         var freqHz = (parseFloat(directTuningFreqStr)) * 100000;
         if (freqIsValid(freqHz)) {
             setFMRadioFrequency(freqHz);
-            setStationIdFrequency(freqHz);
+            //setStationIdFrequency(freqHz);
             goBackToNormal();
         }
     }
@@ -757,7 +773,7 @@ $( ".fm-radio-box" ).click(function() {
     // Tune-in the preset frequency
     if (freqIsValid(freqHz)) {
         setFMRadioFrequency(freqHz);
-        setStationIdFrequency(freqHz);
+        //setStationIdFrequency(freqHz);
     }
 });
 

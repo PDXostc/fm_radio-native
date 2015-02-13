@@ -44,15 +44,13 @@
 #include <string.h>
 
 #include "gstsdrjfmsrc.h"
+#include "fm_radio_common.h"
 
 GST_DEBUG_CATEGORY_EXTERN (sdrjfm_debug);
 #define GST_CAT_DEFAULT sdrjfm_debug
 
 
-#define DEFAULT_MIN_FREQUENCY    88000000
-#define DEFAULT_MAX_FREQUENCY   108000000
 #define DEFAULT_FREQUENCY_STEP     100000
-#define DEFAULT_FREQUENCY        96700000
 #define DEFAULT_INTERVAL              100
 #define DEFAULT_THRESHOLD              30
 
@@ -357,7 +355,7 @@ gst_sdrjfm_src_read (GstAudioSrc * asrc, gpointer data, guint length,
     samples += count;
     remaining -= count;
   }
-  
+
   return length;
 }
 
@@ -427,10 +425,10 @@ gst_sdrjfm_src_init (GstSdrjfmSrc * self)
 {
   GstAudioBaseSrc *basrc = GST_AUDIO_BASE_SRC (self);
 
-  self->min_freq = DEFAULT_MIN_FREQUENCY;
-  self->max_freq = DEFAULT_MAX_FREQUENCY;
+  self->min_freq = FM_RADIO_SERVICE_MIN_FREQ;
+  self->max_freq = FM_RADIO_SERVICE_MAX_FREQ;
   self->freq_step = DEFAULT_FREQUENCY_STEP;
-  self->frequency = DEFAULT_FREQUENCY;
+  self->frequency = FM_RADIO_SERVICE_DEF_FREQ;
   self->interval = DEFAULT_INTERVAL;
   self->threshold = DEFAULT_THRESHOLD;
 
@@ -473,12 +471,12 @@ gst_sdrjfm_src_class_init (GstSdrjfmSrcClass * klass)
 
   g_object_class_install_property (gobject_class, PROP_MIN_FREQUENCY,
       g_param_spec_int ("min-frequency", "Minimum Frequency",
-          "Minimum frequency used in seeks (in Hz)", 0, G_MAXINT, DEFAULT_MIN_FREQUENCY,
+          "Minimum frequency used in seeks (in Hz)", 0, G_MAXINT, FM_RADIO_SERVICE_MIN_FREQ,
 			static_cast<GParamFlags>( G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS)));
 
   g_object_class_install_property (gobject_class, PROP_MAX_FREQUENCY,
       g_param_spec_int ("max-frequency", "Maximum Frequency",
-          "Maximum frequency used in seeks (in Hz)", 0, G_MAXINT, DEFAULT_MAX_FREQUENCY,
+          "Maximum frequency used in seeks (in Hz)", 0, G_MAXINT, FM_RADIO_SERVICE_MAX_FREQ,
 			static_cast<GParamFlags>( G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS)));
 
   g_object_class_install_property (gobject_class, PROP_FREQUENCY_STEP,
@@ -488,7 +486,7 @@ gst_sdrjfm_src_class_init (GstSdrjfmSrcClass * klass)
 
   g_object_class_install_property (gobject_class, PROP_FREQUENCY,
       g_param_spec_int ("frequency", "Frequency",
-          "Frequency to receive", 0, G_MAXINT, DEFAULT_FREQUENCY,
+          "Frequency to receive", 0, G_MAXINT, FM_RADIO_SERVICE_DEF_FREQ,
     static_cast<GParamFlags>(G_PARAM_READWRITE | GST_PARAM_MUTABLE_PLAYING | G_PARAM_STATIC_STRINGS)));
 
   g_object_class_install_property (gobject_class, PROP_INTERVAL,

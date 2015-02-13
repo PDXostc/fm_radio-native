@@ -15,10 +15,26 @@
 #include "../../extension_common/extension.h"
 #include "../../extension_common/picojson.h"
 
+class FMRadioInstance;
+
+typedef struct {
+    //DBusGProxyCall  *call;
+    FMRadioInstance *obj;
+    picojson::value *msg;
+} DBusReplyListener;
+
 class FMRadioInstance : public common::Instance {
     public:
         FMRadioInstance();
         ~FMRadioInstance();
+
+        void PostAsyncReply(const picojson::value& msg,
+                            picojson::value::object& value);
+        void PostAsyncErrorReply(const picojson::value& msg,
+                                 const std::string& error_msg);
+        void PostAsyncSuccessReply(const picojson::value& msg,
+                                   const picojson::value& value);
+        void PostAsyncSuccessReply(const picojson::value& msg);
 
     private:
         // common::Instance implementation.
@@ -27,7 +43,6 @@ class FMRadioInstance : public common::Instance {
 
         // Synchronous messages
         void HandleGetEnabled(const picojson::value& msg);
-        void HandleGetAntennaAvailable(const picojson::value& msg);
         void HandleGetFrequency(const picojson::value& msg);
 
         // Asynchronous messages
@@ -41,9 +56,10 @@ class FMRadioInstance : public common::Instance {
                                   const picojson::value& msg);
 
         // Asynchronous dbus reply callback catch-all method
-        void ReplyCallback(DBusGProxy *proxy,
-                           GError *error,
-                           gpointer userdata);
+        static void DBusReplyCallback(DBusGProxy *proxy,
+                                      GError *error,
+                                      gpointer userdata);
+        DBusReplyListener* CreateDBusReplyListener(const picojson::value& msg);
 
         // Synchronous message helpers
         void SendSyncErrorReply(const std::string& error_msg);
@@ -51,14 +67,6 @@ class FMRadioInstance : public common::Instance {
         void SendSyncSuccessReply(const picojson::value& value);
 
         // Asynchronous message helpers
-        void PostAsyncReply(const picojson::value& msg,
-                            picojson::value::object& value);
-        void PostAsyncErrorReply(const picojson::value& msg,
-                                 const std::string& error_msg);
-        void PostAsyncSuccessReply(const picojson::value& msg,
-                                   const picojson::value& value);
-        void PostAsyncSuccessReply(const picojson::value& msg);
-
         void SendSignal(const picojson::value& signal_name,
                         const picojson::value& signal_value);
 
@@ -77,7 +85,6 @@ class FMRadioInstance : public common::Instance {
 
         static guint on_enabled_listener_id_;
         static guint on_disabled_listener_id_;
-        static guint on_antenna_changed_listener_id_;
         static guint on_frequency_changed_listener_id_;
 
         GMainLoop* main_loop_;
@@ -86,6 +93,9 @@ class FMRadioInstance : public common::Instance {
         // Those are used to access FMRadioService .xml introspect bindings
         DBusGConnection *bus;
         DBusGProxy *busProxy;
+
+        // TODO: remove
+        // static std::list<dbusReplyListener*> listeners;
 };
 
 #endif  // FM_RADIO_INSTANCE_H_
