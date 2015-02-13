@@ -7,8 +7,8 @@ var ScreenScale=1.5;
 	ScreenWidth = 720*ScreenScale,
 	ScreenHeight = 1280*ScreenScale, /*1920 or 1800, 1220 for testing*/
 	VerticalOffset = -200, /*-200, 200 for testing */
-	ClickSensitivity = 50,
-	DragSensitivity = 50,
+	ClickSensitivity = 10,
+	DragSensitivity = 20,
 	Edges = true,
 	Fading = false,
 	Scaling = true,
@@ -240,6 +240,8 @@ DNA.prototype = {
 
 		//Side Images
 		var SideImg={};
+		//Center Image
+        var CenterImg = IconLinks[0][0];
 
 // --------------------------------------
 		//Increment through the icons
@@ -267,7 +269,10 @@ DNA.prototype = {
 				//Assign icon images
 				SideImg[i] = IconLinks[G.Icon][0];
 
-				if(ImageCenter!==2){
+				if(ImageCenter===2){}
+				else if(ImageCenter)
+					a.drawImage(CenterImg, this.x-(G.HexScale[0]/2), this.y-(G.HexScale[0]/2))
+				else{
 					//scale the images according to the cosine
 					if(Scaling){
 						G.HexScale[i]=rescale(G.HexScale[i],G.Strand[i]);
@@ -357,6 +362,7 @@ Spinner.prototype = {
     frameAction: function (b) {
 		//redraw canvas
         b.canvas.width = b.canvas.width;
+		b.Context.drawImage(img,0,0,ScreenWidth,ScreenHeight);
 		if(ShowFPS)
 			fpsUpdate();
 		//butt,round,square
@@ -383,8 +389,6 @@ Spinner.prototype = {
 				//Capture the start location
 				G.DragStartX=G.MouseX;
 				G.DragStartY=G.MouseY;
-				//console.log("G.DragStartX: "+G.DragStartX);
-				//console.log("G.DragStartY: "+G.DragStartY);
 			}else if(G.Timer>ClickSensitivity){
 				//Sensitivity indicates the click is too long to run a function
 				G.ClickedTooLong=true;
@@ -422,7 +426,7 @@ Spinner.prototype = {
 		
 		//A click has been registered
 		if(G.Mouseclick){
-			for(var i in G.HotZone){
+			for(i=0;i<Object.keys(G.HotZone).length;i++){
 				try{
 					//if the coordinates line up, and the icon isn't too far away
 					if(G.LastMouseX>G.HotZone[i]["X"] && G.LastMouseX<G.HotZone[i]["X"]+G.HotZone[i]["S"] && G.HotZone[i]["Cos"] < ClickableDistance){
@@ -582,7 +586,7 @@ function addIcon(Icon, Callback, Path, Id){
 	if(Callback!==null)
 		IconLinks.push([img,Callback]);
 	else
-		IconLinks.push([img,function (){ tizen.application.launch(Id);tizen.application.getCurrentApplication().exit(); }])
+		IconLinks.push([img,function (){ tizen.application.launch(Id); }])
 	IconCount++;
 }
 function rescale(scale,cos){
@@ -592,30 +596,16 @@ function rescale(scale,cos){
 //Input functions
 function getMousePos(canvas, evt){
 	var rect = canvas[0].getBoundingClientRect();
-	if(typeof(evt.clientX) == typeof(undefined) && typeof(evt.touches[0].clientX) == typeof(undefined)){
-		return {
-			x: evt.changedTouches[0].clientX - rect.left,
-			y: evt.changedTouches[0].clientY - rect.top
-		};
-	}else if(typeof(evt.clientX) == typeof(undefined)){
-		return {
-			x: evt.touches[0].clientX - rect.left,
-			y: evt.touches[0].clientY - rect.top
-		};
-	}else{
-		return {
-			x: evt.clientX - rect.left,
-			y: evt.clientY - rect.top
-		};
-	}
+	return {
+		x: evt.clientX - rect.left,
+		y: evt.clientY - rect.top
+	};
 }
 function setMousedown(down){
 	if(G.Mousedown===true && down===false && G.Timer<ClickSensitivity)
 		G.Mouseclick=true;
-	else{
+	else
 		G.Mouseclick=false;
-		delete G.LastDir;
-	}
 	G.Mousedown=down;
 }
 function getMouseloc(evt){
@@ -633,7 +623,7 @@ function initDrag(){
 	}
 	if(G.Mousedown){
 		var dist=getDistance(G.DragStartX,G.DragStartY,G.MouseX,G.MouseY);
-		if(dist>DragSensitivity||typeof(G.LastDir)!=typeof(undefined)){
+		if(dist>20){
 				G.LHDist=Math.round(getDistance(G.LastMouseX,0,G.MouseX,0)); //Last Horizontal Distance
 				if(G.LHDist>MaxSpeed){ G.LHDist=MaxSpeed; }
 				if(G.MouseX>G.LastMouseX){
@@ -662,31 +652,18 @@ function initDrag(){
 	G.LastMouseY=G.MouseY;
 }
 
-var JagAPI = {
-	Listen: function(canvas, event, callback, useCapture) { //useCapture not supported
-		//click order of events:
-		//touchstart touchmove touchend mouseover mousemove mousedown mouseup click dblclick
-		switch(event){
-			case "mousedown":
-				canvas.addEventListener('touchstart', callback);
-			break;
-			case "mousemove":
-				canvas.addEventListener('touchmove', callback);
-			break;
-			case "mouseup":
-				canvas.addEventListener('touchend', callback);
-			break;
-		}
-		canvas.addEventListener(event, callback);
-	}
-}
-
 //Misc functions
 function initListeners(){
-	JagAPI.Listen(canvas[0],'mousedown',	function (evt) {	getMouseloc(evt);setMousedown(true);});
-	JagAPI.Listen(canvas[0],'mouseup',		function (evt) {	setMousedown(false);});
-	JagAPI.Listen(canvas[0],'mouseout',		function (evt) {	setMousedown(false);});
-	JagAPI.Listen(canvas[0],'mousemove',	function (evt) {	getMouseloc(evt);});
+	console.log('DNA Canvas Listeners Initialized!');
+
+	var b = document.body;
+	b.addEventListener('mousedown', function (evt) {	console.log("Clicked at "+evt.pageX +","+evt.pageY);	console.log("Body mouse event registered!");	}, false);
+	b.addEventListener('mouseup', function (evt) {		console.log("Released at "+evt.pageX +","+evt.pageY);	}, false);
+
+	canvas[0].addEventListener('mousedown', function (evt) {	setMousedown(true);	console.log("Canvas mouse event registered!");	}, false);
+	canvas[0].addEventListener('mouseup', function (evt) {	setMousedown(false);	}, false);
+	canvas[0].addEventListener('mouseout', function (evt) {	setMousedown(false);	}, false);
+	canvas[0].addEventListener('mousemove', function (evt) {	getMouseloc(evt);		}, false);
 }
 
 //App Icon functions
@@ -696,19 +673,18 @@ function onAppRecallSuccess(list) {
 						   "AMB Simulator":"./DNA_common/images/amb_simulator_inactive.png",
 						   "Hello Tizen":"./DNA_common/images/tizen_inactive.png",
 						   "Audio Settings":"./DNA_common/images/audio_settings_inactive.png",
-						   "MOST AUDIO":"./DNA_common/images/audio_settings_inactive.png",
-						   "Fingerprint":"./DNA_common/images/fingerprint_inactive.png",
+						   "Finger Print":"./DNA_common/images/fingerprint_inactive.png",
 						   "Multimedia Player":"./DNA_common/images/mediaplayer_inactive.png",
 						   "SmartDeviceLink":"./DNA_common/images/sdl_inactive.png",
 						   "pkgmgr-install":"./DNA_common/images/pkgmgr-install_inactive.png",
 						   "syspopup-app":"./DNA_common/images/syspopup-app_inactive.png",
 						   ApplicationVisibility:"./DNA_common/images/app_visibility_inactive.png",
-						   Boilerplate:"./DNA_common/images/grid_inactive.png",
+						   Boilerplate:"./DNA_common/images/boilerplate_icon.png",
 						   Browser:"./DNA_common/images/browser_inactive.png", 
-						   "DNA Browser":"./DNA_common/images/browser_inactive.png", 
 						   Dashboard:"./DNA_common/images/dashboard_inactive.png",
 						   Dialer:"./DNA_common/images/dialer_inactive.png",
 						   Email:"./DNA_common/images/email_inactive.png",
+						   Grid:"./DNA_common/images/grid_inactive.png",
 						   HVAC:"./DNA_common/images/hvac_inactive.png",
 						   Handwriting:"./DNA_common/images/handwriting_inactive.png",
 						   Keyboard:"./DNA_common/images/keyboard_inactive.png",
@@ -722,12 +698,9 @@ function onAppRecallSuccess(list) {
 						   Tizen:"./DNA_common/images/tizen_inactive.png",
 						   Voiceprint:"./DNA_common/images/voiceprint_inactive.png",
 						   Weather:"./DNA_common/images/weather_inactive.png",
+						   FMRADIO:"./DNA_common/images/fmradio_inactive.png",
 						   gestureGame:"./DNA_common/images/gesture_game_inactive.png",
-						   GestureGame:"./DNA_common/images/gesture_game_inactive.png",
-						   saythis:"./DNA_common/images/say_this_inactive.png",
-						   FMRADIO:"./DNA_common/images/fmradio.png",
-						   Cameras:"./DNA_common/images/camera_icon.png"
-						 };
+						   saythis:"./DNA_common/images/say_this_inactive.png"};
 	var i = 0;
 	var path="";
 	try {
@@ -740,17 +713,15 @@ function onAppRecallSuccess(list) {
 
 		for (i = 0; i < list.length; i++) {
 			var app = list[i];
-			if(app.name != "Home Screen"){
-				if (registeredApps[app.name]) {
-					addIcon(app.name, null, registeredApps[app.name], app.id);
+			if (registeredApps[app.name]) {
+				addIcon(app.name, null, registeredApps[app.name], app.id);
+			}else{
+				if(app.iconPath.substr(app.iconPath.length - 4) != ".png"){
+					var path="./DNA_common/images/tizen_inactive.png";
 				}else{
-					if(app.iconPath.substr(app.iconPath.length - 4) != ".png"){
-						var path="./DNA_common/images/tizen_inactive.png";
-					}else{
-						var path=app.iconPath;
-					}
-					addIcon(app.name, null, path, app.id);
+					var path=app.iconPath;
 				}
+				addIcon(app.name, null, path, app.id);
 			}
 		}
 	} catch (exc) {
@@ -763,7 +734,7 @@ function getInstalledApps(callback){
 	G.Callback = callback;
 	//Add defaults until app pulls icons properly
 	/*for(i=0;i<SkipRows*StrandCount;i++){
-		addIcon('Dashboard',	function (){ tizen.application.launch("JLRPOCX033.Dashboard");			});
+		addIcon('Dashboard',	function (){ tizen.application.launch("intelPoc12.Dashboard");			});
 	}*/
 	"use strict";
 	if (typeof tizen !== 'undefined') {
@@ -782,11 +753,14 @@ function getInstalledApps(callback){
 	}else{
 		//Add some defaults for the Web Simulator
 		//addIcon syntax: Image Name, Callback Function
-		addIcon('dashboard_inactive',	function (){ tizen.application.launch("JLRPOCX033.Dashboard");			});
-		addIcon('fingerprint_inactive',	function (){ tizen.application.launch("JLRPOCX011.FingerPrint");		});
-		addIcon('hvac_inactive',		function (){ tizen.application.launch("JLRPOCX008.HVAC");				});
-		addIcon('news_inactive',		function (){ tizen.application.launch("JLRPOCX007.News");				});
-		addIcon('phone_inactive',		function (){ tizen.application.launch("JLRPOCX031.phone");				});
+		addIcon('dashboard_inactive',	function (){ tizen.application.launch("intelPoc12.Dashboard");			});
+		addIcon('fingerprint_inactive',	function (){ tizen.application.launch("intelPoc32.FingerPrint");			});
+		addIcon('hvac_inactive',			function (){ tizen.application.launch("intelPoc16.HVAC");				});
+		addIcon('mediaplayer_inactive',		function (){ tizen.application.launch("intelPoc14.MultimediaPlayer");	});
+		addIcon('navigation_inactive',	function (){ tizen.application.launch("intelPoc11.navigation");			});
+		addIcon('news_inactive',			function (){ tizen.application.launch("intelPoc30.News");				});
+		addIcon('phone_inactive',		function (){ tizen.application.launch("intelPoc15.phone");				});
+		addIcon('weather_inactive',		function (){ tizen.application.launch("intelPoc31.Weather");				});
 		//IconCount=30; //for testing purposes
 		callback();
 	}
