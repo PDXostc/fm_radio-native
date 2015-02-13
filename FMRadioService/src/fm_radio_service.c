@@ -492,7 +492,8 @@ bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
                 g_message("DEBUG3 : bus_cb, cb = %p", data->frequency_changed_cb);
                 const GstStructure *s = gst_message_get_structure (message);
 
-                g_assert (gst_structure_has_field_typed (s, "frequency", G_TYPE_INT));
+                if (!gst_structure_has_field_typed (s, "frequency", G_TYPE_INT))
+		  break;
                 g_message("DEBUG4 : bus_cb, cb = %p", data->frequency_changed_cb);
 
                 gint freq;
