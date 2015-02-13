@@ -576,7 +576,8 @@ bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
             if (GST_MESSAGE_SRC (message) == GST_OBJECT (data->fmsrc)) {
                 const GstStructure *s = gst_message_get_structure (message);
 
-                g_assert (gst_structure_has_field_typed (s, "frequency", G_TYPE_INT));
+                if (!gst_structure_has_field_typed (s, "frequency", G_TYPE_INT))
+                    break;
 
                 gint freq;
                 gst_structure_get_int (s, "frequency", &freq);
