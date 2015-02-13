@@ -23,8 +23,7 @@ Settings.includeHTMLSucess = function(linkobj) {
    //$("body").append(Settings.import.getElementById('settingsPage'));
    //$("#settingsPage").toggle();
    //Settings.addUpdateSettingsPage('settingsX','page',function(){console.log('SettingsX click');});
-   onDepenancy("BottomBar.settingsIcon",Settings.pageUpdate)
-   //setTimeout(Settings.pageUpdate,3000);
+   setTimeout(Settings.pageUpdate,3000);
 };
 		
 Settings.pageUpdate = function() {
@@ -36,7 +35,6 @@ Settings.pageUpdate = function() {
 		console.log("replace settingsIcon with "+Settings.settingsIconHTML);
 		$('#settingsIcon').replaceWith(Settings.settingsIconHTML.valueOf());
 		$("body").append(Settings.import.getElementById('settingsPage'));
-		depenancyMet("Settings.settingsPage");
 		document.getElementById('settingsIcon').onclick=function(){$('#settingsPage').toggleClass('hidden');};
 		document.getElementById('SettingsTabsCloseButton').onclick=function(){$('#settingsPage').toggleClass('hidden');};
 		console.log("icon update ");
@@ -52,15 +50,3 @@ Settings.includeHTMLFailed = function(linkobj) {
 includeHTML(Settings.TemplateHTML, Settings.includeHTMLSucess, Settings.includeHTMLFailed);
 
 console.log("end of settings.js");
-
-enableSpinner();
-
-disableSpinner();
-
-function enableSpinner() {
-	$(".spinner").removeClass("off").addClass("on");
-}
-
-function disableSpinner() {
-	$(".spinner").removeClass("on").addClass("off");
-}
