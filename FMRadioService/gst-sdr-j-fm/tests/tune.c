@@ -5,8 +5,25 @@
 GST_DEBUG_CATEGORY (sdrjfm_debug);
 #define GST_CAT_DEFAULT sdrjfm_debug
 
-#define MIN_FREQ  88100000
-#define MAX_FREQ 108100000
+#define MIN_FREQ              88000000
+#define MAX_FREQ             108000000
+#define RDS_CAPABLE_STATION  105900000
+
+typedef enum
+{
+  SEEK_START = 1,
+  SEEK_WAIT,
+  SEEK_UP,
+  SEEK_DOWN,
+  SEEK_DONE
+} SeekState;
+
+typedef enum
+{
+  RDS_FIRST = 1,
+  RDS_CLEAR,
+  RDS_SECOND
+} RDSState;
 
 typedef struct _TestData TestData;
 struct _TestData
@@ -14,16 +31,19 @@ struct _TestData
   GstElement *pipeline;
   GstElement *fmsrc;
   void (*playing_cb) (TestData*);
-  void (*frequency_changed_cb) (TestData*,gint);
-  void (*station_found_cb) (TestData*,gint);
+  void (*frequency_changed_cb) (TestData*, gint);
+  void (*station_found_cb) (TestData*, gint);
+  void (*rds_label_clear_cb) (TestData*);
+  void (*rds_label_change_cb) (TestData*, const gchar *);
+  void (*rds_label_complete_cb) (TestData*, const gchar *);
   gint timeout;
   GMainLoop *loop;
   gint freqs[10];
   gint idx;
   gint target_freq;
   guint timeout_id;
-  gboolean cancelled;
-  gboolean sought_down;
+  SeekState seek_state;
+  RDSState rds_state;
 };
 
 static gboolean
@@ -46,21 +66,42 @@ bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
       if (GST_MESSAGE_SRC (message) == GST_OBJECT (data->fmsrc)) {
         const GstStructure *s = gst_message_get_structure (message);
 
-        g_assert (gst_structure_has_field_typed (s, "frequency", G_TYPE_INT));
+	if (gst_structure_has_field_typed (s, "frequency", G_TYPE_INT))
+	  {
+	    gint freq;
+	    gst_structure_get_int (s, "frequency", &freq);
+	    g_assert_cmpint (freq, >=, MIN_FREQ);
+	    g_assert_cmpint (freq, <=, MAX_FREQ);
 
-	gint freq;
-	gst_structure_get_int (s, "frequency", &freq);
-	g_assert_cmpint (freq, >=, MIN_FREQ);
-	g_assert_cmpint (freq, <=, MAX_FREQ);
 
+	    if (gst_structure_has_name (s, "sdrjfmsrc-frequency-changed")) {
+	      if (data->frequency_changed_cb)
+		data->frequency_changed_cb (data, freq);
+	    } else if (gst_structure_has_name (s, "sdrjfmsrc-station-found")) {
+	      if (data->station_found_cb)
+		data->station_found_cb (data, freq);
+	    }
+	  }
+	else if (gst_structure_has_name (s, "sdrjfmsrc-rds-station-label-clear"))
+	  {
+		if (data->rds_label_clear_cb)
+		  data->rds_label_clear_cb (data);
+	  }
+	else if (gst_structure_has_field_typed (s, "station-label", G_TYPE_STRING))
+	  {
 
-	if (gst_structure_has_name (s, "sdrjfmsrc-frequency-changed")) {
-	  if (data->frequency_changed_cb)
-	    data->frequency_changed_cb (data, freq);
-	} else if (gst_structure_has_name (s, "sdrjfmsrc-station-found")) {
-	  if (data->station_found_cb)
-	    data->station_found_cb (data, freq);
-	}
+	    const gchar *label = gst_structure_get_string (s, "station-label");
+	    if (gst_structure_has_name (s, "sdrjfmsrc-rds-station-label-change"))
+	      {
+		if (data->rds_label_change_cb)
+		  data->rds_label_change_cb (data, label);
+	      }
+	    else if (gst_structure_has_name (s, "sdrjfmsrc-rds-station-label-complete"))
+	      {
+		if (data->rds_label_complete_cb)
+		  data->rds_label_complete_cb (data, label);
+	      }
+	  }
       }
       break;
 
@@ -83,8 +124,11 @@ bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
 
 static TestData *
 tearup (gint freq, void (*playing_cb) (TestData*),
-	void (*frequency_changed_cb) (TestData*,gint),
-	void (*station_found_cb) (TestData*,gint))
+	void (*frequency_changed_cb) (TestData*, gint),
+	void (*station_found_cb) (TestData*, gint),
+	void (*rds_label_clear_cb) (TestData*),
+	void (*rds_label_change_cb) (TestData*, const gchar *),
+	void (*rds_label_complete_cb) (TestData*, const gchar *))
 {
   GError *error = NULL;
   TestData *data = g_slice_new0 (TestData);
@@ -104,11 +148,14 @@ tearup (gint freq, void (*playing_cb) (TestData*),
       NULL);
 
   data->timeout = 60;
-  data->cancelled = FALSE;
-  data->sought_down = FALSE;
+  data->seek_state = SEEK_START;
+  data->rds_state = RDS_FIRST;
   data->playing_cb = playing_cb;
   data->frequency_changed_cb = frequency_changed_cb;
   data->station_found_cb = station_found_cb;
+  data->rds_label_clear_cb = rds_label_clear_cb;
+  data->rds_label_change_cb = rds_label_change_cb;
+  data->rds_label_complete_cb = rds_label_complete_cb;
 
   bus = gst_pipeline_get_bus (GST_PIPELINE (data->pipeline));
   gst_bus_add_watch (bus, bus_cb, data);
@@ -198,56 +245,76 @@ test_tune ()
   TestData *data = tearup (96700000,
 			   test_tune_playing_cb,
 			   test_tune_freq_changed_cb,
-			   NULL);
+			   NULL, NULL, NULL, NULL);
   test_run (data);
 }
 
 static void
-test_seek_playing_cb (TestData *data);
+test_seek_up (TestData *data);
 
 static gboolean
-wait_timed_out_cb (void *userdata)
+seek_wait_cb (void *userdata)
 {
   TestData *data = userdata;
   GST_DEBUG_OBJECT (data->fmsrc, "Wait elapsed, resuming seek");
-  test_seek_playing_cb(data);
+  data->seek_state = SEEK_UP;
+  test_seek_up(data);
   return FALSE;
 }
 
 static gboolean
-seek_timed_out_cb (void *userdata)
+seek_start_cb (void *userdata)
 {
+
   TestData *data = userdata;
-  GST_DEBUG_OBJECT (data->fmsrc, "Wait elapsed, cancelling seek");
+  GST_DEBUG_OBJECT (data->fmsrc, "End of start period, cancelling seek");
 
   g_signal_emit_by_name (data->fmsrc, "cancel-seek");
-  data->cancelled = TRUE;
-  data->timeout_id = g_timeout_add_seconds (3, wait_timed_out_cb, data);
+  data->seek_state = SEEK_WAIT;
+  data->timeout_id = g_timeout_add_seconds (3, seek_wait_cb, data);
   return FALSE;
 }
 
 static void
-test_seek_playing_cb (TestData *data)
+test_seek_up (TestData *data)
 {
-  GST_DEBUG_OBJECT (data->fmsrc, "Pipeline playing; seeking up for station");
+  GST_DEBUG_OBJECT (data->fmsrc, "Seeking up for station");
   g_signal_emit_by_name (data->fmsrc, "seek-up");
-  if (!data->cancelled) {
-    data->timeout_id = g_timeout_add_seconds (3, seek_timed_out_cb, data);
-  }
+
+  if (data->seek_state == SEEK_START)
+    data->timeout_id = g_timeout_add_seconds (2, seek_start_cb, data);
 }
 
 static void
 test_seek_station_found_cb (TestData *data, gint frequency)
 {
+  GST_DEBUG_OBJECT (data->fmsrc, "Found station at frequency %d in state %d",
+    frequency, data->seek_state);
 
-  if (!data->sought_down) {
-    data->sought_down = TRUE;
-    g_signal_emit_by_name (data->fmsrc, "seek-down");
+  switch (data->seek_state)
+    {
+      case SEEK_START:
+	g_signal_emit_by_name (data->fmsrc, "seek-up");
+	GST_DEBUG_OBJECT (data->fmsrc, "Found station while starting, seeking again");
+	break;
+   
+      case SEEK_UP:
+	data->seek_state = SEEK_DOWN;
+	g_signal_emit_by_name (data->fmsrc, "seek-down");
+	GST_DEBUG_OBJECT (data->fmsrc, "Found station at %d while seeking up, seeking down", frequency);
+	break;
 
-    GST_DEBUG_OBJECT (data->fmsrc, "Seeking with frequency %d", frequency);
-  } else {
-    test_done (data);
-  }
+      case SEEK_DOWN:
+	GST_DEBUG_OBJECT (data->fmsrc, "Found station at %d while seeking down, test complete",
+                          frequency);
+	data->seek_state = SEEK_DONE;
+	test_done (data);
+	break;
+
+      case SEEK_DONE:
+      case SEEK_WAIT:
+	break;
+    }
 }
 
 static void
@@ -255,9 +322,75 @@ test_seek ()
 {
   GST_DEBUG ("Starting seek test");
   TestData *data = tearup (88100000,
-			   test_seek_playing_cb,
+			   test_seek_up,
 			   NULL,
-			   test_seek_station_found_cb);
+			   test_seek_station_found_cb,
+                           NULL, NULL, NULL);
+  test_run (data);
+}
+
+static void
+test_rds_label_clear (TestData *data)
+{
+  GST_DEBUG_OBJECT (data->fmsrc, "RDS station label cleared");
+
+  switch (data->rds_state)
+    {
+    case RDS_CLEAR:
+      GST_DEBUG_OBJECT (data->fmsrc, "Successfully cleared RDS station label"
+                                     ", switching frequency back");
+      data->rds_state = RDS_SECOND;
+      g_object_set (data->fmsrc, "frequency", RDS_CAPABLE_STATION, NULL);
+      break;
+
+    case RDS_FIRST:
+    case RDS_SECOND:
+      break;
+  };
+}
+
+static void
+test_rds_label_change (TestData *data, const gchar *label)
+{
+  GST_DEBUG_OBJECT (data->fmsrc, "RDS station label changed to: `%s'", label);
+}
+
+static void
+test_rds_label_complete (TestData *data, const gchar *label)
+{
+  GST_DEBUG_OBJECT (data->fmsrc, "RDS station label complete: `%s'", label);
+
+  switch (data->rds_state)
+    {
+    case RDS_FIRST:
+      GST_DEBUG_OBJECT (data->fmsrc, "First RDS station label complete, switching frequency");
+      data->rds_state = RDS_CLEAR;
+      g_object_set (data->fmsrc, "frequency", RDS_CAPABLE_STATION + 1000000, NULL);
+      break;
+    case RDS_SECOND:
+      GST_DEBUG_OBJECT (data->fmsrc, "Second RDS station label complete, test complete");
+      test_done (data);
+      break;
+
+    case RDS_CLEAR:
+      break;
+  };
+}
+
+
+static void
+test_rds ()
+{
+  GST_DEBUG ("Starting RDS test");
+  TestData *data = tearup (RDS_CAPABLE_STATION,
+			   NULL,
+			   NULL,
+			   NULL,
+			   test_rds_label_clear,
+			   test_rds_label_change,
+			   test_rds_label_complete);
+  data->timeout = 300;
+
   test_run (data);
 }
 
@@ -272,6 +405,7 @@ main (gint argc, gchar **argv)
   g_test_init (&argc, &argv, NULL);
   g_test_add_func ("/tune/live", test_tune);
   g_test_add_func ("/tune/seek", test_seek);
+  g_test_add_func ("/tune/rds", test_rds);
   g_test_run ();
   return 0;
 }

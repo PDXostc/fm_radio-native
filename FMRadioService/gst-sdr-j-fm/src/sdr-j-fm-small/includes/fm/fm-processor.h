@@ -39,6 +39,7 @@
 #include	"ringbuffer.h"
 #include	"oscillator.h"
 #include	"resampler.h"
+#include	"rds-groupdecoder.h"
 
 #define SCAN_BLOCK_SIZE 1024
 
@@ -65,7 +66,11 @@ public:
 	                             int32_t,	// inputRate
 	                             int32_t,	// fmrate
 	                             int32_t,	// audioRate,
-	                             int16_t);	// threshold scanning
+	                             int16_t,	// threshold scanning
+				     ClearCallback = 0,	// rds clear callback
+				     LabelCallback = 0,	// rds station label change callback
+				     LabelCallback = 0,	// rds station label complete callback
+				     void * = 0);	// rds callbacks userdata
 	        	~fmProcessor (void);
 	void		stop		(void);		// stop the processor
 	void		setfmMode	(uint8_t);

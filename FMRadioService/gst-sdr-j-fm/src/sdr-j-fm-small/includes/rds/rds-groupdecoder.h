@@ -39,11 +39,13 @@
 #include	"fm-constants.h"
 #include	"rds-group.h"
 
-class	RadioInterface;
+typedef void (*ClearCallback)(void *userdata);
+typedef void (*LabelCallback)(const char * label, void *userdata);
 
 class	rdsGroupDecoder {
 public:
-	rdsGroupDecoder		(RadioInterface *);
+	rdsGroupDecoder		(ClearCallback, LabelCallback,
+				 LabelCallback, void *);
 	~rdsGroupDecoder	(void);
 bool	decode			(RDSGroup *);
 void	reset			(void);
@@ -64,8 +66,6 @@ static const uint32_t NUM_OF_CHARS_RADIOTEXT =
 static const char END_OF_RADIO_TEXT		= 0x0D;
 
 private:
-	RadioInterface	*MyRadioInterface;
-
 	void		Handle_Basic_Tuning_and_Switching (RDSGroup *);
 	void		Handle_RadioText		  (RDSGroup *);
 	void		Handle_Time_and_Date		  (RDSGroup *);
@@ -75,7 +75,7 @@ private:
 	uint32_t	m_piCode;
 
 //	Group 1 members
-	char   stationLabel [STATION_LABEL_LENGTH];
+	char   stationLabel [STATION_LABEL_LENGTH + 1];
 	int8_t   m_grp1_diCode;
 	uint32_t stationNameSegmentRegister;
 
@@ -83,6 +83,13 @@ private:
 	uint32_t textSegmentRegister;
 	int32_t  textABflag;
 	char   textBuffer [NUM_OF_CHARS_RADIOTEXT];
+
+	// Callback members
+	ClearCallback clearCallback;
+	LabelCallback changeCallback;
+	LabelCallback completeCallback;
+	void *callbackUserData;
+
 	//signals:
 	void	setGroup		(int);
 	void	setPTYCode		(int);

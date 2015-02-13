@@ -40,44 +40,57 @@
 class	rdsDecoder;
 class	audioSink;
 
-/** This is the main interface for the FM radio.  Originally it was
- * the main GUI class.
+/** \brief This is the main interface for the FM radio.
+ * 
+ * Originally this class was the main GUI class.
  */
 class RadioInterface {
 public:
-		RadioInterface		(int32_t = KHz(96700));
+		RadioInterface		(int32_t = KHz(96700),
+					 ClearCallback = 0, // rds clear callback
+					 LabelCallback = 0, //  rds station label change callback
+					 LabelCallback = 0, // rds station label complete callback
+					 void * = 0); // rds callbacks userdata
 		~RadioInterface		();
 
-	/** Get demodulated stereo interleaved audio samples.  This
-	 * function will block until there are samples available.
-	 * Request up to @length samples and store them in the array pointed to by @data.
-	 * Returns: the actual number of samples written to @data
+	/** \brief Get demodulated stereo interleaved audio samples.
+	 * 
+	 * Request up to \a length samples and store them in the array pointed to by \a data.
+	 * This function will block until there are samples available.
+	 * \returns the actual number of samples written to \a data.
 	 */
 	uint32_t	getSamples		(DSPFLOAT *data, uint32_t length);
-	/** Set the tuner to receive @frequency Hz */
+	/** \brief Set the tuner to receive \a frequency Hz */
 	void		setTuner		(int32_t frequency);
 
 	void		setFrequencyChangeCB	(vfoFrequencyChangedCB, void *);
-
-	/** Start seeking for a station.  After this function returns,
+	
+	/** \brief Start seeking for a station.
+	 * 
+	 * After this function returns,
 	 * the RadioInterface will start sampling different
-	 * frequencies for @interval milliseconds, adding @frequencyStep Hz each iteration,
-	 * wrapping at the lower and upper bounds of @minFrequency and
-	 * @maxFrequency, respectively.  The seek will continue either
+	 * frequencies for \a interval milliseconds, adding \a frequencyStep Hz each iteration,
+	 * wrapping at the lower and upper bounds of \a minFrequency and
+	 * \a maxFrequency, respectively.  The seek will continue either
 	 * until cancelSeek() is called or until a station is found,
-	 * in which case @callback is called with the station
-	 * frequency and @userdata.
+	 * in which case \a callback is called with the station
+	 * frequency and \a userdata.
 	 * \param threshold The signal level over which a signal is considered to be a station
 	 * \param interval How long to scan for a station on each
 	 * frequency, in milliseconds
 	 * \param callback A function to call when a station is found
-	 * \param userdata A pointer to be provided to @callback
+	 * \param userdata A pointer to be provided to \a callback
 	 */
 	void		seek			(int16_t threshold,
 						 int32_t minFrequency, int32_t maxFrequency,
 						 int32_t frequencyStep, int32_t interval,
 						 StationCallback callback, void *userdata);
 
+	/** \brief Stop seeking
+	 *
+	 * If a seek is underway, the seek is stopped and the receiver is retuned to the
+	 * frequency it was on before the seek was started.
+	 */
 	void		cancelSeek		();
 
 private:

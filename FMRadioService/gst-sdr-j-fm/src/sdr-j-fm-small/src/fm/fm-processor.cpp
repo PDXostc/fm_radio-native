@@ -56,7 +56,11 @@ GST_DEBUG_CATEGORY_EXTERN (sdrjfm_debug);
 	                          int32_t		inputRate,
 	                          int32_t		fmRate,
 	                          int32_t		audioRate,
-	                          int16_t		thresHold) {
+	                          int16_t		thresHold,
+				  ClearCallback		clearCallback,
+				  LabelCallback		changeCallback,
+				  LabelCallback		completeCallback,
+				  void *		callbackUserData) {
 	running				= false;
 	this	-> myRig		= vi;
 	this	-> myRadioInterface	= RI;
@@ -89,7 +93,11 @@ GST_DEBUG_CATEGORY_EXTERN (sdrjfm_debug);
 #define	RDS_DECIMATOR	8
 	this	-> myRdsDecoder		= new rdsDecoder (myRadioInterface,
 	                                                  fmRate / RDS_DECIMATOR,
-	                                                  mySinCos);
+	                                                  mySinCos,
+							  clearCallback,
+							  changeCallback,
+							  completeCallback,
+							  callbackUserData);
 	this	-> rdsModus		= rdsDecoder::RDS2;
 /*
  *	averagePeakLevel and audioGain are set

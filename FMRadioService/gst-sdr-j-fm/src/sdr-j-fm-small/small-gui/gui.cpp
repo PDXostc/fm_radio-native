@@ -51,7 +51,11 @@ GST_DEBUG_CATEGORY_EXTERN (sdrjfm_debug);
  *	gui elements and the handling agents. All real action
  *	is embedded in actions, initiated by gui buttons
  */
-	RadioInterface::RadioInterface (int32_t frequency): myFMprocessor(0) {
+	RadioInterface::RadioInterface (int32_t frequency,
+					ClearCallback		clearCallback,
+					LabelCallback		changeCallback,
+					LabelCallback		completeCallback,
+					void *		callbackUserData): myFMprocessor(0) {
 std::string h;
 bool	success;
 
@@ -110,7 +114,11 @@ bool	success;
 	                                    inputRate,
 	                                    fmRate,
 	                                    this -> audioRate,
-	                                    thresHold);
+	                                    thresHold,
+					    clearCallback,
+					    changeCallback,
+					    completeCallback,
+					    callbackUserData);
 	setStart();
 }
 
@@ -419,33 +427,6 @@ void	RadioInterface::set_squelchMode	(void) {
 void	RadioInterface::set_squelchValue (int n) {
 	if (myFMprocessor != NULL)
 	   myFMprocessor -> set_squelchValue (n);
-}
-
-void	RadioInterface::set_audioDump (const std::string &file) {
-	/*
-SF_INFO	*sf_info	= (SF_INFO *)alloca (sizeof (SF_INFO));
-
-	if (audioDumping) {
-	   our_audioSink	-> stopDumping ();
-	   sf_close (audiofilePointer);
-	   audioDumping = false;
-	   return;
-	}
-
-	sf_info		-> samplerate	= this -> audioRate;
-	sf_info		-> channels	= 2;
-	sf_info		-> format	= SF_FORMAT_WAV | SF_FORMAT_PCM_24;
-
-	audiofilePointer	= sf_open (file.c_str(),
-	                                   SFM_WRITE, sf_info);
-	if (audiofilePointer == NULL) {
-		//qDebug () << "Cannot open " << file. toLatin1 (). data ();
-	   return;
-	}
-
-	audioDumping		= true;
-	our_audioSink		-> startDumping (audiofilePointer);
-	*/
 }
 
 uint32_t RadioInterface::getSamples(DSPFLOAT *data, uint32_t length) {

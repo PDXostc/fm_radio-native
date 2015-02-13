@@ -36,33 +36,22 @@
 
 #include	"rds-groupdecoder.h"
 #include	<cstring>
+#include	<gst/gst.h>
 #include	<stdio.h>
 
-	rdsGroupDecoder::rdsGroupDecoder (RadioInterface *RI) {
-	MyRadioInterface	= RI;
-	// FIXME: Need new method of reporting RDS data
-	/*
-	connect (this, SIGNAL (setGroup (int)),
-	         MyRadioInterface, SLOT (setGroup (int)));
-	connect (this, SIGNAL (setPTYCode (int)),
-	         MyRadioInterface, SLOT (setPTYCode (int)));
-	connect (this, SIGNAL (setPiCode (int)),
-	         MyRadioInterface, SLOT (setPiCode (int)));
-	connect (this, SIGNAL (setStationLabel (char *, int)),
-	         MyRadioInterface, SLOT (setStationLabel (char *, int)));
-	connect (this, SIGNAL (clearStationLabel (void)),
-	         MyRadioInterface, SLOT (clearStationLabel (void)));
-	connect (this, SIGNAL (setRadioText (char *, int)),
-	         MyRadioInterface, SLOT (setRadioText (char *, int)));
-	connect (this, SIGNAL (clearRadioText (void)),
-	         MyRadioInterface, SLOT (clearRadioText (void)));
-	connect (this, SIGNAL (setAFDisplay (int)),
-	         MyRadioInterface, SLOT (setAFDisplay (int)));
-	connect (this, SIGNAL (setMusicSpeechFlag (int)),
-	         MyRadioInterface, SLOT (setMusicSpeechFlag (int)));
-	connect (this, SIGNAL (clearMusicSpeechFlag (void)),
-	         MyRadioInterface, SLOT (clearMusicSpeechFlag (void)));
-	*/
+GST_DEBUG_CATEGORY_EXTERN (sdrjfm_debug);
+#define GST_CAT_DEFAULT sdrjfm_debug
+
+
+rdsGroupDecoder::rdsGroupDecoder (ClearCallback clearCallback,
+				  LabelCallback changeCallback,
+				  LabelCallback completeCallback,
+				  void *callbackUserData) {
+	this -> clearCallback = clearCallback;
+	this -> changeCallback = changeCallback;
+	this -> completeCallback = completeCallback;
+	this -> callbackUserData = callbackUserData;
+	stationLabel[STATION_LABEL_LENGTH] = '\0';
 	reset ();
 }
 
@@ -82,13 +71,9 @@ void	rdsGroupDecoder::reset (void) {
 	          NUM_OF_CHARS_RADIOTEXT * sizeof (char));
 	textABflag		= -1; // Not defined
 	textSegmentRegister	= 0;
-	// FIXME: Signals needed
-	// clearRadioText		();
-	//clearStationLabel	();
-	//clearMusicSpeechFlag	();
-	//setPTYCode		(0);
-	//setPiCode		(0);
-	//setAFDisplay		(0);
+
+	if (clearCallback)
+		clearCallback(callbackUserData);
 }
 
 bool rdsGroupDecoder::decode (RDSGroup *grp) {
@@ -97,6 +82,7 @@ bool rdsGroupDecoder::decode (RDSGroup *grp) {
 	//setGroup	(grp -> getGroupType ());
 	//setPTYCode	(grp -> getProgrammeType ());
 	//setPiCode	(grp -> getPiCode ());
+	//GST_DEBUG ("RDS Pi code: %x", (unsigned int) grp -> getPiCode ());
 
 //	PI-code has changed -> new station received
 //	Reset the decoder
@@ -172,25 +158,31 @@ uint32_t charsforStationName	= grp -> getBlock_D () & 0xFFFF;
 
 void	rdsGroupDecoder::addtoStationLabel (uint32_t index,
 	                                    uint32_t name) {
-	stationLabel [2 * index] = (char)(name >> 8);
-	stationLabel [2 * index + 1] = (char)(name & 0xFF);
+	char * segment = &stationLabel [2 * index];
 
-	// FIXME: Signals needed
-	//setStationLabel (stationLabel, STATION_LABEL_LENGTH);
+	const char old[2] = { segment [0], segment [1] };
+
+	segment [0] = (char)(name >> 8);
+	segment [1] = (char)(name & 0xFF);
+
+	if (changeCallback
+	    && (old [0] != segment [0] || old [1] != segment [1]))
+		changeCallback(stationLabel, callbackUserData);
 
 //	Reset segment counter on first segment
 	if (index == 0)
 	   stationNameSegmentRegister = 0;
 
 //	Mark current segment as received, (set bit in segment register to 1)
-	stationNameSegmentRegister |= (2 * index);
+	//stationNameSegmentRegister |= (2 * index);
+	stationNameSegmentRegister |= (1 << index);
 
 //	check whether all segments are in
 	if ((int32_t)stationNameSegmentRegister + 1 ==
 	                     (1 << NUMBER_OF_NAME_SEGMENTS)) {
-	   // FIXME: Signals needed
-	   //setStationLabel (stationLabel, STATION_LABEL_LENGTH);
 	   stationNameSegmentRegister = 0;
+	   if (completeCallback)
+		   completeCallback(stationLabel, callbackUserData);
 	}
 }
 
@@ -238,12 +230,14 @@ uint16_t	i;
 	   textSegmentRegister = 0;
 	   memset (textBuffer, ' ',
 	          NUM_OF_CHARS_RADIOTEXT * sizeof (char));
+	   if (clearCallback)
+		   clearCallback(callbackUserData);
 	}
 
 	textPart1	= grp -> getBlock_C ();
 	textPart2	= grp -> getBlock_D ();
 
-	// Store the received data
+ 	// Store the received data
 	textFragment [0] = (char)(textPart1 >> 8);
 	textFragment [1] = (char)(textPart1 & 0xFF);
 	textFragment [2] = (char)(textPart2 >> 8);

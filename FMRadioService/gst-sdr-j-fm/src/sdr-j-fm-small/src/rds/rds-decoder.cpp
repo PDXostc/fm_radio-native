@@ -24,12 +24,16 @@
  *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include	<gst/gst.h>
 #include	<stdlib.h>
 #include	<stdio.h>
 #include	<string.h>
 #include	"rds-decoder.h"
 #include	"iir-filters.h"
 #include	"sincos.h"
+
+GST_DEBUG_CATEGORY_EXTERN (sdrjfm_debug);
+#define GST_CAT_DEFAULT sdrjfm_debug
 
 const DSPFLOAT	RDS_BITCLK_HZ =	1187.5;
 /*
@@ -43,7 +47,11 @@ const DSPFLOAT	RDS_BITCLK_HZ =	1187.5;
  */
 	rdsDecoder::rdsDecoder (RadioInterface *myRadio,
 				int32_t		rate,
-				SinCos		*mySinCos) {
+				SinCos		*mySinCos,
+				ClearCallback clearCallback,
+				LabelCallback changeCallback,
+				LabelCallback completeCallback,
+				void *callbackUserData) {
 DSPFLOAT	synchronizerSamples;
 int16_t	i;
 int16_t	length;
@@ -104,7 +112,10 @@ int16_t	length;
 	my_rdsBlockSync		= new rdsBlockSynchronizer (MyRadioInterface);
 	my_rdsBlockSync		-> setFecEnabled (true);
 
-	my_rdsGroupDecoder	= new rdsGroupDecoder	(MyRadioInterface);
+	my_rdsGroupDecoder	= new rdsGroupDecoder	(clearCallback,
+							 changeCallback,
+							 completeCallback,
+							 callbackUserData);
 
 	/*
 	connect (this, SIGNAL (setCRCErrors (int)),
@@ -223,6 +234,8 @@ void	rdsDecoder::processBit (bool bit) {
 //	      resync if the last sync failed
 		   // FIXME: Signals needed
 		   //setSyncErrors (my_rdsBlockSync -> getNumSyncErrors ());
+		   //GST_DEBUG("RDS sync error count: %d",
+		   //my_rdsBlockSync -> getNumSyncErrors ());
 	      my_rdsBlockSync -> resync ();
 	      break;
 

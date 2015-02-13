@@ -28,10 +28,81 @@
 
 #include <gui.h>
 
-typedef struct _GstSdrjfmSrc GstSdrjfmSrc;
+//typedef struct _GstSdrjfmSrc GstSdrjfmSrc;
 typedef struct _GstSdrjfmSrcClass GstSdrjfmSrcClass;
 
-struct _GstSdrjfmSrc {
+/** \brief The SDR-J FM source element.
+ *
+ * This element will send a variety of bus messages.
+ * <DL>
+ * 
+ * <DT>`sdrjfmsrc-frequency-changed`</DT>
+ * <DD>Emitted when the radio receiver's frequency is
+ * changed, for any reason.
+ * <P><B>Properties</B>
+ * <TABLE>
+ * <TR>
+ * <TD>Name</TD><TD>Type</TD><TD>Description</TD><TD>Example</TD>
+ * </TR>
+ * <TR><TD>`frequency`</TD><TD>`G_TYPE_INT`</TD><TD>Receiver
+ * frequency, in Hz</TD><TD>97600000</TD></TR>
+ * </TABLE>
+ * </DD>
+ * 
+ * <DT>`sdrjfmsrc-station-found`</DT>
+ * <DD>Emitted when a seek operation finds a station.
+ * <P><B>Properties</B>
+ * <TABLE>
+ * <TR>
+ * <TD>Name</TD><TD>Type</TD><TD>Description</TD><TD>Example</TD>
+ * </TR>
+ * <TR><TD>`frequency`</TD><TD>`G_TYPE_INT`</TD><TD>The located
+ * station's frequency, in Hz</TD><TD>97600000</TD></TR>
+ * </TABLE>
+ * </DD>
+ * 
+ * <DT>`sdrjfmsrc-rds-station-label-clear`</DT>
+ * <DD>Emitted when the RDS station label has been cleared.  For
+ * example, when changing frequency or because the tuned station has
+ * changed the transmitted label.
+ * <P><B>Properties</B>
+ * <P>This message has no properties.
+ * </DD>
+ * 
+ * <DT>`sdrjfmsrc-rds-station-label-change`</DT>
+ * <DD>Emitted when the RDS station label changes content.  As different
+ * segments of the label are received, this message will be emitted
+ * each time a new segment is successfully decoded.  Empty segments
+ * are filled with spaces.
+ * <P><B>Properties</B>
+ * <TABLE>
+ * <TR>
+ * <TD>Name</TD><TD>Type</TD><TD>Description</TD><TD>Example</TD>
+ * </TR>
+ * <TR><TD>`station-label`</TD><TD>`G_TYPE_STRING`</TD><TD>The RDS
+ * station label, or as much of it as has been received</TD>
+ * <TD>`Ci&nbsp;&nbsp;Ta&nbsp;&nbsp;`, `Ci&nbsp;&nbsp;Talk`, `CityTalk`</TD></TR>
+ * </TABLE>
+ * </DD>
+ * 
+ * <DT>`sdrjfmsrc-rds-station-label-complete`</DT>
+ * <DD>Emitted when each segment in the RDS station label has been
+ * successfully decoded.  This message will be emitted in addition to
+ * a `sdrjfmsrc-rds-station-label-change` message.
+ * <P><B>Properties</B>
+ * <TABLE>
+ * <TR>
+ * <TD>Name</TD><TD>Type</TD><TD>Description</TD><TD>Example</TD>
+ * <TR><TD>`station-label`</TD><TD>`G_TYPE_STRING`</TD><TD>The
+ * complete RDS station label</TD>
+ * <TD>`CityTalk`</TD></TR>
+ * </TR>
+ * </TABLE>
+ * </DD>
+ * 
+ * </DL>
+ */
+struct GstSdrjfmSrc {
   GstAudioSrc    src;
 
   /** The receiver frequency, in Hz */
@@ -40,9 +111,10 @@ struct _GstSdrjfmSrc {
   gint min_freq;
   /** Upper bound frequency for seeking, in Hz */
   gint max_freq;
-  /** The amount, in Hz, by which the frequency is increased
-   * in each iteration during a seek.  The sign of this variable
-   * indicates the direction of the seek.
+  /** \brief The amount, in Hz, by which the frequency is increased
+   * in each iteration during a seek.
+   * 
+   * The sign of this variable indicates the direction of the seek.
    */
   gint freq_step;
   /** The time, in milliseconds, allowed for sampling a frequency
@@ -50,10 +122,16 @@ struct _GstSdrjfmSrc {
    */
   gint interval;
   /** The signal-to-noise ratio beyond which a station is considered
-   * found during seeking.  The units of this variable are an internal
-   * representation.
+   * found during seeking, in dB
    */
   gint threshold;
+  /** \brief The RDS station label.
+   * 
+   * This is an eight-character buffer.  We store
+   * it with a closing NUL character and also insert a NUL when there is only
+   * trailing whitespace.
+   */
+  gchar station_label[9];
 
   RadioInterface *radio;
 };
