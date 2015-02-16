@@ -434,8 +434,7 @@ gst_sdrjfm_src_init (GstSdrjfmSrc * self)
 
   strncpy(self->station_label, DEFAULT_STATION_LABEL, sizeof (self->station_label));
 
-  // basrc->latency_time = 150000;
-  // basrc->buffer_time = 2 * basrc->latency_time;
+  basrc->buffer_time = 5000000;
 
   gst_audio_base_src_set_provide_clock (basrc, FALSE);
 }
