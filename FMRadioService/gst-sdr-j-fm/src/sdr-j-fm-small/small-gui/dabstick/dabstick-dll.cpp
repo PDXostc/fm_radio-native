@@ -225,7 +225,10 @@ err:
 
 void	dabstick_dll::setVFOFrequency	(int32_t f) {
 	lastFrequency	= f;
-	(void)(this -> rtlsdr_set_center_freq (device, f + vfoOffset));
+
+	while (this -> rtlsdr_set_center_freq (device, f + vfoOffset))
+		GST_ERROR("Error while setting DAB stick VFO frequency, retrying");
+
 	GST_DEBUG("Set reception frequency of DAB stick to %u", f);
 	if (this -> vfoFrequencyChanged)
 		this -> vfoFrequencyChanged (this -> vfoFrequencyChangedUserData, f);
