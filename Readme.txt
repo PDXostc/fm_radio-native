@@ -68,6 +68,11 @@ In an Ubuntu shell:
                     # Additionally, if you want to ALSO copy the 'debug' rpms, do this INSTEAD :
                     $ sudo ./install_rpms.sh debug
 
+  * Reboot your target device if it's the first time you install the rpms
+    systemd will have to know your service before it can safely autolaunch it.
+
+        $ sudo reboot
+
 
 *** back on HOST SYSTEM ***
 
