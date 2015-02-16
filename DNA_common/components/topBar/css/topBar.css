@@ -25,8 +25,10 @@ overflow: hidden;
 	width:114px;
 }
 .topTask img{
-	height:100%;
-	width:100%;
+	height:116px;
+	width:116px;
+	margin-top:-1px;
+	margin-left:-1px;
 }
 .topTask{
 	border-right:1px solid gray;
@@ -46,15 +48,15 @@ overflow: hidden;
 
 }
 .hexGridHeading{
-	padding-left:15px;
+	padding:25px;
 	font-size:25px;
 	color:white;
 	background-color:gray;
 	z-index:2;
-	width:92%;
+	width:88%;
+	height:18px;
 	border:1px solid orange;
 	position:fixed;
-	line-height:45px;
 }
 .homeScrAppGridText{
 	white-space:nowrap;
@@ -63,6 +65,7 @@ overflow: hidden;
 }
 .exitButton{
 	float:right;
+	margin-top:-12px;
 }
 #appGridIcon {
 	width:89px; 
@@ -77,10 +80,10 @@ overflow: hidden;
 	display:none;
 	position:absolute;
 	top:115px;
-	bottom:130px;
 	left:-1px;
 	padding:32px;
-	width:100%;
+	width:1016px;
+	height:1608px;
 	z-index:5;
 	font-size:20px;
 	background-color:rgba(0,0,0,1);

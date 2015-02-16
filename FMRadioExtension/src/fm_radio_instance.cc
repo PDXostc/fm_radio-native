@@ -11,6 +11,7 @@
 guint FMRadioInstance::on_enabled_listener_id_ = 0;
 guint FMRadioInstance::on_disabled_listener_id_ = 0;
 guint FMRadioInstance::on_frequency_changed_listener_id_ = 0;
+guint FMRadioInstance::on_station_found_listener_id_ = 0;
 
 FMRadioInstance::FMRadioInstance()
     : main_loop_(g_main_loop_new(0, FALSE)),
@@ -47,6 +48,7 @@ void FMRadioInstance::HandleMessage(const char* msg)
 {
     picojson::value v;
 
+    g_message("DEBUG : entered HandleMessage");
     std::string err;
     picojson::parse(v, msg, msg + strlen(msg), &err);
     if (!err.empty()) {
@@ -54,10 +56,15 @@ void FMRadioInstance::HandleMessage(const char* msg)
     }
 
     const std::string cmd = v.get("cmd").to_str();
+    g_message("    msg = %s", cmd.c_str());
     if (cmd == "Enable") {
         HandleEnable(v);
     } else if (cmd == "SetFrequency") {
         HandleSetFrequency(v);
+    } else if (cmd == "Seek") {
+        HandleSeek(v);
+    } else if (cmd == "CancelSeek") {
+        HandleCancelSeek(v);
     } else if (cmd == "AddOnEnabledListener") {
         HandleAddListener(on_enabled_listener_id_,
         std::string("onenabled"), v);
@@ -76,6 +83,12 @@ void FMRadioInstance::HandleMessage(const char* msg)
     } else if (cmd == "RemoveOnFrequencyChangedListener") {
         HandleRemoveListener(on_frequency_changed_listener_id_,
         std::string("onfrequencychanged"), v);
+    } else if (cmd == "AddOnStationFoundListener") {
+        HandleAddListener(on_station_found_listener_id_,
+        std::string("onstationfound"), v);
+    } else if (cmd == "RemoveOnStationFoundListener") {
+        HandleRemoveListener(on_frequency_changed_listener_id_,
+        std::string("onfrequencychanged"), v);
     } else {
         g_warning("HandleMessage : Unknown command: %s", cmd.c_str());
     }
@@ -86,12 +99,14 @@ void FMRadioInstance::HandleSyncMessage(const char* msg)
     picojson::value v;
     std::string err;
 
+    g_message("DEBUG : entered HandleSyncMessage");
     picojson::parse(v, msg, msg + strlen(msg), &err);
     if (!err.empty()) {
         return;
     }
 
     const std::string cmd = v.get("cmd").to_str();
+    g_message("    msg = %s", cmd.c_str());
     if (cmd == "GetEnabled") {
         HandleGetEnabled(v);
     } else if (cmd == "GetFrequency") {
@@ -104,82 +119,106 @@ void FMRadioInstance::HandleSyncMessage(const char* msg)
 void FMRadioInstance::SendSyncErrorReply(const std::string&
                                          error_msg = "")
 {
+    g_message("DEBUG : entered SendSyncErrorReply");
+
     picojson::value::object o;
     o["isError"] = picojson::value(true);
     if (!error_msg.empty())
         o["errorMessage"] = picojson::value(error_msg.c_str());
     picojson::value v(o);
+    g_message("    post = %s", v.serialize().c_str());
     SendSyncReply(v.serialize().c_str());
 }
 
 void FMRadioInstance::SendSyncSuccessReply()
 {
+    g_message("DEBUG : entered SendSyncSuccessReply");
+
     picojson::value::object o;
     o["isError"] = picojson::value(false);
     picojson::value v(o);
+    g_message("    post = %s", v.serialize().c_str());
     SendSyncReply(v.serialize().c_str());
 }
 
 void FMRadioInstance::SendSyncSuccessReply(const picojson::value& value)
 {
+    g_message("DEBUG : entered SendSyncSuccessReply");
+
     picojson::value::object o;
     o["isError"] = picojson::value(false);
     o["value"] = value;
     picojson::value v(o);
+    g_message("    post = %s", v.serialize().c_str());
     SendSyncReply(v.serialize().c_str());
 }
 
 void FMRadioInstance::PostAsyncReply(const picojson::value& msg,
                                      picojson::value::object& reply)
 {
+    g_message("DEBUG : entered PostAsyncReply");
+
     g_message("PostAsyncReply - serialized = %s", msg.serialize().c_str());
     reply["replyId"] = picojson::value(msg.get("replyId").get<double>());
     picojson::value v(reply);
+    g_message("    post = %s", v.serialize().c_str());
     PostMessage(v.serialize().c_str());
 }
 
 void FMRadioInstance::PostAsyncErrorReply(const picojson::value& msg,
                                           const std::string& error_msg = "")
 {
-    g_message("PostAsyncErrorReply");
+    g_message("DEBUG : entered PostAsyncErrorReply");
+
     picojson::value::object reply;
     reply["isError"] = picojson::value(true);
     if (!error_msg.empty())
         reply["errorMessage"] = picojson::value(error_msg.c_str());
+    g_message("    post = %s", msg.serialize().c_str());
     PostAsyncReply(msg, reply);
 }
 
 void FMRadioInstance::PostAsyncSuccessReply(const picojson::value& msg,
                                             const picojson::value& value)
 {
-    g_message("PostAsyncSuccessReply - 2 args");
+    g_message("DEBUG : entered PostAsyncSuccessReply");
+
     picojson::value::object reply;
     reply["isError"] = picojson::value(false);
     reply["value"] = value;
+    g_message("    post = %s", msg.serialize().c_str());
     PostAsyncReply(msg, reply);
 }
 
 void FMRadioInstance::PostAsyncSuccessReply(const picojson::value& msg)
 {
+    g_message("DEBUG : entered PostAsyncSuccessReply");
+
     picojson::value::object reply;
     reply["isError"] = picojson::value(false);
+    g_message("    post = %s", msg.serialize().c_str());
     PostAsyncReply(msg, reply);
 }
 
 void FMRadioInstance::SendSignal(const picojson::value& signal_name,
                                  const picojson::value& signal_value)
 {
+    g_message("DEBUG : entered SendSignal");
+
     picojson::value::object o;
     o["cmd"] = picojson::value("signal");
     o["signal_name"] = signal_name;
     o["signal_params"] = signal_value;
     picojson::value msg(o);
+    g_message("    post = %s", msg.serialize().c_str());
     PostMessage(msg.serialize().c_str());
 }
 
 GVariant* FMRadioInstance::CallDBusGet(const gchar* method_name,
                                        GError** error)
 {
+    g_message("DEBUG : entered CallDBusGet");
+
     if (!method_name)
         return NULL;
 
@@ -205,12 +244,15 @@ void FMRadioInstance::HandleSignal(GDBusConnection* connection,
                                    GVariant* parameters,
                                    gpointer user_data)
 {
+    g_message("DEBUG : entered HandleSignal");
+
     FMRadioInstance* instance = static_cast<FMRadioInstance*>(user_data);
     if (!instance) {
         g_warning("Failed to cast to instance...");
         return;
     }
 
+    g_message("    signal_name = %s", signal_name);
     if (!strcmp(signal_name, "onenabled")) {
         // there is no 'value' (param) here.
         instance->SendSignal(picojson::value(signal_name), picojson::value());
@@ -218,6 +260,13 @@ void FMRadioInstance::HandleSignal(GDBusConnection* connection,
         // there is no 'value' (param) here.
         instance->SendSignal(picojson::value(signal_name), picojson::value());
     } else if (!strcmp(signal_name, "onfrequencychanged")) {
+        double freq;
+        g_variant_get(parameters, "(d)", &freq);
+        picojson::value value(freq);
+
+        // there is no 'value' (param) here.
+        instance->SendSignal(picojson::value(signal_name), value);
+    } else if (!strcmp(signal_name, "onstationfound")) {
         double freq;
         g_variant_get(parameters, "(d)", &freq);
         picojson::value value(freq);
@@ -260,7 +309,8 @@ void FMRadioInstance::DBusReplyCallback(DBusGProxy *proxy,
                                         GError *error,
                                         gpointer userdata)
 {
-        g_message("DBusReplyCallback1");
+    g_message("DEBUG : entered DBusReplyCallback");
+
         std::string error_str;
 
         // we're static, fetch the corresponding FMRadioInstance obj
@@ -268,11 +318,10 @@ void FMRadioInstance::DBusReplyCallback(DBusGProxy *proxy,
         FMRadioInstance* instance = listener->obj;
         //DBusGProxyCall *proxyCall = listener->call;
         picojson::value *msg      = listener->msg;
-        g_message("DBusReplyCallback1 - serialized = %s", (msg->serialize()).c_str());
 
         if (error) {
             g_message("DBusReplyCallback - ERROR");
-            error_str = "FMRadioService:setFrequency() error occured '" +
+            error_str = "error: '" +
                         std::string(error->message) + "'\n";
 
             g_warning("%s", error_str.c_str());
@@ -289,7 +338,8 @@ void FMRadioInstance::DBusReplyCallback(DBusGProxy *proxy,
 
 DBusReplyListener* FMRadioInstance::CreateDBusReplyListener(const picojson::value& msg)
 {
-    g_message("CreateDBusReplyListener");
+    g_message("DEBUG : entered CreateDBusReplyListener, msg=%s", msg.serialize().c_str());
+
     DBusReplyListener* listener = new DBusReplyListener();
     // make a copy of the msg and add it to the listener
     picojson::value *newMsg = new picojson::value(msg);
@@ -306,6 +356,8 @@ DBusReplyListener* FMRadioInstance::CreateDBusReplyListener(const picojson::valu
 
 void FMRadioInstance::HandleEnable(const picojson::value& msg)
 {
+    g_message("DEBUG: entered HandleSetEnable, msg=%s", msg.serialize().c_str());
+
     GError* error = NULL;
     //TODO:: Transform CallDBus to specify the bus name/path/iface
     //       so it can be used to GetEnabled, etc... and return the value.
@@ -328,13 +380,13 @@ void FMRadioInstance::HandleEnable(const picojson::value& msg)
 
 void FMRadioInstance::HandleSetFrequency(const picojson::value& msg)
 {
-    g_message("HandleSetFrequency1");
+    g_message("DEBUG: entered HandleSetFrequency, msg=%s", msg.serialize().c_str());
+
+    GError* error = NULL;
     if (!msg.contains("frequency")) {
         PostAsyncErrorReply(msg);
         return;
     }
-
-    //DBusGProxyCall *call;
 
     //TODO:: Transform CallDBus to specify the bus name/path/iface
     //       so it can be used to GetEnabled, etc... and return the value.
@@ -342,19 +394,87 @@ void FMRadioInstance::HandleSetFrequency(const picojson::value& msg)
 
     // Numbers are only repensented as 'double' in picojson,
     // hence the conversion.
-    DBusReplyListener* data = CreateDBusReplyListener(msg);
-    g_message("HandleSetFrequency2 + msg = %f", msg.get("frequency").get<double>());
-    com_jlr_fmradioservice_setfrequency_async (busProxy,
+    //DBusReplyListener* data = CreateDBusReplyListener(msg);
+    /*com_jlr_fmradioservice_setfrequency_async (busProxy,
                                                msg.get("frequency").get<double>(),
                                                DBusReplyCallback,
-                                               data);
-    g_message("HandleSetFrequency3");
+                                               data);*/
+    if (!com_jlr_fmradioservice_setfrequency(busProxy,
+                                             msg.get("frequency").get<double>(),
+                                             &error)) {
+        std::string error_str;
+        if (error)
+            error_str = "FMRadioService:setFrequency() error occured '" +
+                        std::string(error->message) + "'\n";
+        else
+            error_str = "FMRadioService:setFrequency() unknown error occured\n";
+
+        g_warning("%s", error_str.c_str());
+        PostAsyncErrorReply(msg, error_str);
+        return;
+    }
+
+    PostAsyncSuccessReply(msg);
+}
+
+void FMRadioInstance::HandleSeek(const picojson::value& msg)
+{
+    g_message("DEBUG: entered HandleSeek, msg=%s", msg.serialize().c_str());
+
+    GError* error = NULL;
+    if (!msg.contains("direction")) {
+        PostAsyncErrorReply(msg);
+        return;
+    }
+
+    if (!com_jlr_fmradioservice_seek(busProxy,
+                                     msg.get("direction").get<bool>(),
+                                     &error)) {
+        std::string error_str;
+        if (error)
+            error_str = "FMRadioService:seek() error occured '" +
+                        std::string(error->message) + "'\n";
+        else
+            error_str = "FMRadioService:seek() unknown error occured\n";
+
+        g_warning("%s", error_str.c_str());
+        PostAsyncErrorReply(msg, error_str);
+        return;
+    }
+
+    PostAsyncSuccessReply(msg);
+}
+
+void FMRadioInstance::HandleCancelSeek(const picojson::value& msg)
+{
+    g_message("DEBUG: entered HandleCancelSeek, msg=%s", msg.serialize().c_str());
+
+    GError* error = NULL;
+    //TODO:: Transform CallDBus to specify the bus name/path/iface
+    //       so it can be used to GetEnabled, etc... and return the value.
+    // CallDBus("Hangup", NULL, &error);
+    if (!com_jlr_fmradioservice_cancelseek(busProxy, &error)) {
+        std::string error_str;
+        if (error)
+            error_str = "FMRadioService:cancelseek() error occured '" +
+                        std::string(error->message) + "'\n";
+        else
+            error_str = "FMRadioService:cancelseek() unknown error occured\n";
+
+        g_warning("%s", error_str.c_str());
+        PostAsyncErrorReply(msg, error_str);
+        return;
+    }
+
+    PostAsyncSuccessReply(msg);
 }
 
 void FMRadioInstance::HandleAddListener(guint& listener_id,
                                         const std::string& signal_name,
                                         const picojson::value& msg)
 {
+    g_message("DEBUG : entered HandleAddListener, signal=%s, msg=%s", signal_name.c_str(), msg.serialize().c_str());
+
     listener_id = g_dbus_connection_signal_subscribe(
         g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, NULL),
         FM_RADIO_SERVICE_DBUS_NAME,
@@ -381,6 +501,8 @@ void FMRadioInstance::HandleRemoveListener(guint& listener_id,
                                            const std::string& signal_name,
                                            const picojson::value& msg)
 {
+    g_message("DEBUG : entered HandleRemoveListener, msg=%s", msg.serialize().c_str());
+
     if (listener_id == 0) {
         g_warning("Failed to subscribe for : %s, %i",
                   signal_name.c_str(), listener_id);
@@ -401,6 +523,8 @@ void FMRadioInstance::HandleGetEnabled(const picojson::value& msg)
     GValue value = { 0 };
     GError *error = NULL;
     picojson::value::object o;
+
+    g_message("DEBUG : entered HandleGetEnabled, msg=%s", msg.serialize().c_str());
 
     // TODO: Make use of DbusGetCall above !!
     DBusGProxy *prox = dbus_g_proxy_new_for_name(bus,
@@ -438,6 +562,8 @@ void FMRadioInstance::HandleGetFrequency(const picojson::value& msg)
     GValue value = { 0 };
     GError *error = NULL;
     picojson::value::object o;
+
+    g_message("DEBUG : entered HandleGetFrequency, msg=%s", msg.serialize().c_str());
 
     // TODO: Make use of DBUsGetCall above !!
     DBusGProxy *prox = dbus_g_proxy_new_for_name(bus,

@@ -232,7 +232,7 @@ WseClass.prototype.encode_value = function(Obj) {
 	// {object, document}  - the current document object
 	// {object, id}        - DOM object with id field
 	// {object, num}       - Stored in objects object!
-	if (Obj == this.win)
+	if (Obj == window.self)
 	    return Ei.tuple(this.ObjectTag,Ei.atom("window"));
 	else if (Obj == window.document) 
 	    return Ei.tuple(this.ObjectTag,Ei.atom("document"));
@@ -256,7 +256,7 @@ WseClass.prototype.encode_value = function(Obj) {
 
 //
 // Decode BERT rpc values into javascript objects
-// {object, window}   =>  this.win
+// {object, window}   =>  window.self
 // {object, document} =>  window.document
 // {object, screen}   =>  screen
 // {object, navigator} => navigator
@@ -278,7 +278,7 @@ WseClass.prototype.decode_value = function(Obj) {
 	    var elem = Obj.value;
 	    if ((elem.length==2) && Ei.eqAtom(elem[0],"object")) {
 		if (Ei.eqAtom(elem[1], "window"))
-		    return this.win;
+		    return window.self;
 		else if (Ei.eqAtom(elem[1],"document"))
 		    return window.document;
 		else if (Ei.eqAtom(elem[1], "screen"))

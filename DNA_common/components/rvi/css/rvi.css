@@ -17,6 +17,32 @@
     display: block;
 }
 
+#inputBox	{
+	/* left: 12%;
+	top: 70px; */ /*needs to be at least this high for the keyboard*/
+	/*width: 550px;
+  	z-index: 1;   	
+	display: flex; 
+	text-align: center;	
+	align-items:center; 	
+	padding-bottom: 5%;  	
+	justify-content: center; */
+}
+
+form	{
+	position: relative;
+	margin: 70px auto;
+	width: 80%;
+	height: 300px;
+	outline: 1px solid rgba(255,255,255, 0.25);
+	padding: 30px;
+	display: flex;
+	text-align: center;
+	align-items: center;
+	justify-content: center;
+	padding-bottom: 50px;
+}
+
 .text {
 	padding: 30px 0;
 	text-align: right;
@@ -75,6 +101,42 @@
 	height: 67px;
 }
 
+.labelBox	{
+	float: left;
+	text-transform: uppercase;
+	text-align: right;
+	width: 38%;
+}
+
+.inputNumberBox	{   
+	background-color: rgb(0, 0, 0);    
+	display: inline-block;
+	-webkit-transform-style: preserve-3d;       
+	transform-style: preserve-3d;
+	line-height: 8rem;
+	text-align: left;
+	margin-left: 20px;
+	float: left;
+}
+
+.inputNumber	{
+	border: none;
+	background-color: rgb(0, 0, 0);
+	width: 372px;
+	font-size: 3rem;
+	padding-left: 20px;
+	height: 75px;
+	color: rgba(196, 196, 196, 1.0);
+}
+::-webkit-input-placeholder {
+   color: #444;
+}
+
+.inputNumber:focus {
+	outline: none;
+	box-shadow: 0 0 15px 5px #b0e0ee;
+}
+
 .inputBox .deleteButton {
 	display: inline-block;
 	vertical-align: top;
@@ -88,6 +150,20 @@
 	float: right;
 }
 
+.loadingSpinnerHistory {
+	top:130px;
+	width:100%;
+	height:100%;
+}
+.submitButton {
+	height: 43px;
+	margin: 5%;
+	background-color: rgba(58, 174, 255, 0.3);
+	box-shadow: 0 0 2px 2px #1DA2FF inset;
+	display: inline-block;
+	text-align: center;
+	padding: 0 20px;
+}
 #submit, #cancel {
 	background: none;
 	border: none;
@@ -97,31 +173,70 @@
 	color: rgba(255, 255, 255, 1.0);	
 	line-height: 43px;
 }
+
+.setup {
+	position: absolute;
+	left: 82%;
+	top: 115px;
+	width: 13%;
+	background-color: rgba(58, 174, 255, 0.3);
+	box-shadow: 0 0 2px 2px #1DA2FF inset;
+	text-align: center;
+	padding: 0 20px;
+}
+#setup {
+	background: none;
+	border: none;
+	text-transform: uppercase;
+	font-weight: bold;
+	font-size: 22px;
+	color: rgba(255, 255, 255, 1.0);
+	line-height: 38px;
+}
 .button-area {
 	display: inline-block;
 	margin: 30px 0;
 }
-.rviElement {
-	/*border-bottom: 1px solid rgba(255,255,255, 0.25);*/ /*if there is more than one app, uncomment this line*/
-	margin: 0 40px;
-	display: flex;
-	justify-content: space-between;
-	flex-direction: row;
-	/*padding: 20px 0;*/
-	align-items: center;
+.delete-button {
+  display: inline-block;
+  vertical-align: middle;
+  outline: 0px;
+  cursor: pointer;
 }
-.component-tabs {
-	padding: 0 35px;
-	margin: 40px 40px 0 40px;
+.delete-button::after {
+  content: "\00d7";
+  display: block;
+  width: 25px;
+  height: 25px;
+  position: absolute;
+  z-index: 1;
+  right: 16px;
+  top: 0px;
+  bottom: 0px;
+  margin: auto;
+  padding: 3px;
+  text-align: center;
+  color: #444;
+  font-size: 4rem;
+  outline: 1px solid #444;
+  cursor: pointer;
+  line-height: 2.5rem;
 }
-.rvi-tabs	{
-	display: inline-block;
-	padding: 10px 20px;
-	margin: 0 5px;
-	background: #181818;
-	color: rgba(254, 156, 0, .7);
+.close-button {
+  display: inline-block;
+  cursor: pointer;
+  float: right;
+  padding-right: 25px;
+  padding-bottom: 25px;
+  width: 100%;
+  text-align: right;
 }
-.tab-selected {
-	background: #222;
-	color: #fe9c00;
+.close-button::after {
+  content: "\00d7";
+  width: 50px;
+  height: 50px;
+  z-index: 1;
+  color: white;
+  font-size: 5rem;
+  cursor: pointer;
 }

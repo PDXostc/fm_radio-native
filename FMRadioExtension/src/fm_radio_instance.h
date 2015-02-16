@@ -44,10 +44,12 @@ class FMRadioInstance : public common::Instance {
         // Synchronous messages
         void HandleGetEnabled(const picojson::value& msg);
         void HandleGetFrequency(const picojson::value& msg);
+        void HandleCancelSeek(const picojson::value& msg);
 
         // Asynchronous messages
         void HandleEnable(const picojson::value& msg);
         void HandleSetFrequency(const picojson::value& msg);
+        void HandleSeek(const picojson::value& msg);
         void HandleAddListener(guint& listener_id,
                                const std::string& signal_name,
                                const picojson::value& msg);
@@ -86,6 +88,7 @@ class FMRadioInstance : public common::Instance {
         static guint on_enabled_listener_id_;
         static guint on_disabled_listener_id_;
         static guint on_frequency_changed_listener_id_;
+        static guint on_station_found_listener_id_;
 
         GMainLoop* main_loop_;
         std::thread thread_;

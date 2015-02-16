@@ -11,85 +11,19 @@ sorted when there is time to organize all the components and make decisions*/
 	height: 100%;  
 	left: 0;
 	top: 0;
+	/*z-index: 20;  */
+	/* display: flex; */  
 	flex-direction: column;  
+	/*flex-grow: 1;  */
+	/*flex: none;*/
 	background-color: rgba(0, 0, 0, 0.8);
 }
-.settings-back-arrow {
-	cursor: pointer;
-	text-transform: uppercase;
-	width: 100px;
-	height: 100px;
-	float: left;
-	background-image: url('/DNA_common/components/settings/images/back.png');
-	background-repeat: no-repeat;
-	margin: 24px 20px 0 20px;
-}
-.component-top {
-	z-index: 0;
-	background-color: #222;
-	margin: 0 40px;
-}
-.component-head {
-	margin-top: 7px;
-	display: inline-block;
-	text-transform: uppercase;
-	width: 75%;
-	overflow: hidden;
-	height: 125px;
-}
-.component-subhead {
-	margin:  0 40px;
-	padding: 1px 20px;
-	background-color: #222;
-}
-.component-content {
-	overflow-x: hidden;
-	overflow-y: auto;
-	padding-right: 20px;
-	padding: 20px 0;
-	background-color: #222;
-	margin: 0 40px;
-}
-.component-title {
-	font-size: 75px;
+.componentHeader {
+	font-size: 62px;
 	color: #fff;
 	font-weight: bold;
-	line-height: 47px;
+	line-height: 44px;
 	margin-left: 0;
-}
-.component-form {
-  position: relative;  
-  margin: 40px;  
- 	outline: 1px solid rgba(255,255,255, 0.25);  
- 	padding: 40px;  
-}
-/*.label-box*/
-.component-label	{
-	text-transform: uppercase;
-	text-align: right;
-	/*width: 35%;*/
-	margin-right: 10px;
-	font-weight: 400;
-	font-size: 4rem;
-	color: #fe9c00;
-	line-height: 2.5em;
-}
-.blue-rectangle {
-	width: 104px;
-	height: 17px;
-	display: inline-block;
-	vertical-align: middle;
-	background-color: rgba(83, 181, 206, 1.0);
-	margin-right: 3px;
-	margin-left: 4px;
-}
-.blue-caption-text {
-	font-size: 22px;
-	font-weight: bold;
-	color: rgba(83, 181, 206, 1.0);
-	margin-left: 3px;
-	display: inline-block;
-	vertical-align: middle;
 }
 ul .settingElement {
 	text-transform: uppercase;
@@ -113,135 +47,291 @@ ul#settingsPageList > :first-child {
 ul#settingsPageList > :last-child {
 	border-bottom: none;
 }
+.themesContent {
+	line-height: 0;
+}
 
-.networkElement {
+.themesContent .themeElement {
+	width: 215px;
+	height: 215px;
+	display: inline-block;
+	margin-right: 7px;
+	margin-bottom: 10px;
+	cursor: pointer;
+}
+
+.themesContent .themeElement .themeImage {
+	width: 300px;
+	height: 300px;
+	background-size: 100% 100%;
+}
+
+.themesContent .themeElement .themeImage img {
+	width: 300px;
+	height: 300px;
+}
+
+.themesContent .themeElement .themeTitle {
+	position: relative;
+	padding-left: 10px;
+	padding-right: 10px;
+	line-height: 80px !important;
+	top: -80px;
+	left: 0;
+	height: 80px;
+	overflow: hidden;
+	text-align: center;
+	text-transform: uppercase;
+}
+
+.wifiElement {
 	border-bottom: 1px solid rgba(255,255,255, 0.25);
 	overflow: hidden;
 	white-space: nowrap;
 	cursor: pointer;
 	text-transform: uppercase;
-	margin: 0 40px;
-	display: flex;
-	justify-content: space-between;
-	flex-direction: row;
-	padding: 20px 0;
-}
-.networkElementTitle {
+	margin-left: 40px;
 	color: rgb(196, 196, 196);
-	color: rgba(196, 196, 196, 1.0); /*#c4c4c4*/
-	font-size: 3rem;
-	font-weight: bold;
 }
-.networkElementInfoBox {
-	justify-content: space-between;
+
+.wifiElement .wifiElementInfoBox {
+	width: 495px;
+	display: block;
+	float: left;
 }
-.networkElementSubtitle {
+
+.wifiElement .wifiElementSubtitle {
 	margin-top: 5px;
 	color: rgb(83, 181, 206);
 	font-weight: normal;
-	font-size: 2.5rem;
-	line-height: 2rem;
 }
-.networkElementDescription {
+.wifiElement .wifiElementDescription {
 	color: rgb(83, 181, 206);
 	font-weight: normal;
-	font-size: 2.5rem;
-	line-height: 3rem;
 }
-.networkElementMore {
+.wifiElement .wifiElementMore {
 	color: rgb(83, 181, 206);
-	font-weight: normal;	
-	font-size: 2.5rem;  
-	line-height: 3rem;
+	font-weight: normal;
 }
-.networkElementButton {
-	justify-content: space-between;
-	margin-right: -20px;
+.wifiElement .wifiElementButton {
+	display: block;
+	float: right;
+	width: 180px;
+	top: 26px;
 }
-.selected {
-	font-weight: bold;
+/* green button color indicates connected, dark green per Richard */
+.connectGreen {
+	box-shadow: 0 0 2px 2px rgba(102, 210, 45, 1.0) inset;
+	border: 1px solid rgba(89, 255, 0, 1.0);
 }
-.alert {
-	color: rgb(255, 255, 255);
-	font-weight: bold;
+/* pale tone 'white' indicated not connected, white per Richard */
+.connectWhite {
+	box-shadow: inset 0 0 70px rgba(178, 240, 255, 0.8);
+	border: 1px solid rgba(255, 255, 255, 1.0);
 }
-.settings-switch {
+
+.toggleButton {
+	width: 89px;
+	height: 43px;
+}
+
+.toggleButtonBackground {
+	width: 100%;
+	height: 100%;
+	opacity: 0.5;
+}
+
+.toggleButton .toggleButtonText {
+	position: relative;
+	text-align: center;
+	top: -43px;
+	line-height: 43px;
+}
+
+.subPanelToggleButton {
+	/* position: absolute;*/
+	margin-right: 50px;
 	float: right;
 	display:inline-block;
 	height: 100px;
-	width: 200px;
 	padding-top: 25px;
 }
-.buttonsArea {
-	margin: 40px;
-	display: flex;
-	justify-content: space-between;
-	flex-direction: row;
+
+.subPanelToggleButtonWide {
+	width: 200px;
 }
-.networkRefreshButton {
+
+.buttonsArea {
+	width: 100%;
+	margin-top: 20px;
+	min-height: 43px;
+}
+
+.wifiRefreshButton {
 	width: 80px;
 	height: 80px;
+	float: left;
 	background-image: url('/DNA_common/components/settings/images/refresh.png');
+	margin-left: 100px;
 	background-size: 80px 80px;
 	background-repeat: no-repeat;
 }
+
 .addNetworkButton {
 	width: 80px;
 	height: 80px;
+	float: right;
 	background-image: url('/DNA_common/components/settings/images/plus.png');
+	margin-right: 60px;
 	background-size: 80px 80px;
 	background-repeat: no-repeat;
 }
+
 .bluetoothRefreshButton {
 	width: 180px;
 	margin: 0 auto;
 }
-.networkNetworkInfoElement {
+
+.wifiNetworkInfoElement {
 	padding: 10px 0;
 	overflow: hidden;
 	white-space: nowrap;
 	cursor: pointer;
 	text-transform: uppercase;
 }
+
 .networkConnectButton {
 	margin: 20px auto;
 	width: 200px;
 }
+
 .loadingSpinnerWifi {
 	position: absolute;
 	top: 33px;
 	right: 240px;
 }
+
 .loadingSpinnerBluetooth {
 	position: absolute;
 	top: 33px;
 	right: 240px;
 }
+
+.popupContainer {
+	position: absolute;
+	width: 300px;
+	height: 300px;
+	z-index: 999;
+	display: none;
+    top: 0;
+    left: 0;
+}
+
+.popupContainerWrapper {
+	width: 300px;
+	height: 300px;
+	display: -webkit-box;
+	-webkit-box-pack: center;
+	-webkit-box-align: center;
+}
+
+.popupWrapper {
+	border-width: 1px;
+	border-style: solid;
+}
+
+.popupHeader {
+	width: 400px;
+	height: 80px;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+	display: -webkit-box;
+	-webkit-box-pack: center;
+	-webkit-box-align: center;
+	text-transform: uppercase;
+}
+
+.popupContent {
+	width: 400px;
+	min-height: 100px;
+}
+
+.popupContentContainer {
+	padding: 10px;
+}
+
+.popupContentContainerKey {
+	text-transform: uppercase;
+	display: block;
+}
+
+.popupContentContainerValue {
+	text-transform: uppercase;
+	display: block;
+}
+
+.popupInputBox {
+	margin-top: 10px;
+}
+
+.popupFooter {
+	width: 400px;
+	border-top-width: 1px;
+	border-top-style: solid;
+}
+
+.popupButton {
+	width: 185px;
+	height: 55px;
+	display: inline-block;
+	padding: 10px 0 10px 10px;
+}
+
+.popupButtonBackground {
+	width: 100%;
+	height: 100%;
+	opacity: 0.5;
+}
+
+.popupButton .popupButtonText {
+	position: relative;
+	text-align: center;
+	top: -55px;
+	line-height: 55px;
+}
+
 .contentContainer {
 	padding: 10px;
 }
+
 .contentContainerKey {
 	text-transform: uppercase;
 	display: inline-block;
 	width: 200px;
 }
+
 .contentContainerValue {
 	text-transform: uppercase;
 	display: inline-block;
 }
+
 .contentInputBox {
 	display: inline-block;
 }
+
 .inputBox .settingsInputWideInline {
 	width: 350px;
 }
+
 .inputBox .settingsInputSelectionWideInline {
 	width: 310px;
 }
+
 .wifiHandoverButton {
 	width: 300px;
 	margin: 0 auto;
 }
+
 .disabledArea {
 	width: 500px;
 	height: 500px;
@@ -251,6 +341,7 @@ ul#settingsPageList > :last-child {
 	display: none;
 	z-index: 11;
 }
+
 .bluetoothPINCode {
 	float: left;
 	bottom: 10px;
@@ -259,110 +350,10 @@ ul#settingsPageList > :last-child {
 	position: absolute;
 	text-transform: uppercase;
 }
-
-.modal-bkgrnd{
-  width: 675px;
-  background-color: #222;
-/*  position: absolute;  
-  transform: translate(-50%, -50%);*/
-  padding: 0 20px 20px 30px;
-}
-.delete-button {
-  display: inline-block;
-  outline: 0px;
-}
-.delete-button::after {
-  	content: "\00d7";
-	display: block;
-	width: 40px;
-	height: 40px;
-	text-align: center;
-	color: #444;
-	font-size: 5rem;
-	outline: 1px solid #444;
-	cursor: pointer;
-	line-height: .75em;
-	margin-left: -70px;
-	margin-top: 30px;
-}
-.next-button {
-  display: inline-block;
-  outline: 0px;
-}
-.next-button::after {
-  content: "\025B8";
-	display: block;
-	width: 40px;
-	height: 40px;
-	text-align: center;
-	color: #444;
-	font-size: 5rem;
-	outline: 1px solid #444;
-	cursor: pointer;
-	line-height: .65em;
-	margin-left: -70px;
-	margin-top: 30px;
-}
-.previous-button {
-  display: inline-block;
-  outline: 0px;
-  cursor: pointer;
-  display: none;
-}
-.previous-button::after {
-  content: "\025C2";
-	display: block;
-	width: 40px;
-	height: 40px;
-	text-align: center;
-	color: #444;
-	font-size: 5rem;
-	outline: 1px solid #444;
-	cursor: pointer;
-	line-height: .65em;
-	margin-left: -70px;
-	margin-top: 30px;
-}
-.password-field .off {
+.hidden	{
 	display: none;
 }
-.settings-clear {
-	display: inline-block;
-	height: 10px;
-	width: 100%;
-}
-.border {
-	border-top: 1px solid rgba(255,255,255, 0.25);
-}
-
-/************spinner styles**************/
-.spinner {
-	width: 80px;
-	height: 80px;
-	margin: auto;
-	background-image: url(../images/spinner_icon_white_lg.png);
-}
-
-.spinner.on {
-	-webkit-animation: spin 0.65s linear infinite;
-	animation: spin 0.65s linear infinite;
-}
-
-.spinner.off {
-	-webkit-animation: none;
-	animation: none;
-}
-.small-spinner {
-	width: 42px;
-	height: 42px;
-	margin: auto;
-	background-image: url(../images/spinner_icon_white.png);
-}
-@-webkit-keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.componentSubheader {
+	margin: 20px;
+	border-bottom: 1px solid rgba(255,255,255, 0.25);
 }
