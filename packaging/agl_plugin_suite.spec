@@ -138,7 +138,6 @@ LIBSAMPLERATE_INCLUDES="-I/%{LIBSAMPLERATE_PATH}/src"
 # Now build autotool-like FMRadioService and gstreamer gstsdrjfm plugin
 cd %{FMRADIOSERVICE_PATH}
 LD_LIBRARY_PATH=%{RTLSDR_LIBPATH} RS_CFLAGS=${RTLSDR_INCLUDES} RS_LIBS=${RTLSDR_LIBS} SR_CFLAGS=${LIBSAMPLERATE_INCLUDES} SR_LIBS=${LIBSAMPLERATE_LIBS} FFTW_CFLAGS=${FFTW3_INCLUDES} FFTW_LIBS=${FFTW3_LIBS} ./configure --prefix=%{_prefix}
-make -n &> ~/make.log
 make
 
 # Build all the xwalk extension plugins
