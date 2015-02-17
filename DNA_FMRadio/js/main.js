@@ -958,6 +958,22 @@ $( "#station-id" ).click(function() {
                                   1, true, curDashOpacity);
             break;
 
+        default:
+            console.log("MODAL keypad is currently shown. Can't click here")
+    }
+});
+
+/**
+ * When user is currently waiting on a "scanned" station frequency, 
+ * we are reacting to big digits's mousedown event to disable
+ * scanning and "choose" the current station.
+ *
+ * @method station-id.mousedown
+ * @param  handler {function} Callback called when element is clicked
+ * @static
+ */
+$( "#station-id" ).mousedown(function() {
+    switch(state) {
         case "STATE_SCANNING_WAIT":
             // means we tune in this scanned station. User likes it !
             state = "STATE_NORMAL";
@@ -969,9 +985,6 @@ $( "#station-id" ).click(function() {
             }
             setStationIdFrequency(fmradio.frequency(), 1);
             break;
-
-        default:
-            console.log("MODAL keypad is currently shown. Can't click here")
     }
 });
 
