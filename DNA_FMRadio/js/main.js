@@ -71,7 +71,7 @@ var constants = {
     'FREQ_MAX_LIMIT'           : 108000000,             // Higher end of valid freq.
     'FREQ_MIN_LIMIT'           : 88000000,              // Lower end of valid freq.
     'KEYCODE_ESC'              : 27,                    // Keycode for "ESCAPE" char
-    'DIRECT_TUNING_FLASH_TIME' : 1000,                  // flashing timer timeout
+    'FLASH_TIME'               : 500,                   // flashing timer timeout
     'MOUSE_HOLD_TIMEOUT_TIME'  : 2000,                  // Time to wait for mousehold
     'SCAN_WAIT_TIMEOUT_TIME'   : 5000,                  // Time to wait when scanning
     'PRESET_PREFIX'            : "com.jlr.dna-fmradio." // presets localStorage pref.
@@ -125,6 +125,13 @@ var scanWaitTimeout = null;
 var curDashOpacity = 1.0;
 
 /**
+ * Currently shown big digits opacity in "scanning wait" animations
+ *
+@property curDigitsOpacity {Number}
+ */
+var curDigitsOpacity = 1.0;
+
+/**
  * Utility function to replace a single char in a string by another one
  *
  * @method setCharAt
@@ -155,8 +162,8 @@ function clip(n, lower, upper) {
  * Validates if the passed-in frequency (String) is in the correct
  * range / follows the right format.
  * This function supports input freq. as a number OR as a string.
- * If freq. is a number : it is assumed in Hz and validation is against range only
- * If freq. is a string : it is assumed string representation of a float (with .)
+ * If freq. is a number : Is assumed in Hz and validation is against range only
+ * If freq. is a string : Is assumed string representation of a float (with .)
  *
  * @method freqIsValid
  * @param  freq {String} Frequency to validate.
@@ -194,16 +201,27 @@ function freqIsValid(freq) {
  * @param  freq {number,string} Frequency to set. Can be either string or number
  * @static
  */
-function setStationIdFrequency(freq, dash, opacity) {
-    console.error("DEBUG: entered setStationIdFrequency");
+function setStationIdFrequency(freq, opacity, dash, dashOpacity) {
+    console.error("DEBUG: entered setStationIdFrequency, opacity = " + opacity);
+    var innerHTML;
 
-    if(typeof(dash)==='undefined') dash = false;
+    // default values
+    if(typeof(opacity) === 'undefined') opacity = 1;
+    if(typeof(dash) === 'undefined') dash = false;
 
     var element = document.getElementById("station-id");
+
+    // We always put the frequency inside <span> tags to enable
+    // easy transparency setting.
+    innerHTML = "<span style=\"opacity: " + opacity + ";\">";
+
     if (typeof freq == "number" ) {
+        console.error("DEBUG: number");
         var freqMHz = freq / 1000000;
-        element.innerHTML = freqMHz.toFixed(1);
+        innerHTML += freqMHz.toFixed(1);
+        console.error("DEBUG: frequencyID innerHTML = " + innerHTML);
     } else if (typeof freq == "string" ) {
+        console.error("DEBUG: string");
         var strLength = freq.length;
         if (strLength > 0) {
             var index;
@@ -212,19 +230,19 @@ function setStationIdFrequency(freq, dash, opacity) {
 
             // subStr length can never be > than index + 1;
             if (subStr.length < (index + 1)) {
-                element.innerHTML = freq;
+                innerHTML += freq;
             } else {
-                element.innerHTML = subStr + ".";
+                innerHTML += subStr + ".";
             }
 
             // Now, show the remaining digit from freq is any
             if (freq.length > subStr.length) {
-                element.innerHTML += freq.charAt(freq.length-1);
+                innerHTML += freq.charAt(freq.length-1);
             }
 
             // Lastly, check for validity and set color and OK button accordingly.
             var okBtn = document.getElementById("numOK");
-            if (!freqIsValid(element.innerHTML)) {
+            if (!freqIsValid(innerHTML)) {
                 okBtn.classList.remove("dna-orange");
                 okBtn.classList.add("fm-gray");
             } else {
@@ -232,21 +250,31 @@ function setStationIdFrequency(freq, dash, opacity) {
                 okBtn.classList.remove("fm-gray");
             }
         } else {
-            element.innerHTML = freq;
+            innerHTML += freq;
         }
 
         // Add the "flashing dash" at the end if in direct tuning mode
         // 'dash' should only be used with 'String' mode. Note that the
         // is not showned on STATE_DIRECT_TUNING_FULL
         if (dash && (state != "STATE_DIRECT_TUNING_FULL")) {
-            element.innerHTML += "<span style=\"opacity: " + opacity + ";\">_</span>";
+            innerHTML += "<span style=\"opacity: " +
+                                 dashOpacity + ";\">_</span>";
         }
     } else {
         console.error("Bad Station frequency type !");
         return;
     }
+
+    console.error("DEBUG: frequencyID innerHTML = " + innerHTML);
+    // We close the <span>
+    innerHTML += "</span>";
+    console.error("DEBUG: frequencyID innerHTML = " + innerHTML);
+
     // Add the "fm" at the very end
-    element.innerHTML += '<span class="fm-designation">FM</span>';
+    innerHTML += "<span class=\"fm-designation\">FM</span>";
+
+    console.error("DEBUG: frequencyID innerHTML = " + innerHTML);
+    element.innerHTML = innerHTML;
 }
 
 /**
@@ -288,7 +316,8 @@ function updateStationIdDigit(add, num_value) {
                     directTuningFreqStr += num_value;
                     state = "STATE_DIRECT_TUNING_3";
                 } else {
-                    directTuningFreqStr = directTuningFreqStr.substring(0, strLength-1);
+                    directTuningFreqStr =
+                        directTuningFreqStr.substring(0, strLength-1);
                     state = "STATE_DIRECT_TUNING_1";
                 }
                 break;
@@ -302,7 +331,8 @@ function updateStationIdDigit(add, num_value) {
                         state = "STATE_DIRECT_TUNING_FULL";
                     }
                 } else {
-                    directTuningFreqStr = directTuningFreqStr.substring(0, strLength-1);
+                    directTuningFreqStr =
+                        directTuningFreqStr.substring(0, strLength-1);
                     state = "STATE_DIRECT_TUNING_2";
                 }
                 break;
@@ -312,15 +342,17 @@ function updateStationIdDigit(add, num_value) {
                     stopFlash();
                     state = "STATE_DIRECT_TUNING_FULL";
                 } else {
-                    directTuningFreqStr = directTuningFreqStr.substring(0, strLength-1);
+                    directTuningFreqStr =
+                        directTuningFreqStr.substring(0, strLength-1);
                     state = "STATE_DIRECT_TUNING_3";
                 }
                 break;
             case "STATE_DIRECT_TUNING_FULL":
                 // We can't enter any more digits at this point.
                 if (!add) {
-                    startFlash();
-                    directTuningFreqStr = directTuningFreqStr.substring(0, strLength-1);
+                    startFlash("dash");
+                    directTuningFreqStr =
+                        directTuningFreqStr.substring(0, strLength-1);
                     if (directTuningFreqStr.charAt(0) == "1")
                         state = "STATE_DIRECT_TUNING_4";
                     else
@@ -334,7 +366,7 @@ function updateStationIdDigit(add, num_value) {
                 console.error("Invalid STATE in keypad-box.click !");
         }
         curDashOpacity = 1;
-        setStationIdFrequency(directTuningFreqStr, true, curDashOpacity);
+        setStationIdFrequency(directTuningFreqStr, 1, true, curDashOpacity);
     } else {
         console.error("updateStationIdDigit should be called only when in" +
                       "one of the STATE_DIRECT_TUNING_XX modes!");
@@ -347,8 +379,25 @@ function updateStationIdDigit(add, num_value) {
  * @method startFlash
  * @static
  */
-function startFlash() {
-    flashInterval = setInterval(flashStationIdDigitsCB, constants.DIRECT_TUNING_FLASH_TIME);
+function startFlash(component) {
+
+    console.error("DEBUG : startFlash component = " + component);
+    // Flashing should NEVER happen at the same time for
+    // Scanning_wait and Direct_tuning modes... so we can safely
+    // reuse flashInterval interval variable.
+
+    if(typeof(component) === 'undefined')
+        console.error("Call to startFlash must have an argument !");
+    if (component == "dash") {
+        flashInterval = setInterval(flashStationIdDashCB,
+                                constants.FLASH_TIME);
+    } else if (component == "digits") {
+        curDigitsOpacity = 0;
+        flashInterval = setInterval(flashStationIdDigitsCB,
+                                constants.FLASH_TIME);
+    } else {
+        console.error("Wrong startFlash parameter");
+    }
 }
 
 /**
@@ -430,10 +479,9 @@ function addSignalListeners() {
                 buttonUserFeedback("smartCancelBtn", "", "hidden");
             } else if (state.indexOf("STATE_SCANNING_SEEK") > -1){
                 console.log("DEBUG : back to STATE_SCANNING_WAIT");
-                // TODO: Fire big digits flashing animation
-                // ...
+                startFlash("digits");
 
-                // Launch 5-second pause timer
+                // Launch scan_wait pause timer
                 if (scanWaitTimeout != null)
                     clearTimeout(scanWaitTimeout);
 
@@ -468,7 +516,8 @@ var init = function () {
     if (preset.getBoundingClientRect) {
         var r = preset.getBoundingClientRect();
         keypad.style.top = (r.top - 100) + "px";
-        keypad.style.left = (((r.left + r.width)/2) - (keypad.clientWidth/2)) + "px";
+        keypad.style.left = (((r.left + r.width)/2) -
+                              (keypad.clientWidth/2)) + "px";
     } else {
         console.error("Browser does not support getBoundingClientRect !");
     }
@@ -687,7 +736,8 @@ function callSeek(direction) {
 function callCancelSeek() {
     try {
         fmradio.cancelSeek(function(error) {
-            console.error("FMRadio.cancelSeek internal error : " + error.message);
+            console.error("FMRadio.cancelSeek internal error : " +
+                          error.message);
             return false;
         });
     } catch(e) {
@@ -702,15 +752,27 @@ function callCancelSeek() {
  ****************************************************************************/
 
 function flashStationIdDigitsCB() {
-    console.error("DEBUG: entered flashStationIdDigitsCB");
+    console.error("DEBUG: entered flashStationIdDigitsCB, curOpacity = " + curDigitsOpacity);
 
-    // we just toggle dash opacity while animating direct tuning
+    // We just toggle digits opacity
+    if (curDigitsOpacity == 0)
+        curDigitsOpacity = 1;
+    else
+        curDigitsOpacity = 0;
+
+    setStationIdFrequency(fmradio.frequency(), curDigitsOpacity);
+}
+
+function flashStationIdDashCB() {
+    console.error("DEBUG: entered flashStationIdDashCB");
+
+    // We just toggle dash opacity
     if (curDashOpacity == 0)
         curDashOpacity = 1;
     else
         curDashOpacity = 0;
 
-    setStationIdFrequency(directTuningFreqStr, true, curDashOpacity);
+    setStationIdFrequency(directTuningFreqStr, 1, true, curDashOpacity);
 }
 
 function mouseHoldCB(presetNumStr) {
@@ -736,17 +798,18 @@ function mouseHoldCB(presetNumStr) {
 function scanWaitCB(direction) {
     console.error("DEBUG: entered scanWaitCB, direction = " + direction);
 
+    stopFlash();
+
     var dir;
     if (direction == "DW")
         dir = false;
     else
         dir = true;
 
-    // We launch another seek operation in the sam direction
+    // We launch another seek operation in the same direction
     if (callSeek(dir)) {
         state = "STATE_SCANNING_SEEK_" + direction;
         buttonUserFeedback("smartCancelBtn", "hidden", "");
-        cancelBtn.innerHTML = "Cancel ...";
     }
 }
 
@@ -793,10 +856,6 @@ $( "#TuneDownBtn" ).click(function() {
             frequency = constants.FREQ_MAX_LIMIT;
 
         callSetFrequency(frequency);
-
-        // Change the Station ID from the JS layer for now
-        // TODO: check if better to update from a onFrequenyChanged handler
-        //setStationIdFrequency(frequency);
     }
 });
 
@@ -819,10 +878,6 @@ $( "#TuneUpBtn" ).click(function() {
             frequency = constants.FREQ_MIN_LIMIT;
 
         callSetFrequency(frequency);
-
-        // Change the Station ID from the JS layer for now
-        // TODO: check if better to update from a onFrequenyChanged handler
-        //setStationIdFrequency(frequency);
     }
 });
 
@@ -842,7 +897,6 @@ $( "#SeekDownBtn" ).click(function() {
         if (callSeek(false)) {
             state = "STATE_SEEKING";
             buttonUserFeedback("smartCancelBtn", "hidden", "");
-            cancelBtn.innerHTML = "Cancel ...";
         }
     }
 });
@@ -862,7 +916,6 @@ $( "#SeekUpBtn" ).click(function() {
         if (callSeek(true)) {
             state = "STATE_SEEKING";
             buttonUserFeedback("smartCancelBtn", "hidden", "");
-            cancelBtn.innerHTML = "Cancel ...";
         }
     }
 });
@@ -883,7 +936,6 @@ $( "#ScanDownBtn" ).click(function() {
         if (callSeek(false)) {
             state = "STATE_SCANNING_SEEK_DW";
             buttonUserFeedback("smartCancelBtn", "hidden", "");
-            cancelBtn.innerHTML = "Cancel ...";
         }
     }
 });
@@ -904,7 +956,6 @@ $( "#ScanUpBtn" ).click(function() {
         if (callSeek(true)) {
             state = "STATE_SCANNING_SEEK_UP";
             buttonUserFeedback("smartCancelBtn", "hidden", "");
-            cancelBtn.innerHTML = "Cancel ...";
         }
     }
 });
@@ -933,9 +984,10 @@ $( "#station-id" ).click(function() {
             preset.classList.add("hidden");
             keypad.classList.remove("hidden");
             directTuningFreqStr = "";
-            startFlash();
+            startFlash("dash");
             curDashOpacity = 1;
-            setStationIdFrequency(directTuningFreqStr, true, curDashOpacity);
+            setStationIdFrequency(directTuningFreqStr,
+                                  1, true, curDashOpacity);
             break;
         default:
             console.log("MODAL keypad is currently shown. Can't click here")
@@ -1111,6 +1163,8 @@ $( "#smartCancelBtn" ).click(function() {
         // scanwaitTimeout is currently ticking...so to stop it from firing.
         clearTimeout(scanWaitTimeout);
         scanWaitTimeout = null;
+
+        stopFlash();
 
         // we hide the smartCancelbutton and put everything back to normal
         buttonUserFeedback($(this), "", "hidden");
