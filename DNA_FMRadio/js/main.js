@@ -29,7 +29,8 @@
  * STATE_DIRECT_TUNING_4    : User has entered digit3, ready to input digit 4
  * STATE_DIRECT_TUNING_FULL : User has entered digit4, no more digits can be entered
  * STATE_SEEKING            : User has launched a seek. waiting for a stationFound
- * STATE_SCANNING_SEEK      : User has entered scanning mode. waiting for a channel
+ * STATE_SCANNING_SEEK_DW   : User has entered scanning down mode. waiting for a channel
+ * STATE_SCANNING_SEEK_UP   : User has entered scanning up mode. waiting for a channel
  * STATE_SCANNING_SHOW      : System found a station and is rendering for 5 seconds.
  * STATE_ERROR              : FMRadio{Service,Extension} had an unrecoverable error
  *
@@ -56,6 +57,12 @@ var mouseState = "STATE_MOUSE_UP";
 var directTuningFreqStr;
 
 /**
+ * Frequency that was current before a scan is initiated
+@property preScanFrequency {Number}
+ */
+var preScanFrequency;
+
+/**
  * Useful constants
 @property constants {Object}
  */
@@ -66,6 +73,7 @@ var constants = {
     'KEYCODE_ESC'              : 27,                    // Keycode for "ESCAPE" char
     'DIRECT_TUNING_FLASH_TIME' : 1000,                  // flashing timer timeout
     'MOUSE_HOLD_TIMEOUT_TIME'  : 2000,                  // Time to wait for mousehold
+    'SCAN_WAIT_TIMEOUT_TIME'   : 5000,                  // Time to wait when scanning
     'PRESET_PREFIX'            : "com.jlr.dna-fmradio." // presets localStorage pref.
 };
 
@@ -98,9 +106,16 @@ var flashInterval = null;
 /**
  * Timeout variable used to track mousehold gestures
  *
-@property flashInterval {Object}
+@property mouseHoldTimeout {Object}
  */
 var mouseHoldTimeout = null;
+
+/**
+ * Timeout variable used to track scanWaits
+ *
+@property scanWaitTimeout {Object}
+ */
+var scanWaitTimeout = null;
 
 /**
  * Currently shown dash opacity in direct tuning animation
@@ -406,14 +421,28 @@ function addSignalListeners() {
         fmradio.addOnStationFoundListener(function(signal_value){
             console.log("DEBUG : StationFound SIGNAL received : " + signal_value);
 
+            setStationIdFrequency(signal_value);
+
             // update the state with regard to current seek/scan state
             if (state == "STATE_SEEKING") {
+                console.log("DEBUG : back to STATE_NORMAL");
                 state = "STATE_NORMAL";
                 buttonUserFeedback("smartCancelBtn", "", "hidden");
-            } else {
-                // TODO: implement behavior during a scan
+            } else if (state.indexOf("STATE_SCANNING_SEEK") > -1){
+                console.log("DEBUG : back to STATE_SCANNING_WAIT");
+                // TODO: Fire big digits flashing animation
+                // ...
+
+                // Launch 5-second pause timer
+                if (scanWaitTimeout != null)
+                    clearTimeout(scanWaitTimeout);
+
+                scanWaitTimeout = setTimeout(scanWaitCB,
+                                  constants.SCAN_WAIT_TIMEOUT_TIME,
+                                  state.substr(state.length - 2));
+
+                state = "STATE_SCANNING_WAIT";
             }
-            setStationIdFrequency(signal_value);
         });
     } catch(e) {
         console.error("addStationFoundListener failed with error : " + e);
@@ -704,6 +733,23 @@ function mouseHoldCB(presetNumStr) {
     mouseDownTimeout = null;
 }
 
+function scanWaitCB(direction) {
+    console.error("DEBUG: entered scanWaitCB, direction = " + direction);
+
+    var dir;
+    if (direction == "DW")
+        dir = false;
+    else
+        dir = true;
+
+    // We launch another seek operation in the sam direction
+    if (callSeek(dir)) {
+        state = "STATE_SCANNING_SEEK_" + direction;
+        buttonUserFeedback("smartCancelBtn", "hidden", "");
+        cancelBtn.innerHTML = "Cancel ...";
+    }
+}
+
 
 /****************************************************************************
  * JQUERY EVENT HANDLERS    *************************************************
@@ -796,7 +842,7 @@ $( "#SeekDownBtn" ).click(function() {
         if (callSeek(false)) {
             state = "STATE_SEEKING";
             buttonUserFeedback("smartCancelBtn", "hidden", "");
-            cancelBtn.innerHTML = "Cancel Seek ...";
+            cancelBtn.innerHTML = "Cancel ...";
         }
     }
 });
@@ -813,11 +859,52 @@ $( "#SeekUpBtn" ).click(function() {
 
     // Interaction with 'seek' is only possible on STATE_NORMAL
     if (state == "STATE_NORMAL") {
-
         if (callSeek(true)) {
             state = "STATE_SEEKING";
             buttonUserFeedback("smartCancelBtn", "hidden", "");
-            cancelBtn.innerHTML = "Cancel Seek ...";
+            cancelBtn.innerHTML = "Cancel ...";
+        }
+    }
+});
+
+/**
+ * Scan down
+ *
+ * @method ScanDownBth.click
+ * @param  handler {function} Callback called when element is clicked
+ * @static
+ */
+$( "#ScanDownBtn" ).click(function() {
+    console.error("DEBUG: entered $( \"#ScanDownBtn\" ).click");
+
+    // Interaction with 'scan' is only possible on STATE_NORMAL
+    if (state == "STATE_NORMAL") {
+        preScanFrequency = fmradio.frequency();
+        if (callSeek(false)) {
+            state = "STATE_SCANNING_SEEK_DW";
+            buttonUserFeedback("smartCancelBtn", "hidden", "");
+            cancelBtn.innerHTML = "Cancel ...";
+        }
+    }
+});
+
+/**
+ * Scan up
+ *
+ * @method ScanUpBth.click
+ * @param  handler {function} Callback called when element is clicked
+ * @static
+ */
+$( "#ScanUpBtn" ).click(function() {
+    console.error("DEBUG: entered $( \"#ScanUpBtn\" ).click");
+
+    // Interaction with 'scan' is only possible on STATE_NORMAL
+    if (state == "STATE_NORMAL") {
+        preScanFrequency = fmradio.frequency();
+        if (callSeek(true)) {
+            state = "STATE_SCANNING_SEEK_UP";
+            buttonUserFeedback("smartCancelBtn", "hidden", "");
+            cancelBtn.innerHTML = "Cancel ...";
         }
     }
 });
@@ -1014,7 +1101,22 @@ $( "#smartCancelBtn" ).click(function() {
             state = "STATE_NORMAL";
             buttonUserFeedback($(this), "", "hidden");
         }
-    } else if (state == "STATE_SCANNING_SEEK") {
-        // TODO: implement stop scanning here
+    } else if (state.indexOf("STATE_SCANNING_SEEK") > -1) {
+        if (callCancelSeek()) {
+            state = "STATE_NORMAL";
+            buttonUserFeedback($(this), "", "hidden");
+        }
+        callSetFrequency(preScanFrequency);
+    } else if (state == "STATE_SCANNING_WAIT") {
+        // scanwaitTimeout is currently ticking...so to stop it from firing.
+        clearTimeout(scanWaitTimeout);
+        scanWaitTimeout = null;
+
+        // we hide the smartCancelbutton and put everything back to normal
+        buttonUserFeedback($(this), "", "hidden");
+        state = "STATE_NORMAL"
+        callSetFrequency(preScanFrequency);
+    } else {
+        console.error("smartCancelBtn.click() state error !");
     }
 });
