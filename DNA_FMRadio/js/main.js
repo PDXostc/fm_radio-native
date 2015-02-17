@@ -170,6 +170,7 @@ function clip(n, lower, upper) {
  * @static
  */
 function freqIsValid(freq) {
+
     var freqHz;
     if (typeof freq == "number" ) {
         // the 'Number' version assume freq. already in Hz
@@ -202,7 +203,7 @@ function freqIsValid(freq) {
  * @static
  */
 function setStationIdFrequency(freq, opacity, dash, dashOpacity) {
-    console.error("DEBUG: entered setStationIdFrequency, opacity = " + opacity);
+
     var innerHTML;
 
     // default values
@@ -216,12 +217,9 @@ function setStationIdFrequency(freq, opacity, dash, dashOpacity) {
     innerHTML = "<span style=\"opacity: " + opacity + ";\">";
 
     if (typeof freq == "number" ) {
-        console.error("DEBUG: number");
         var freqMHz = freq / 1000000;
         innerHTML += freqMHz.toFixed(1);
-        console.error("DEBUG: frequencyID innerHTML = " + innerHTML);
     } else if (typeof freq == "string" ) {
-        console.error("DEBUG: string");
         var strLength = freq.length;
         if (strLength > 0) {
             var index;
@@ -265,15 +263,12 @@ function setStationIdFrequency(freq, opacity, dash, dashOpacity) {
         return;
     }
 
-    console.error("DEBUG: frequencyID innerHTML = " + innerHTML);
     // We close the <span>
     innerHTML += "</span>";
-    console.error("DEBUG: frequencyID innerHTML = " + innerHTML);
 
     // Add the "fm" at the very end
     innerHTML += "<span class=\"fm-designation\">FM</span>";
 
-    console.error("DEBUG: frequencyID innerHTML = " + innerHTML);
     element.innerHTML = innerHTML;
 }
 
@@ -286,8 +281,6 @@ function setStationIdFrequency(freq, opacity, dash, dashOpacity) {
  * @static
  */
 function updateStationIdDigit(add, num_value) {
-    console.error("DEBUG: entered updateStationIdDigit");
-
 
     if (state.indexOf("DIRECT_TUNING") > -1) {
         var strLength = directTuningFreqStr.length;
@@ -381,7 +374,6 @@ function updateStationIdDigit(add, num_value) {
  */
 function startFlash(component) {
 
-    console.error("DEBUG : startFlash component = " + component);
     // Flashing should NEVER happen at the same time for
     // Scanning_wait and Direct_tuning modes... so we can safely
     // reuse flashInterval interval variable.
@@ -407,6 +399,7 @@ function startFlash(component) {
  * @static
  */
 function stopFlash() {
+
     clearInterval(flashInterval);
     flashInterval = null;
 }
@@ -419,7 +412,6 @@ function stopFlash() {
  * @static
  */
 function goBackToNormal() {
-    console.error("DEBUG: entered goBackToNormal");
 
     var keypad = document.getElementById("keypad-container");
     var preset = document.getElementById("presets-container");
@@ -443,6 +435,7 @@ function goBackToNormal() {
 
 /* faked audio visualizer */
 function fluctuate(bar) {
+
     var hgt = Math.random() * 10;
     hgt += 1;
     var t = hgt * 30;
@@ -455,11 +448,9 @@ function fluctuate(bar) {
 }
 
 function addSignalListeners() {
-    console.error("DEBUG: entered addSignalListeners");
 
     try {
         fmradio.addOnFrequencyChangedListener(function(signal_value){
-            console.log("DEBUG : frequencychanged SIGNAL received : " + signal_value);
             setStationIdFrequency(signal_value);
         });
     } catch(e) {
@@ -468,17 +459,14 @@ function addSignalListeners() {
 
     try {
         fmradio.addOnStationFoundListener(function(signal_value){
-            console.log("DEBUG : StationFound SIGNAL received : " + signal_value);
 
             setStationIdFrequency(signal_value);
 
             // update the state with regard to current seek/scan state
             if (state == "STATE_SEEKING") {
-                console.log("DEBUG : back to STATE_NORMAL");
                 state = "STATE_NORMAL";
                 buttonUserFeedback("smartCancelBtn", "", "hidden");
             } else if (state.indexOf("STATE_SCANNING_SEEK") > -1){
-                console.log("DEBUG : back to STATE_SCANNING_WAIT");
                 startFlash("digits");
 
                 // Launch scan_wait pause timer
@@ -506,7 +494,6 @@ function addSignalListeners() {
  * @static
  */
 var init = function () {
-    console.error("DEBUG: entered init");
 
     $(".bar").each(function(i) {
         fluctuate($(this));
@@ -602,7 +589,6 @@ function setupSpeechRecognition() {
 }
 
 function savePresetsList() {
-    console.error("DEBUG: entered savePresetsList");
 
     // frequencies in 'presets' should all valid Numbers (-1 when unset)
     for (i = 0; i < presets.length; i++) {
@@ -613,7 +599,6 @@ function savePresetsList() {
 }
 
 function loadPresetsList() {
-    console.error("DEBUG: entered loadPresetsList");
 
     for (i = 0; i < presets.length; i++) {
         var val = localStorage.getItem(constants.PRESET_PREFIX + "preset" + i);
@@ -638,7 +623,6 @@ function loadPresetsList() {
  * @static
  **/
 function buttonUserFeedback(objectOrId, beforeClass, afterClass) {
-    console.error("DEBUG: entered buttonUserFeedback");
 
     var element;
     if (typeof objectOrId == "string" ) {
@@ -663,6 +647,7 @@ function buttonUserFeedback(objectOrId, beforeClass, afterClass) {
  * @static
  */
 function callEnable() {
+
     try {
         fmradio.enable(function(error) {
             console.error("FMRadio.enable internal error : " + error.message);
@@ -683,7 +668,6 @@ function callEnable() {
  * @static
  */
 function callSetFrequency(freqHz) {
-    console.error("DEBUG: entered callSetFrequency");
 
     try {
         fmradio.setFrequency(freqHz, function(error) {
@@ -704,28 +688,21 @@ function callSetFrequency(freqHz) {
  * @static
  */
 function callSeek(direction) {
-    console.error("DEBUG: entered callSeek");
 
     try {
         if (direction) {
-            console.log("DEBUG2");
             fmradio.seekup(function(error) {
-                console.log("DEBUG3");
                 console.error("fmradio.seekup error : " + error.message);
             });
         } else {
-            console.log("DEBUG4");
             fmradio.seekdown(function(error) {
-                console.log("DEBUG5");
                 console.error("fmradio.seekdown error : " + error.message);
             });
         }
     } catch(e) {
-        console.log("DEBUG6");
         console.error("callSeek error catch : " + e);
         return false;
     }
-    console.log("DEBUG7");
     return true;
 }
 
@@ -736,6 +713,7 @@ function callSeek(direction) {
  * @static
  */
 function callCancelSeek() {
+
     try {
         fmradio.cancelSeek(function(error) {
             console.error("FMRadio.cancelSeek internal error : " +
@@ -754,7 +732,6 @@ function callCancelSeek() {
  ****************************************************************************/
 
 function flashStationIdDigitsCB() {
-    console.error("DEBUG: entered flashStationIdDigitsCB, curOpacity = " + curDigitsOpacity);
 
     // We just toggle digits opacity
     if (curDigitsOpacity == 0)
@@ -766,7 +743,6 @@ function flashStationIdDigitsCB() {
 }
 
 function flashStationIdDashCB() {
-    console.error("DEBUG: entered flashStationIdDashCB");
 
     // We just toggle dash opacity
     if (curDashOpacity == 0)
@@ -778,7 +754,6 @@ function flashStationIdDashCB() {
 }
 
 function mouseHoldCB(presetNumStr) {
-    console.error("DEBUG: entered mouseHoldCB");
 
     // We have a mousehold on 'preset_num' button!
     var presetNum = parseInt(presetNumStr);
@@ -798,7 +773,6 @@ function mouseHoldCB(presetNumStr) {
 }
 
 function scanWaitCB(direction) {
-    console.error("DEBUG: entered scanWaitCB, direction = " + direction);
 
     stopFlash();
 
@@ -828,7 +802,6 @@ function scanWaitCB(direction) {
  * @istatic
  */
 $(document).keydown(function(e) {
-    console.error("DEBUG: entered $(document).keydown");
 
     if (e.keyCode == constants.KEYCODE_ESC) {
         if (state.indexOf("STATE_DIRECT_TUNING") >= 0) {
@@ -846,7 +819,6 @@ $(document).keydown(function(e) {
  * @static
  */
 $( "#TuneDownBtn" ).click(function() {
-    console.error("DEBUG: entered $( \"#TuneDownBtn\" ).click");
 
     // Interaction with 'manual tuning' is only possible on STATE_NORMAL
     if (state == "STATE_NORMAL") {
@@ -870,7 +842,6 @@ $( "#TuneDownBtn" ).click(function() {
  * @static
  */
 $( "#TuneUpBtn" ).click(function() {
-    console.error("DEBUG: entered $( \"#TuneUpBtn\" ).click");
 
     // Interaction with 'manual tuning' is only possible on STATE_NORMAL
     if (state == "STATE_NORMAL") {
@@ -891,7 +862,6 @@ $( "#TuneUpBtn" ).click(function() {
  * @static
  */
 $( "#SeekDownBtn" ).click(function() {
-    console.error("DEBUG: entered $( \"#SeekDownBtn\" ).click");
 
     // Interaction with 'seek' is only possible on STATE_NORMAL
     if (state == "STATE_NORMAL") {
@@ -911,7 +881,6 @@ $( "#SeekDownBtn" ).click(function() {
  * @static
  */
 $( "#SeekUpBtn" ).click(function() {
-    console.error("DEBUG: entered $( \"#SeekUpBtn\" ).click");
 
     // Interaction with 'seek' is only possible on STATE_NORMAL
     if (state == "STATE_NORMAL") {
@@ -930,7 +899,6 @@ $( "#SeekUpBtn" ).click(function() {
  * @static
  */
 $( "#ScanDownBtn" ).click(function() {
-    console.error("DEBUG: entered $( \"#ScanDownBtn\" ).click");
 
     // Interaction with 'scan' is only possible on STATE_NORMAL
     if (state == "STATE_NORMAL") {
@@ -950,7 +918,6 @@ $( "#ScanDownBtn" ).click(function() {
  * @static
  */
 $( "#ScanUpBtn" ).click(function() {
-    console.error("DEBUG: entered $( \"#ScanUpBtn\" ).click");
 
     // Interaction with 'scan' is only possible on STATE_NORMAL
     if (state == "STATE_NORMAL") {
@@ -972,7 +939,6 @@ $( "#ScanUpBtn" ).click(function() {
  * @static
  */
 $( "#station-id" ).click(function() {
-    console.error("DEBUG: entered $( \"#station-id\" ).click");
 
     var keypad = document.getElementById("keypad-container");
     var preset = document.getElementById("presets-container");
@@ -1017,7 +983,6 @@ $( "#station-id" ).click(function() {
  * @static
  */
 $( ".clickable-key" ).click(function() {
-    console.error("DEBUG: entered $( \".clickable-key\" ).click");
 
     // the clicked element's index
     var num = $(this).attr('index');
@@ -1032,7 +997,6 @@ $( ".clickable-key" ).click(function() {
  * @static
  */
 $( "#key_DEL" ).click(function() {
-    console.error("DEBUG: entered $( \"#key_DEL\" ).click");
 
     updateStationIdDigit(false);
 });
@@ -1045,7 +1009,6 @@ $( "#key_DEL" ).click(function() {
  * @static
  */
 $( "#key_OK" ).click(function() {
-    console.error("DEBUG: entered $( \"#key_OK\" ).click");
 
     if (state == "STATE_DIRECT_TUNING_FULL") {
         // Changing the actual tuned frequency is only done
@@ -1068,7 +1031,6 @@ $( "#key_OK" ).click(function() {
  * @static
  */
 $( ".fm-radio-box" ).click(function() {
-    console.error("DEBUG: entered $( \".fm-radio-box\" ).click");
 
     // Extract pressed preset # from the element's id
     // freqHz *must* be a number to feed freqIsValid()
@@ -1091,7 +1053,6 @@ $( ".fm-radio-box" ).click(function() {
  * @static
  */
 $( ".fm-radio-box" ).mousedown(function() {
-    console.error("DEBUG: entered $( \".fm-radio-box\" ).mousedown");
 
     mouseState = "STATE_MOUSE_DOWN";
     buttonUserFeedback($(this), "fm-gray", "dna-orange");
@@ -1115,7 +1076,6 @@ $( ".fm-radio-box" ).mousedown(function() {
  * @static
  */
 $( ".fm-radio-box" ).mouseup(function() {
-    console.error("DEBUG: entered $(\".fm-radio-box\" ).mouseup");
 
     mouseState = "STATE_MOUSE_UP";
     buttonUserFeedback($(this), "dna-orange", "fm-gray");
@@ -1134,7 +1094,6 @@ $( ".fm-radio-box" ).mouseup(function() {
  * @static
  */
 $( ".keypad-box" ).mousedown(function() {
-    console.error("DEBUG: entered $( \".keypad-box\" ).mousedown");
 
     buttonUserFeedback($(this), "fm-gray", "dna-orange");
 });
@@ -1147,7 +1106,6 @@ $( ".keypad-box" ).mousedown(function() {
  * @static
  */
 $( ".keypad-box" ).mouseup(function() {
-    console.error("DEBUG: entered $( \".keypad-box\" ).mouseup");
 
     buttonUserFeedback($(this), "dna-orange", "fm-gray");
 });
@@ -1160,7 +1118,6 @@ $( ".keypad-box" ).mouseup(function() {
  * @static
  */
 $( "#smartCancelBtn" ).click(function() {
-    console.error("DEBUG: entered $( \"smartCancelBtn\" ).click");
 
     // We can only cancel an ongoing "seek"
     if (state == "STATE_SEEKING") {
