@@ -482,8 +482,10 @@ function addSignalListeners() {
                 startFlash("digits");
 
                 // Launch scan_wait pause timer
-                if (scanWaitTimeout != null)
+                if (scanWaitTimeout != null) {
                     clearTimeout(scanWaitTimeout);
+                    scanWaitTimeout = null;
+                }
 
                 scanWaitTimeout = setTimeout(scanWaitCB,
                                   constants.SCAN_WAIT_TIMEOUT_TIME,
@@ -989,6 +991,19 @@ $( "#station-id" ).click(function() {
             setStationIdFrequency(directTuningFreqStr,
                                   1, true, curDashOpacity);
             break;
+
+        case "STATE_SCANNING_WAIT":
+            // means we tune in this scanned station. User likes it !
+            state = "STATE_NORMAL";
+            buttonUserFeedback("smartCancelBtn", "", "hidden");
+            stopFlash();
+            if (scanWaitTimeout != null) {
+                    clearTimeout(scanWaitTimeout);
+                    scanWaitTimeout = null;
+            }
+            setStationIdFrequency(fmradio.frequency(), 1);
+            break;
+
         default:
             console.log("MODAL keypad is currently shown. Can't click here")
     }
