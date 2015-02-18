@@ -1,0 +1,2 @@
+# NOTE: setting the WL_OUTPUT lets Weston know which display to associate the touch device with
+ATTRS{idVendor}=="0eef", ATTRS{idProduct}=="7200", ENV{WL_OUTPUT}="DP1"

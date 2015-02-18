@@ -22,6 +22,10 @@ In an Ubuntu shell:
         $ sudo cp blacklist-rtlsdr.conf /etc/modprobe.d
         $ sudo cp 99-librtlsdr.rules /etc/udev/rules.d
 
+  * Make sure your tizen setup supports touch events
+
+        $ sudo cp 99-egalax.rules /usr/lib/udev/rules.d
+
   * reboot the device
         $ sudo reboot
 
