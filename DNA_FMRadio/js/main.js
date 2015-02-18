@@ -536,6 +536,7 @@ var init = function () {
     $(".clickable-key").on('click',  onClassClickableKeyClick);
     $("#key_DEL").on('click',  onKeyDELClick);
     $("#key_OK").on('click',   onKeyOKClick);
+    $("#key_ESC").on('click',  onKeyESCClick);
     $(".fm-radio-box").on('click',  onClassFmRadioBoxClick);
     $(".fm-radio-box").on('touchstart', onClassFmRadioBoxTouchStart);
     $(".fm-radio-box").on('touchend',   onClassFmRadioBoxTouchEnd);
@@ -813,23 +814,6 @@ function scanWaitCB(direction) {
  ****************************************************************************/
 
 /**
- * Catch key up events (keyboard keys)
- *
- * @method keyup
- * @param  handler {function} Callback called when element is clicked
- * @istatic
- */
-$(document).keydown(function(e) {
-
-    if (e.keyCode == constants.KEYCODE_ESC) {
-        if (state.indexOf("STATE_DIRECT_TUNING") >= 0) {
-            goBackToNormal();
-            setStationIdFrequency(fmradio.frequency());
-        }
-    }
-});
-
-/**
  * Decreases FMRadioService frequency by 0.1 MHz
  *
  * @method onTuneDownBtnClick
@@ -1035,6 +1019,21 @@ function onKeyOKClick(e) {
             callSetFrequency(freqHz);
             goBackToNormal();
         }
+    }
+}
+
+/**
+ * React to user clicking on the ESC keypad button
+ *
+ * @method onKeyESCClick
+ * @param  e {Object} Event object
+ * @static
+ */
+function onKeyESCClick(e) {
+
+    if (state.indexOf("STATE_DIRECT_TUNING") >= 0) {
+        goBackToNormal();
+        setStationIdFrequency(fmradio.frequency());
     }
 }
 
