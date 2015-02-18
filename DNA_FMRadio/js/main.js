@@ -525,6 +525,24 @@ var init = function () {
         }
     });
 
+    // Defining mouse and touch events
+    $("#TuneUpBtn").on('click',   onTuneUpBtnClick);
+    $("#TuneDownBtn").on('click', onTuneDownBtnClick);
+    $("#SeekUpBtn").on('click',   onSeekUpBtnClick);
+    $("#SeekDownBtn").on('click', onSeekDownBtnClick);
+    $("#ScanUpBtn").on('click',   onScanUpBtnClick);
+    $("#ScanDownBtn").on('click', onScanDownBtnClick);
+    $("#station-id").on('touchstart', onStationIdTouchStart);
+    $(".clickable-key").on('click',  onClassClickableKeyClick);
+    $("#key_DEL").on('click',  onKeyDELClick);
+    $("#key_OK").on('click',   onKeyOKClick);
+    $(".fm-radio-box").on('click',  onClassFmRadioBoxClick);
+    $(".fm-radio-box").on('touchstart', onClassFmRadioBoxTouchStart);
+    $(".fm-radio-box").on('touchend',   onClassFmRadioBoxTouchEnd);
+    $(".keypad-box").on('touchstart', onClassKeypadBoxTouchStart);
+    $(".keypad-box").on('touchend',   onClassKeypadBoxTouchEnd);
+    $("#smartCancelBtn").on('click', onSmartCancelBtnClick);
+
     if (fmradio) {
         // We start by registering our various signal listeners
         addSignalListeners();
@@ -791,7 +809,7 @@ function scanWaitCB(direction) {
 
 
 /****************************************************************************
- * JQUERY EVENT HANDLERS    *************************************************
+ * ACTION CATCHER EVENT HANDLERS   ******************************************
  ****************************************************************************/
 
 /**
@@ -814,11 +832,11 @@ $(document).keydown(function(e) {
 /**
  * Decreases FMRadioService frequency by 0.1 MHz
  *
- * @method TuneDownBtn.click
- * @param  handler {function} Callback called when element is clicked
+ * @method onTuneDownBtnClick
+ * @param  e {Object} Event object
  * @static
  */
-$( "#TuneDownBtn" ).click(function() {
+function onTuneDownBtnClick(e) {
 
     // Interaction with 'manual tuning' is only possible on STATE_NORMAL
     if (state == "STATE_NORMAL") {
@@ -831,17 +849,16 @@ $( "#TuneDownBtn" ).click(function() {
 
         callSetFrequency(frequency);
     }
-});
-
+}
 
 /**
  * Increases FMRadioService frequency by 0.1 MHz
  *
- * @method TuneUpBtn.click
- * @param  handler {function} Callback called when element is clicked
+ * @method onTuneBtnClick
+ * @param  e {Object} Event object
  * @static
  */
-$( "#TuneUpBtn" ).click(function() {
+function onTuneUpBtnClick(e) {
 
     // Interaction with 'manual tuning' is only possible on STATE_NORMAL
     if (state == "STATE_NORMAL") {
@@ -852,16 +869,16 @@ $( "#TuneUpBtn" ).click(function() {
 
         callSetFrequency(frequency);
     }
-});
+}
 
 /**
  * Seek down
  *
- * @method SeekDownBth.click
- * @param  handler {function} Callback called when element is clicked
+ * @method onSeekDownBtnClick
+ * @param  e {Object} Event object
  * @static
  */
-$( "#SeekDownBtn" ).click(function() {
+function onSeekDownBtnClick(e) {
 
     // Interaction with 'seek' is only possible on STATE_NORMAL
     if (state == "STATE_NORMAL") {
@@ -871,16 +888,16 @@ $( "#SeekDownBtn" ).click(function() {
             buttonUserFeedback("smartCancelBtn", "hidden", "");
         }
     }
-});
+}
 
 /**
  * Seek up
  *
- * @method SeekUpBth.click
- * @param  handler {function} Callback called when element is clicked
+ * @method onSeekUpBtnClick
+ * @param  e {Object} Event object
  * @static
  */
-$( "#SeekUpBtn" ).click(function() {
+function onSeekUpBtnClick(e) {
 
     // Interaction with 'seek' is only possible on STATE_NORMAL
     if (state == "STATE_NORMAL") {
@@ -889,16 +906,16 @@ $( "#SeekUpBtn" ).click(function() {
             buttonUserFeedback("smartCancelBtn", "hidden", "");
         }
     }
-});
+}
 
 /**
  * Scan down
  *
- * @method ScanDownBth.click
- * @param  handler {function} Callback called when element is clicked
+ * @method onScanDownBtnClick
+ * @param  e {Object} Event object
  * @static
  */
-$( "#ScanDownBtn" ).click(function() {
+function onScanDownBtnClick(e) {
 
     // Interaction with 'scan' is only possible on STATE_NORMAL
     if (state == "STATE_NORMAL") {
@@ -908,16 +925,16 @@ $( "#ScanDownBtn" ).click(function() {
             buttonUserFeedback("smartCancelBtn", "hidden", "");
         }
     }
-});
+}
 
 /**
  * Scan up
  *
- * @method ScanUpBth.click
- * @param  handler {function} Callback called when element is clicked
+ * @method onScanUpBtnClick
+ * @param  e {Object} Event object
  * @static
  */
-$( "#ScanUpBtn" ).click(function() {
+function onScanUpBtnClick(e) {
 
     // Interaction with 'scan' is only possible on STATE_NORMAL
     if (state == "STATE_NORMAL") {
@@ -927,18 +944,18 @@ $( "#ScanUpBtn" ).click(function() {
             buttonUserFeedback("smartCancelBtn", "hidden", "");
         }
     }
-});
+}
 
 /**
  * React to user clicking on big numbers station frequency
  * When station-id is clicked, a state machine starts to track
  * user entering big numbers station frequency number by number
  *
- * @method station-id.click
- * @param  handler {function} Callback called when element is clicked
+ * @method onStationIdTouchStart
+ * @param  e {Object} Event object
  * @static
  */
-$( "#station-id" ).click(function() {
+function onStationIdTouchStart(e) {
 
     var keypad = document.getElementById("keypad-container");
     var preset = document.getElementById("presets-container");
@@ -958,22 +975,6 @@ $( "#station-id" ).click(function() {
                                   1, true, curDashOpacity);
             break;
 
-        default:
-            console.log("MODAL keypad is currently shown. Can't click here")
-    }
-});
-
-/**
- * When user is currently waiting on a "scanned" station frequency, 
- * we are reacting to big digits's mousedown event to disable
- * scanning and "choose" the current station.
- *
- * @method station-id.mousedown
- * @param  handler {function} Callback called when element is clicked
- * @static
- */
-$( "#station-id" ).mousedown(function() {
-    switch(state) {
         case "STATE_SCANNING_WAIT":
             // means we tune in this scanned station. User likes it !
             state = "STATE_NORMAL";
@@ -985,43 +986,46 @@ $( "#station-id" ).mousedown(function() {
             }
             setStationIdFrequency(fmradio.frequency(), 1);
             break;
+
+        default:
+            console.log("MODAL keypad is currently shown. Can't click here")
     }
-});
+}
 
 /**
  * React to user clicking on keypad num buttons
  *
- * @method keypad-box.click
- * @param  handler {function} Callback called when element is clicked
+ * @method onClassClickableKeyClick
+ * @param  e {Object} Event object
  * @static
  */
-$( ".clickable-key" ).click(function() {
+function onClassClickableKeyClick(e) {
 
     // the clicked element's index
     var num = $(this).attr('index');
     updateStationIdDigit(true, num);
-});
+}
 
 /**
  * React to user clicking on the DEL keypad button
  *
- * @method key_DEL.click
- * @param  handler {function} Callback called when element is clicked
+ * @method onKeyDELClick
+ * @param  e {Object} Event object
  * @static
  */
-$( "#key_DEL" ).click(function() {
+function onKeyDELClick(e) {
 
     updateStationIdDigit(false);
-});
+}
 
 /**
  * React to user clicking on the OK keypad button
  *
- * @method key_OK.click
- * @param  handler {function} Callback called when element is clicked
+ * @method onKeyOKClick
+ * @param  e {Object} Event object
  * @static
  */
-$( "#key_OK" ).click(function() {
+function onKeyOKClick(e) {
 
     if (state == "STATE_DIRECT_TUNING_FULL") {
         // Changing the actual tuned frequency is only done
@@ -1032,19 +1036,20 @@ $( "#key_OK" ).click(function() {
             goBackToNormal();
         }
     }
-});
+}
 
 /**
  * React to user *clicking* on the presets box CLASS
  * When user "clicks" on a memory slots, means he wants to load
  * the station as current.
  *
- * @method  fm-radio-box.click()
- * @param  handler {function} Callback called when element is clicked
+ * @method  onClassFmRadioBoxClick
+ * @param  e {Object} Event object
  * @static
  */
-$( ".fm-radio-box" ).click(function() {
+function onClassFmRadioBoxClick(e) {
 
+    console.error("DEBUG: radiobox click");
     // Extract pressed preset # from the element's id
     // freqHz *must* be a number to feed freqIsValid()
     var index = $(this).attr('preset');
@@ -1054,18 +1059,20 @@ $( ".fm-radio-box" ).click(function() {
     if (freqIsValid(freqHz)) {
         callSetFrequency(freqHz);
     }
-});
+}
 
 /**
  * React to user *mousedown* on the presets box CLASS
  * We are using mousedown and mouseup events here to implement the
  * 2-second mousehold when user wants to save stations as presets
  *
- * @method  fm-radio-box.mousedown()
- * @param  handler {function} Callback called when element is pressed-down
+ * @method  onClassFmRadioBoxTouchStart
+ * @param  e {Object} Event object
  * @static
  */
-$( ".fm-radio-box" ).mousedown(function() {
+function onClassFmRadioBoxTouchStart(e) {
+
+    console.error("DEBUG: radiobox touchstart");
 
     mouseState = "STATE_MOUSE_DOWN";
     buttonUserFeedback($(this), "fm-gray", "dna-orange");
@@ -1077,19 +1084,20 @@ $( ".fm-radio-box" ).mousedown(function() {
     mouseHoldTimeout = setTimeout(mouseHoldCB,
                                   constants.MOUSE_HOLD_TIMEOUT_TIME,
                                   $(this).attr('preset'));
-});
+}
 
 /**
  * React to user *mouseup* on the presets box CLASS
  * We are using mousedown and mouseup events here to implement the
  * 2-second mousehold when user wants to save stations as presets
  *
- * @method  fm-radio-box.mouseup()
- * @param  handler {function} Callback called when element mouse is released
+ * @method  onClassFmRadioBoxTouchEnd
+ * @param  e {Object} Event object
  * @static
  */
-$( ".fm-radio-box" ).mouseup(function() {
+function onClassFmRadioBoxTouchEnd(e) {
 
+    console.error("DEBUG: radiobox touchend");
     mouseState = "STATE_MOUSE_UP";
     buttonUserFeedback($(this), "dna-orange", "fm-gray");
 
@@ -1097,40 +1105,40 @@ $( ".fm-radio-box" ).mouseup(function() {
         clearTimeout(mouseHoldTimeout);
         mouseHoldTimeout = null;
     }
-});
+}
 
 /**
  * React to keypadbox mousedown
  *
- * @method  keypad-box.mousedown()
- * @param  handler {function} Callback called when element is mousedowned
+ * @method  onClassKeypadBoxTouchStart
+ * @param  e {Object} Event object
  * @static
  */
-$( ".keypad-box" ).mousedown(function() {
+function onClassKeypadBoxTouchStart(e) {
 
     buttonUserFeedback($(this), "fm-gray", "dna-orange");
-});
+}
 
 /**
  * React to keypadbox mouseup
  *
- * @method  keypad-box.mouseup()
- * @param  handler {function} Callback called when element is mouseuped
+ * @method  onClassKeypadBoxTouchEnd
+ * @param  e {Object} Event object
  * @static
  */
-$( ".keypad-box" ).mouseup(function() {
+function onClassKeypadBoxTouchEnd(e) {
 
     buttonUserFeedback($(this), "dna-orange", "fm-gray");
-});
+}
 
 /**
  * React to smartCancelButton (cancel seek/scan)
  *
- * @method smartCancelBtn.click
- * @param  handler {function} Callback called when element is mouseuped
+ * @method onSmartCancelBtnClick
+ * @param  e {Object} Event object
  * @static
  */
-$( "#smartCancelBtn" ).click(function() {
+function onSmartCancelBtnClick(e) {
 
     // We can only cancel an ongoing "seek"
     if (state == "STATE_SEEKING") {
@@ -1158,4 +1166,4 @@ $( "#smartCancelBtn" ).click(function() {
     } else {
         console.error("smartCancelBtn.click() state error !");
     }
-});
+}
