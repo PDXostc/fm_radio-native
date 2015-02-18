@@ -24,7 +24,20 @@ In an Ubuntu shell:
 
   * Make sure your tizen setup supports touch events
 
-        $ sudo cp 99-egalax.rules /usr/lib/udev/rules.d
+	* Check your touchscreen's idVendor and idProduct in :
+
+		$ lsusb -v
+
+	* Check which DISPLAY port you are currently using (the actual physical port in which your monitor is plugged in). This is typically 'VGA', 'HDMI1', 'HDMI2', etc... You can check the different known ports in : /etc/xdg/weston/weston.ini
+
+	* Edit the following .rules file with corresponding info.
+	  Change idVendor, idProduct and <DPY_NAME> with the correct values
+
+		$ vim 99-touchscreen.rules
+
+	* Copy the .rules files in proper location on target device
+
+	        $ sudo cp 99-touchscreen.rules /etc/udev/rules.d
 
   * reboot the device
         $ sudo reboot

@@ -1,0 +1,7 @@
+# NOTE: setting the WL_OUTPUT lets Weston know which display to associate the touch device with
+
+# Prolite iiyama
+ATTRS{idVendor}=="0408", ATTRS{idProduct}=="3001", ENV{WL_OUTPUT}="<DPY_NAME>"
+
+# VTC10101's Egalax capacitive touch screen
+#ATTRS{idVendor}=="0eef", ATTRS{idProduct}=="7200", ENV{WL_OUTPUT}="<DPY_NAME>"
