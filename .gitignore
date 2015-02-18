@@ -45,4 +45,9 @@ FMRadioService/gst-sdr-j-fm/tests/tune
 
 DNA_FMRadio/DNA_FMRADIO.wgt
 DNA_FMRadio/DNA_common/
+DNA_HelloTizen/DNA_HelloTizen.wgt
+DNA_HelloTizen/DNA_common/
+DNA_HomeScreen/DNA_HomeScreen.wgt
+DNA_HomeScreen/DNA_common/
+
 
