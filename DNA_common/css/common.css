@@ -1,3 +1,9 @@
+/* Resets *************************************************/
+
+:focus {
+  outline: none;
+}
+
 /* Fonts **************************************************/
 
 /* Adobe Source Sans */
@@ -60,8 +66,6 @@ html {
   font-size: 10px;
 }
 
-/* Body */
-
 body {
   font-family: SourceSansPro, sans-serif;
   width: 1080px;
@@ -76,16 +80,10 @@ body {
   justify-content:space-between;
 }
 
-*{
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-input, textarea{
+input, textarea {
   user-select: auto;
   -webkit-user-select: auto;
 }
-
 
 /*Typography **********************************************/
 
@@ -222,32 +220,42 @@ section {
   height: 0%;
 }
 
-/*#app .content,
-.modal .content,
-#settings .content {
-  flex: 1;
-  padding: 20px;
-}
+/* Pending styles for integration - do not delete
 
-#app .content,
-#settings .content {
-  margin: 20px;
-}
-.wrapper {
-  overflow: hidden;
-  display: flex;
-  flex-direction : column;
-  flex-grow: 1;
-}
+    #app .content,
+    .modal .content,
+    #settings .content {
+      flex: 1;
+      padding: 20px;
+    }
 
-.modal .content {
-  background-color: #333;
-}
+    #app .content,
+    #settings .content {
+      margin: 20px;
+    }
+    .wrapper {
+      overflow: hidden;
+      display: flex;
+      flex-direction : column;
+      flex-grow: 1;
+    }
 
-#top-bar {
-  height: 114px;
-  background-color: black;
-}*/
+    .modal .content {
+      background-color: #333;
+    }
+
+    #top-bar {
+      height: 114px;
+      background-color: black;
+    }
+
+    #bottom-bar {
+      height: 139px;
+      background-color: black;
+      display: flex;
+    }
+
+End pending */
 
 #app {
   display: flex;
@@ -257,11 +265,6 @@ section {
   position: relative;
 }
 
-/*#bottom-bar {
-  height: 139px;
-  background-color: black;
-  display: flex;
-}*/
 
 #top-bar,
 #bottom-bar {
@@ -445,10 +448,10 @@ input[type='button'] {
 /* Forms **************************************************/ 
 
 /* 
-  for consistent styling, apply .text-input class to elements: 
-  - <input type='text'> 
-  - <input type='password'>
-  - <textarea> 
+for consistent styling, apply .text-input class to elements: 
+- input type='text'
+- input type='password'
+- textarea 
 */ 
 
 .text-input {
@@ -468,6 +471,10 @@ textarea,
   font-family: inherit;
 }
 
+::-webkit-input-placeholder {
+   color: #444;
+}
+
 .input-yellow {
   border-color: rgba(255, 255, 0, 0.5);
 }
@@ -484,9 +491,19 @@ textarea,
   box-shadow: 0 0 20px rgba(178, 240, 255, 0.9);
 }
 
-/* 
-  A wrapper for grouping input fields, labels and other
-  form content. Best used on block elements (eg. div)
+.input-white {
+  border: none;
+  color: rgba(196, 196, 196, 1.0);
+}
+
+.input-white:focus {
+  outline: none;
+  box-shadow: 0 0 15px 5px #b0e0ee;
+}
+
+/* .input-group
+   A wrapper for grouping input fields, labels and other
+   form content. Best used on block elements (eg. div)
 */ 
 
 .input-group {
@@ -497,6 +514,7 @@ textarea,
 .input-group label { 
   flex: 1;
 } 
+
 .input-group .text-input { 
   flex: 2;
 }
@@ -568,6 +586,7 @@ textarea,
 }
 
 /* Close button */
+
 .close-button {
   padding: 10px;
   position: relative;
@@ -575,6 +594,7 @@ textarea,
   top: 0;
   float: right;
 }
+
 .close-button::after {
   content: "\00d7";
   width: 26px;
@@ -584,21 +604,8 @@ textarea,
   cursor: pointer;
 }
 
-/* input field with input glow focus and grey placeholder text */
-.input-white {
-  border: none;
-  color: rgba(196, 196, 196, 1.0);
-}
-::-webkit-input-placeholder {
-   color: #444;
-}
-.input-white:focus {
-  outline: none;
-  box-shadow: 0 0 15px 5px #b0e0ee;
-}
-
 /* Modifiers **********************************************/ 
-/* Modifiers should stay at the bottom of the CSS *********/
+/* Modifiers should stay at the bottom of the CSS document */
 
 .hidden,
 .modal.hidden,
@@ -609,6 +616,7 @@ textarea,
 .right {
   float: right;
 }
+
 .left {
   float: left;
 }
@@ -639,8 +647,20 @@ textarea,
   flex: 1;
 }
 
+.flex-item-2 {
+  flex: 2;
+}
+
+.flex-item-3 {
+  flex: 3;
+}
+
 .flex-column {
   flex-direction: column;
+}
+
+.flex-row {
+  flex-direction: row;
 }
 
 .flex-center {
@@ -718,298 +738,80 @@ ul, ol {
 .scrollable-xy::-webkit-scrollbar {
   display: none;
 }
-
-::-webkit-scrollbar {
-  width: 11px;
-  margin-top: 20px;
-}
-::-webkit-scrollbar-track {
-  background: -webkit-linear-gradient(right, rgba(0,0,0,0.6), rgba(72, 72, 72, .8));
-  background: linear-gradient(to right, rgba(0,0,0,0.6), rgba(72, 72, 72, .8));
-  border-left: 1px solid #202020;
-  border-right: 1px solid #606060;
-  border-top: none;
-  border-bottom: none;
-  margin-bottom: -1px;
-}
-::-webkit-scrollbar-thumb { 
-  background:linear-gradient(to right, rgba(112,112,112, .8), rgba(72,72,72, .8));
-  border-radius:5px;
-  border: 1px solid #202020;
-}  
- ::-webkit-scrollbar-button {
-  height:11px;
-  background: -webkit-linear-gradient(right, rgba(0,0,0,0.6), rgba(72, 72, 72, .8));
-  background: linear-gradient(to right, rgba(0,0,0,0.6), rgba(72, 72, 72, .8));
-  border-left: 1px solid #202020;
-  border-right: 1px solid #606060;
-  border-top: none;
-  border-bottom: none;
+  ::-webkit-scrollbar {
+  width: 11px;  
+  margin-top: 20px; 
 } 
-::-webkit-scrollbar-corner {
-  background: -webkit-linear-gradient(right, rgba(0,0,0,0.6), rgba(72, 72, 72, .8));
-  background: linear-gradient(to right, rgba(0,0,0,0.6), rgba(72, 72, 72, .8));
-  border-left: 1px solid #202020;
-  border-right: 1px solid #606060;
-  border-top: none;
-  border-bottom: none;
-  width: 8px;
-  height: 8px;
-}
+::-webkit-scrollbar-track { 
+  background: -webkit-linear-gradient(right, rgba(0,0,0,0.6), rgba(72, 72, 72, .8));  
+  background: linear-gradient(to right, rgba(0,0,0,0.6), rgba(72, 72, 72, .8)); 
+  border-left: 1px solid #202020; 
+  border-right: 1px solid #606060;  
+  border-top: none; 
+  border-bottom: none;  
+  margin-bottom: -1px;  
+} 
+::-webkit-scrollbar-thumb {   
+  background:linear-gradient(to right, rgba(112,112,112, .8), rgba(72,72,72, .8));  
+  border-radius:5px;  
+  border: 1px solid #202020;  
+}   
+ ::-webkit-scrollbar-button { 
+  height:11px;  
+  background: -webkit-linear-gradient(right, rgba(0,0,0,0.6), rgba(72, 72, 72, .8));  
+  background: linear-gradient(to right, rgba(0,0,0,0.6), rgba(72, 72, 72, .8)); 
+  border-left: 1px solid #202020; 
+  border-right: 1px solid #606060;  
+  border-top: none; 
+  border-bottom: none;  
+}   
+::-webkit-scrollbar-corner {  
+  background: -webkit-linear-gradient(right, rgba(0,0,0,0.6), rgba(72, 72, 72, .8));  
+  background: linear-gradient(to right, rgba(0,0,0,0.6), rgba(72, 72, 72, .8)); 
+  border-left: 1px solid #202020; 
+  border-right: 1px solid #606060;  
+  border-top: none; 
+  border-bottom: none;  
+  width: 8px; 
+  height: 8px;  
+} 
 
-/*orange scrollbar*/
-/*::-webkit-scrollbar-thumb { 
-  background-color:#fe9c00;
-  border-radius:5px;
-} */ 
+/*orange scrollbar*/  
+/*::-webkit-scrollbar-thumb {   
+  background-color:#fe9c00; 
+  border-radius:5px;  
+} */  
 
-
-/**********************************************************/
-
-
-/*the following three styles are to fade the bottom of a scrollable div (see news and weather alerts */
-
-.gradientFade {
-  width: 100%;
-  height: 9%;
-  left: 0;
-  bottom: 0;
-  background: -webkit-linear-gradient(top, rgba(0,0,0,0) 3%,rgba(0,0,0,1) 100%);
-  position: absolute;
-}
-.scrollIndicator {
-  display: block;
-  text-align: center;
-}
-.scrollIndicator::after {
-  content: "\002c7";
-  color: white;
-  font-size: 4em;
-  cursor: pointer;
-  font-weight: lighter;
-}
 
 /**********************************************************/
+/* Text Overflow *****************************************/
+/* Replaces older styles with camelCasing */
 
-:focus {
-  outline: none;
-}
-
-.oneLineEllipsis {
+.ellipsis-one-line,
+.ellipsis-two-line,
+.ellipsis-three-line {
   overflow: hidden;
   text-overflow: ellipsis;
   word-wrap: break-word;
   display: -webkit-box;
   -webkit-box-orient: vertical;
+}
+
+.ellipsis-one-line {
   -webkit-line-clamp: 1;
 }
 
-.twoLinesEllipsis {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  word-wrap: break-word;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
+.ellipsis-two-line {
   -webkit-line-clamp: 2;
 }
 
-.threeLinesEllipsis {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  word-wrap: break-word;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
+.ellipsis-three-line, {
   -webkit-line-clamp: 3;
 }
 
-/* FONT SIZE */
-/* The styles in this section wil be eventually removed */
-/* Refer to the style guide for alternate font styles */
+/* Boxes and Modules ****************************/
 
-.fontSizeXXSmall {
-  font-size: 14px;
-  line-height: 14px;
-}
-
-.fontSizeXSmall {
-  font-size: 18px;
-  line-height: 18px;
-}
-
-.fontSizeSmaller {
-  font-size: 20px;
-  line-height: 20px;
-}
-
-.fontSizeSmall {
-  font-size: 24px;
-  line-height: 24px;
-}
-
-.fontSizeMedium {
-  font-size: 28px;
-  line-height: 28px;
-}
-
-.fontSizeLarge {
-  font-size: 30px;
-  line-height: 30px;
-}
-
-.fontSizeLarger {
-  font-size: 34px;
-  line-height: 34px;
-}
-
-.fontSizeXLarge {
-  font-size: 40px;
-  line-height: 40px;
-}
-
-.fontSizeXXLarge {
-  font-size: 48px;
-  line-height: 48px;
-}
-
-.fontSizeXXXLarge {
-  font-size: 62px;
-  line-height: 62px;
-}
-
-.fontSizeXXXXLarge {
-  font-size: 80px;
-  line-height: 80px;
-}
-
-/* Font Weights */
-
-.fontWeightNormal {
-  font-weight: normal;
-}
-
-.fontWeightBold {
-  font-weight: bold;
-}
-
-.fontWeightBolder {
-  font-weight: bolder;
-}
-
-.fontWeightLighter {
-  font-weight: lighter;
-}
-
-/* FONT COLOR */
-.fontWhite {
-  color: rgb(255, 255, 255);
-  color: rgba(255, 255, 255, 1.0); /*#ffffff*/
-}
-
-.fontLtBlue {
-  color: rgb(178, 240, 255);
-  color: rgba(178, 240, 255, 1.0); /*#b2f0ff*/
-}
-
-.fontVividBlue {
-  color: rgb(83, 181, 206);
-  color: rgba(83, 181, 206, 1.0); /*#53b5ce*/
-}
-
-.fontLtYellow {
-  color: rgb(255, 255, 178);
-  color: rgba(255, 255, 178, 1.0); /*#ffffb2*/
-}
-
-.fontVividYellow {
-  color: rgb(255, 255, 0);
-  color: rgba(255, 255, 0, 1.0); /*#ffff00*/
-}
-
-.fontLtOrange {
-  color: rgb(255, 211, 140);
-  color: rgba(255, 211, 140, 1.0); /*#ffd38c*/
-}
-
-.fontVividOrange {
-  color: rgb(254, 156, 0);
-  color: rgba(254, 156, 0, 1.0); /*#fe9c00*/
-}
-
-.fontLtGreen{
-  color: rgb(205, 255, 178);
-  color: rgba(205, 255, 178, 1.0); /*#cdffb2*/
-}
-
-.fontVividGreen {
-  color: rgb(89, 255, 0);
-  color: rgba(89, 255, 0, 1.0); /*#59ff00*/
-}
-.fontNormal {
-  color: rgb(196, 196, 196);
-  color: rgba(196, 196, 196, 1.0); /*#c4c4c4*/
-}
-
-.fontDark {
-  color: rgb(0, 0, 0); /*#000000*/
-  color: rgba(0, 0, 0, 1.0); /*#000000*/
-}
-.fontColorNormal {
-  color: rgb(196, 196, 196);
-  color: rgba(196, 196, 196, 1.0); /*#c4c4c4*/
-}
-.fontColorTheme {
-  color: rgb(58, 174, 255);
-  color: rgba(58, 174, 255, 1.0);
-}
-
-/* PAGE BACKGROUND COLOR */
-.pageBgColorNormal {
-  background-color: rgb(0, 0, 0);
-  background-color: rgba(0, 0, 0, 1.0);
-}
-
-.pageBgColorNormalTransparent {
-  background-color: rgb(0, 0, 0);
-  background-color: rgba(0, 0, 0, 0.8);
-}
-
-/* BACKGROUND COLOR */
-.bgColorDark {
-  background-color: rgb(0, 0, 0);
-  background-color: rgba(0, 0, 0, 1.0);
-}
-
-.bgColorNormal {
-  background-color: rgb(0, 0, 0);
-  background-color: rgba(0, 0, 0, 0.8);
-}
-
-.bgColorNormalTransparent {
-  background-color: rgb(0, 0, 0);
-  background-color: rgba(0, 0, 0, 0.5);
-}
-/* used in News, by any other app too? */
-.bgColorThemeTransparent {
-  background-color: rgb(58, 174, 255);
-  background-color: rgba(58, 174, 255, 0.5);
-}
-.textBgColorThemeTransparent {
-  background-color: rgb(29, 162, 255);
-  background-color: rgba(29, 162, 255, 0.4);
-}
-
-
-/* BOX SHADOW INSET 
- * 1=Blue
- * 2=Green
- * 3=Orange
- * 4=Yellow
- * 5=White
- * Std=Normal for use in boxes, text fields and block level elements
- * Med=Wider For use with buttons
- * LG= widest, for use in special cases*/
-
- .box-inshadow,
+.box-inshadow,
 .box-outshadow {
   color: white;
   padding: 20px;
@@ -1068,434 +870,257 @@ ul, ol {
   border-color: rgba(178, 240, 255, 0.5);
 }
 
- .boxShadowI1Lt {
+/* Style Rule Graveyard ***********************************/
+
+/* Still in use */
+.oneLineEllipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+/* Still in use */
+.twoLinesEllipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+/* Still in use */
+.threeLinesEllipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+/* Still in use */
+.fontSizeXXSmall {
+  font-size: 14px;
+  line-height: 14px;
+}
+
+/* Still in use */
+.fontSizeXSmall {
+  font-size: 18px;
+  line-height: 18px;
+}
+
+/* Still in use */
+.fontSizeSmaller {
+  font-size: 20px;
+  line-height: 20px;
+}
+
+/* Still in use */
+.fontSizeSmall {
+  font-size: 24px;
+  line-height: 24px;
+}
+
+/* Still in use */
+.fontSizeMedium {
+  font-size: 28px;
+  line-height: 28px;
+}
+
+/* Still in use */
+.fontSizeLarge {
+  font-size: 30px;
+  line-height: 30px;
+}
+
+/* Still in use */
+.fontSizeLarger {
+  font-size: 34px;
+  line-height: 34px;
+}
+
+/* Still in use */
+.fontSizeXLarge {
+  font-size: 40px;
+  line-height: 40px;
+}
+
+/* Still in use */
+.fontSizeXXLarge {
+  font-size: 48px;
+  line-height: 48px;
+}
+
+/* Still in use */
+.fontSizeXXXLarge {
+  font-size: 62px;
+  line-height: 62px;
+}
+
+/* Still in use */
+.fontSizeXXXXLarge {
+  font-size: 80px;
+  line-height: 80px;
+}
+
+/* Font Weights */
+
+/* Still in use */
+.fontWeightNormal {
+  font-weight: normal;
+}
+
+/* Still in use */
+.fontWeightBold {
+  font-weight: bold;
+}
+
+/* Still in use */
+.fontWeightBolder {
+  font-weight: bolder;
+}
+
+/* Still in use */
+.fontWeightLighter {
+  font-weight: lighter;
+}
+
+/* Still in use */
+.fontLtBlue {
+  color: rgb(178, 240, 255);
+  color: rgba(178, 240, 255, 1.0); /*#b2f0ff*/
+}
+
+/* Still in use */
+.fontNormal {
+  color: rgb(196, 196, 196);
+  color: rgba(196, 196, 196, 1.0); /*#c4c4c4*/
+}
+
+/* Still in use */
+.fontColorNormal {
+  color: rgb(196, 196, 196);
+  color: rgba(196, 196, 196, 1.0); /*#c4c4c4*/
+}
+
+/* Still in use */
+.fontColorTheme {
+  color: rgb(58, 174, 255);
+  color: rgba(58, 174, 255, 1.0);
+}
+
+/* Still in use */
+.pageBgColorNormal {
+  background-color: rgb(0, 0, 0);
+  background-color: rgba(0, 0, 0, 1.0);
+}
+
+/* Still in use */
+.pageBgColorNormalTransparent {
+  background-color: rgb(0, 0, 0);
+  background-color: rgba(0, 0, 0, 0.8);
+}
+/* Still in use */
+.bgColorDark {
+  background-color: rgb(0, 0, 0);
+  background-color: rgba(0, 0, 0, 1.0);
+}
+
+/* Still in use */
+.bgColorNormal {
+  background-color: rgb(0, 0, 0);
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* Still in use */
+.bgColorNormalTransparent {
+  background-color: rgb(0, 0, 0);
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Still in use */
+.bgColorThemeTransparent {
+  background-color: rgb(58, 174, 255);
+  background-color: rgba(58, 174, 255, 0.5);
+}
+
+/* Still in use */
+.textBgColorThemeTransparent {
+  background-color: rgb(29, 162, 255);
+  background-color: rgba(29, 162, 255, 0.4);
+}
+
+/* Still in use */
+.boxShadowI1Lt {
   box-shadow: inset 0 0 13px rgba(178, 240, 255, 0.8);
 }
 
-.boxShadowI1LtActive:active,.boxShadowI1LtActive:focus {
-  box-shadow: inset 0 0 20px rgb(83, 181, 206);
-}
-
+/* Still in use */
 .boxShadowI2Lt {
   box-shadow: inset 0 0 13px rgba(205, 255, 178, 0.8);
 }
 
-.boxShadowI2LtActive:active,.boxShadowI2LtActive:focus {
-  box-shadow: inset 0 0 20px rgb(89, 255, 0);
-}
-
-.boxShadowI3Lt {
-  box-shadow: inset 0 0 13px rgba(255, 211, 140, 0.8);
-}
-
-.boxShadowI3LtActive:active,.boxShadowI3LtActive:focus {
-  box-shadow: inset 0 0 20px rgb(254, 156, 0);
-}
-
+/* Still in use */
 .boxShadowI4Lt {
   box-shadow: inset 0 0 13px rgba(255, 255, 178, 0.8);
 }
 
-.boxShadowI4LtActive:active,.boxShadowI4LtActive:focus {
-  box-shadow: inset 0 0 20px rgb(255, 255, 0);
-}
-
-.boxShadowI5Std {
-  box-shadow: inset 0 0 13px rgba(255, 255, 255, 0.8);
-}
-
-.boxShadowI5LtActive:active,.boxShadowI5LtActive:focus {
-  box-shadow: inset 0 0 20px rgb(255, 255, 255,);
-}
-
-.boxShadowI1Std {
-  box-shadow: inset 0 0 30px rgba(178, 240, 255, 0.8);
-}
-
-.boxShadowI1StdActive:active,.boxShadowI1StdActive:focus {
-  box-shadow: inset 0 0 50px rgb(83, 181, 206);
-}
-
-.boxShadowI2Std {
-  box-shadow: inset 0 0 30px rgba(205, 255, 178, 0.8);
-}
-
-.boxShadowI2StdActive:active,.boxShadowI2StdActive:focus {
-  box-shadow: inset 0 0 50px rgb(89, 255, 0);
-}
-
+/* Still in use */
 .boxShadowI3Std {
   box-shadow: inset 0 0 30px rgba(255, 211, 140, 0.8);
 }
 
-.boxShadowI3StdActive:active,.boxShadowI3StdActive:focus {
-  box-shadow: inset 0 0 50px rgb(254, 156, 0);
-}
-
-.boxShadowI4Std {
-  box-shadow: inset 0 0 30px rgba(255, 255, 178, 0.8);
-}
-
-.boxShadowI4StdActive:active,.boxShadowI4StdActive:focus {
-  box-shadow: inset 0 0 50px rgb(255, 255, 0);
-}
-
-.boxShadowI5Std {
-  box-shadow: inset 0 0 30px rgba(255, 255, 255, 0.8);
-}
-
-.boxShadowI5StdActive:active,.boxShadowI5StdActive:focus {
-  box-shadow: inset 0 0 50px rgb(255, 255, 255,);
-}
-
-.boxShadowI1Med {
-  box-shadow: inset 0 0 50px rgba(178, 240, 255, 0.8);
-}
-
-.boxShadowI1MedActive:active,.boxShadowI1MedActive:focus {
-  box-shadow: inset 0 0 70px rgb(83, 181, 206);
-}
-
-.boxShadowI2Med {
-  box-shadow: inset 0 0 50px rgba(205, 255, 178, 0.8);
-}
-
-.boxShadowI2MedActive:active,.boxShadowI2MedActive:focus {
-  box-shadow: inset 0 0 70px rgb(89, 255, 0);
-}
-
-.boxShadowI3Med {
-  box-shadow: inset 0 0 50px rgba(255, 211, 140, 0.8);
-}
-
-.boxShadowI3MedActive:active,.boxShadowI3MedActive:focus {
-  box-shadow: inset 0 0 70px rgb(254, 156, 0);
-}
-
-.boxShadowI4Med {
-  box-shadow: inset 0 0 50px rgba(255, 255, 178, 0.8);
-}
-
-.boxShadowI4MedActive:active,.boxShadowI4MedActive:focus {
-  box-shadow: inset 0 0 70px rgb(255, 255, 0);
-}
-
-.boxShadowI5Med {
-  box-shadow: inset 0 0 50px rgba(255, 255, 255, 0.8);
-}
-
-.boxShadowI5MedActive:active,.boxShadowI5MedActive:focus {
-  box-shadow: inset 0 0 70px rgb(255, 255, 255,);
-}
-
-.boxShadowI1Lg {
-  box-shadow: inset 0 0 70px rgba(178, 240, 255, 0.8);
-}
-
-.boxShadowI1LgActive:active,.boxShadowI1LgActive:focus {
-  box-shadow: inset 0 0 90px rgb(83, 181, 206);
-}
-
-.boxShadowI2Lg {
-  box-shadow: inset 0 0 70px rgba(205, 255, 178, 0.8);
-}
-
-.boxShadowI2LgActive:active,.boxShadowI2LgActive:focus {
-  box-shadow: inset 0 0 90px rgb(89, 255, 0);
-}
-
-.boxShadowI3Lg {
-  box-shadow: inset 0 0 70px rgba(255, 211, 140, 0.8);
-}
-
-.boxShadowI3LgActive:active,.boxShadowI3LgActive:focus {
-  box-shadow: inset 0 0 90px rgb(254, 156, 0);
-}
-
-.boxShadowI4Lg {
-  box-shadow: inset 0 0 70px rgba(255, 255, 178, 0.8);
-}
-
-.boxShadowI4LgActive:active,.boxShadowI4LgActive:focus {
-  box-shadow: inset 0 0 90px rgb(255, 255, 0);
-}
-
-.boxShadowI5Lg {
-  box-shadow: inset 0 0 50px rgba(255, 255, 255, 0.8);
-}
-
-.boxShadowI5LgActive:active,.boxShadowI5LgActive:focus {
-  box-shadow: inset 0 0 70px rgb(255, 255, 255,);
-}
-
-/* BORDER COLOR */
+/* Still in use */
 .borderWhite {
   border-color: rgb(255, 255, 255);
   border-color: rgba(255, 255, 255, 1.0); /*#ffffff*/
 }
 
+/* Still in use */
 .borderLtBlue {
   border-color: rgb(178, 240, 255);
   border-color: rgba(178, 240, 255, 1.0); /*#b2f0ff*/
 }
 
-.borderVividBlue {
-  border-color: rgb(83, 181, 206);
-  border-color: rgba(83, 181, 206, 1.0); /*#53b5ce*/
-}
-
-.borderLtYellow {
-  border-color: rgb(255, 255, 178);
-  border-color: rgba(255, 255, 178, 1.0); /*#ffffb2*/
-}
-
-.borderVividYellow {
-  border-color: rgb(255, 255, 0);
-  border-color: rgba(255, 255, 0, 1.0); /*#ffff00*/
-}
-
-.borderLtOrange {
-  border-color: rgb(255, 211, 140);
-  border-color: rgba(255, 211, 140, 1.0); /*#ffd38c*/
-}
-
-.borderVividOrange {
-  border-color: rgb(254, 156, 0);
-  border-color: rgba(254, 156, 0, 1.0); /*#fe9c00*/
-}
-
-.borderLtGreen{
-  border-color: rgb(205, 255, 178);
-  border-color: rgba(205, 255, 178, 1.0); /*#cdffb2*/
-}
-
-.borderVividGreen {
-  border-color: rgb(89, 255, 0);
-  border-color: rgba(89, 255, 0, 1.0); /*#59ff00*/
-}
+/* Still in use */
 .borderNormal {
   border-color: rgb(196, 196, 196);
   border-color: rgba(196, 196, 196, 1.0); /*#c4c4c4*/
 }
 
-.borderDark {
-  border-color: rgb(0, 0, 0); /*#000000*/
-  border-color: rgba(0, 0, 0, 1.0); /*#000000*/
-}
-
-/* BOX SHADOW 
- * 1=Blue
- * 2=Green
- * 3=Orange
- * 4=Yellow
- * 5=White
- * Std=Normal for use in boxes, text fields and block level elements
- * Med=Wider For use with buttons
- * LG= widest, for use in special cases*/
+/* Still in use */
 .boxShadow1Std {
   box-shadow: 0 0 30px rgba(83, 181, 206, 0.8);
 }
 
-.boxShadow1StdActive:active,.boxShadow1StdActive:focus {
-  box-shadow: 0 0 50px rgb(178, 240, 255);
-}
-
-.boxShadow2Std {
-  box-shadow: 0 0 30px rgba(89, 255, 0, 0.8);
-}
-
-.boxShadow2StdActive:active,.boxShadow2StdActive:focus {
-  box-shadow: 0 0 50px rgb(205, 255, 178);
-}
-
-.boxShadow3Std {
-  box-shadow: 0 0 30px rgba(254, 156, 0, 0.8);
-}
-
-.boxShadow3StdActive:active,.boxShadow3StdActive:focus {
-  box-shadow: 0 0 50px rgb(255, 211, 140);
-}
-
+/* Still in use */
 .boxShadow4Std {
   box-shadow: 0 0 30px rgba(255, 255, 0, 0.8);
 }
 
-.boxShadow4StdActive:active,.boxShadow4StdActive:focus {
-  box-shadow: 0 0 50px rgb(255, 255, 178);
-}
-
-.boxShadow5Std {
-  box-shadow: 0 0 30px rgba(255, 255, 255, 0.8);
-}
-
-.boxShadow5StdActive:active,.boxShadow5StdActive:focus {
-  box-shadow: 0 0 50px rgb(255, 255, 255,);
-}
-
+/* Still in use */
 .boxShadow1Med {
   box-shadow:  0 0 50px rgba(83, 181, 206, 0.8);
 }
 
-.boxShadow1MedActive:active,.boxShadow1MedActive:focus {
-  box-shadow: 0 0 70px rgb(178, 240, 255);
-}
-
-.boxShadow2Med {
-  box-shadow:  0 0 50px rgba(89, 255, 0, 0.8);
-}
-
-.boxShadow2MedActive:active,.boxShadow2MedActive:focus {
-  box-shadow: 0 0 70px rgb(205, 255, 178);
-}
-
-.boxShadow3Med {
-  box-shadow: 0 0 50px rgba(254, 156, 0, 0.8);
-}
-
-.boxShadow3MedActive:active,.boxShadow3MedActive:focus {
-  box-shadow: 0 0 70px rgb(255, 211, 140);
-}
-
-.boxShadow4Med {
-  box-shadow: 0 0 50px rgba(255, 255, 0, 0.8);
-}
-
-.boxShadow4MedActive:active,.boxShadow4MedActive:focus {
-  box-shadow: 0 0 70px rgb(255, 255, 178);
-}
-
-.boxShadow5Med {
-  box-shadow:  0 0 50px rgba(255, 255, 255, 0.8);
-}
-
-.boxShadow5MedActive:active,.boxShadow5MedActive:focus {
-  box-shadow:  0 0 70px rgb(255, 255, 255,);
-}
-
-.boxShadow1Lg {
-  box-shadow:  0 0 70px rgba(83, 181, 206, 0.8);
-}
-
-.boxShadow1LgActive:active,.boxShadow1LgActive:focus {
-  box-shadow:  0 0 90px rgb(178, 240, 255);
-}
-
-.boxShadow2Lg {
-  box-shadow: 0 0 70px rgba(89, 255, 0, 0.8);
-}
-
-.boxShadow2LgActive:active,.boxShadow2LgActive:focus {
-  box-shadow: 0 0 90px rgb(205, 255, 178);
-}
-
-.boxShadow3Lg {
-  box-shadow:  0 0 70px rgba(254, 156, 0, 0.8);
-}
-
-.boxShadow3LgActive:active,.boxShadow3LgActive:focus {
-  box-shadow:  0 0 90px rgb(255, 211, 140);
-}
-
-.boxShadow4Lg {
-  box-shadow:  0 0 70px rgba(255, 255, 0, 0.8);
-}
-
-.boxShadow4LgActive:active,.boxShadow4LgActive:focus {
-  box-shadow:  0 0 90px rgb(255, 255, 178);
-}
-
-.boxShadow5Lg {
-  box-shadow: 0 0 50px rgba(255, 255, 255, 0.8);
-}
-
-.boxShadow5LgActive:active,.boxShadow5LgActive:focus {
-  box-shadow: 0 0 70px rgb(255, 255, 255,);
-}
-
-/* BORDER COLOR */
-.borderWhite {
-  border-color: rgb(255, 255, 255);
-  border-color: rgba(255, 255, 255, 1.0); /*#ffffff*/
-}
-
-.borderLtBlue {
-  border-color: rgb(178, 240, 255);
-  border-color: rgba(178, 240, 255, 1.0); /*#b2f0ff*/
-}
-
-.borderVividBlue {
-  border-color: rgb(83, 181, 206);
-  border-color: rgba(83, 181, 206, 1.0); /*#53b5ce*/
-}
-
-.borderLtYellow {
-  border-color: rgb(255, 255, 178);
-  border-color: rgba(255, 255, 178, 1.0); /*#ffffb2*/
-}
-
-.borderVividYellow {
-  border-color: rgb(255, 255, 0);
-  border-color: rgba(255, 255, 0, 1.0); /*#ffff00*/
-}
-
-.borderLtOrange {
-  border-color: rgb(255, 211, 140);
-  border-color: rgba(255, 211, 140, 1.0); /*#ffd38c*/
-}
-
-.borderVividOrange {
-  border-color: rgb(254, 156, 0);
-  border-color: rgba(254, 156, 0, 1.0); /*#fe9c00*/
-}
-
-.borderLtGreen{
-  border-color: rgb(205, 255, 178);
-  border-color: rgba(205, 255, 178, 1.0); /*#cdffb2*/
-}
-
-.borderVividGreen {
-  border-color: rgb(89, 255, 0);
-  border-color: rgba(89, 255, 0, 1.0); /*#59ff00*/
-}
-.borderNormal {
-  border-color: rgb(196, 196, 196);
-  border-color: rgba(196, 196, 196, 1.0); /*#c4c4c4*/
-}
-
-.borderDark {
-  border-color: rgb(0, 0, 0); /*#000000*/
-  border-color: rgba(0, 0, 0, 1.0); /*#000000*/
-}
-
-/* TEXT BACKGROUND COLOR */
+/* Still in use */
 .textBgColorNormal {
   background-color: rgb(0, 0, 0);
   background-color: rgba(0, 0, 0, 1.0);
 }
 
+/* Still in use */
 .textBgColorNormalTransparent {
   background-color: rgb(0, 0, 0);
   background-color: rgba(0, 0, 0, 0.8);
 }
 
-
-/* OPACITY */
-.opacityFull {
-  opacity: 1.0;
-}
-
-.opacityHeavy {
-  opacity: 0.8;
-}
-
-.opacityMedium {
-  opacity: 0.65;
-}
-
-.opacityLight {
-  opacity: 0.5;
-}
-/* phone button */
+/* Still in use */
 .callButton {
   vertical-align: top;
   display: inline-block;
@@ -1507,6 +1132,8 @@ ul, ol {
   background-position: center center;
   background-repeat: no-repeat;
 }
+
+/* Still in use */
 .callingTrue {
   margin-top: 279px;
   background-color: rgb(255, 3, 3);
@@ -1514,24 +1141,10 @@ ul, ol {
   /*background-image: url("../images/phone/icon_endcall_blue.png");*/
 }
 
+/* Still in use */
 .callingFalse {
   margin-top: 117px;
   background-color: rgb(138, 255, 0);
   background-color: rgba(138, 255, 0, 0.54);
-}
-
-/* Flexbox modal */
-.modalFlexbox {
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 5;
-  display: flex;
-  -webkit-box-align: center;
-  -webkit-align-items: center;
-  align-items: center;
-  justify-content: center;
 }
 

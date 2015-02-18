@@ -175,7 +175,7 @@ CarIndicator.prototype._mappingTable = {
 		getFunction : function() { 
 			"use strict";
 			var zone = new Zone([]);
-			 tizen.vehicle.steeringWheelAngle.get(zone).then(function(steeringWheelAngle) 
+			  vehicle.steeringWheelAngle.get(zone).then(function(steeringWheelAngle) 
 			 {
 				 var value2 = steeringWheelAngle.value;
 				 // TODO: add != 0 conditional, or a try/catch.
@@ -189,9 +189,10 @@ CarIndicator.prototype._mappingTable = {
 		subscribeFunction : function() { 
 			"use strict";
 			console.log("AMB: in steeringWheelAngle steeringWheelAngle subscribeFunc.");
-			tizen.vehicle.steeringWheelAngle.subscribe(function(steeringWheelAngle) {
+			// JE no tizen
+			 vehicle.steeringWheelAngle.subscribe(function(steeringWheelAngle) {
 				console.log("AMB steeringWheelAngle  changed to: " + steeringWheelAngle.value);
-		//		vehicle.steeringWheelAngle.unsubscribe(steeringWheelAngle);
+		//		 vehicle.steeringWheelAngle.unsubscribe(steeringWheelAngle);
 		  
 			});
 		}
@@ -207,7 +208,7 @@ CarIndicator.prototype._mappingTable = {
 		getFunction : function() { 
 			"use strict";
 			var zone = new Zone([]);
-			 tizen.vehicle.yawRate.get(zone).then(function(YawRate) 
+			  tizen.vehicle.yawRate.get(zone).then(function(YawRate) 
 			 {
 				 var value2 = YawRate.value;
 				 // TODO: add != 0 conditional, or a try/catch.
@@ -221,7 +222,7 @@ CarIndicator.prototype._mappingTable = {
 		subscribeFunction : function() { 
 			"use strict";
 			console.log("AMB: in YawRate steeringWheelAngle subscribeFunc.");
-			tizen.vehicle.yawRate.subscribe(function(YawRate) {
+			 tizen.vehicle.yawRate.subscribe(function(YawRate) {
 				console.log("AMB steeringWheelAngle  changed to: " + YawRate.value);
 		//		vehicle.steeringWheelAngle.unsubscribe(steeringWheelAngle);
 		  
@@ -239,7 +240,7 @@ CarIndicator.prototype._mappingTable = {
 			getFunction : function() { 
 				"use strict";
 				var zone = new Zone([]);
-				 tizen.vehicle.wheelBrake.get(zone).then(function(WheelBrake) 
+				  vehicle.wheelBrake.get(zone).then(function(WheelBrake) 
 				 {
 					 var value2 = WheelBrake.value;
 					 // TODO: add != 0 conditional, or a try/catch.
@@ -253,9 +254,9 @@ CarIndicator.prototype._mappingTable = {
 			subscribeFunction : function() { 
 				"use strict";
 				console.log("AMB: in WheelBrake steeringWheelAngle subscribeFunc.");
-				tizen.vehicle.wheelBrake.subscribe(function(WheelBrake) {
+				 vehicle.wheelBrake.subscribe(function(WheelBrake) {
 					console.log("AMB WheelBrake  changed to: " + WheelBrake.value);
-			//		vehicle.steeringWheelAngle.unsubscribe(steeringWheelAngle);
+			//		 vehicle.steeringWheelAngle.unsubscribe(steeringWheelAngle);
 			  
 				});
 			}
@@ -273,7 +274,7 @@ CarIndicator.prototype._mappingTable = {
 		getFunction : function() { 
 			"use strict";
 			var zone = new Zone([]);
-			 tizen.vehicle.tyrePressureFLMS.get(zone).then(function(tirePressure) 
+			  vehicle.tyrePressureFLMS.get(zone).then(function(tirePressure) 
 			 {
 				 // TODO: add != 0 conditional, or a try/catch.
 				 GlobalSelf._mappingTable["TyrePressureFLMS"].curValue = tirePressure.tyrePressureFLMS;
@@ -286,9 +287,9 @@ CarIndicator.prototype._mappingTable = {
 		subscribeFunction : function() { 
 			"use strict";
 			console.log("AMB: in TyrePressureFLMS  subscribeFunc.");
-			tizen.vehicle.tyrePressureFLMS.subscribe(function(tirePressure) {
+			  vehicle.tyrePressureFLMS.subscribe(function(tirePressure) {
 				console.log("AMB TyrePressureFLMS  changed to: " + tirePressure.tyrePressureFLMS);
-		//		vehicle.steeringWheelAngle.unsubscribe(steeringWheelAngle);
+		//		 vehicle.steeringWheelAngle.unsubscribe(steeringWheelAngle);
 		  
 			});
 		}
@@ -303,7 +304,7 @@ CarIndicator.prototype._mappingTable = {
 		getFunction : function() { 
 			"use strict";
 			var zone = new Zone([]);
-			 tizen.vehicle.tyrePressureFRMS.get(zone).then(function(tirePressure) 
+			   vehicle.tyrePressureFRMS.get(zone).then(function(tirePressure) 
 			 {
 				 // TODO: add != 0 conditional, or a try/catch.
 				 GlobalSelf._mappingTable["TyrePressureFRMS"].curValue = tirePressure.tyrePressureFRMS;
@@ -316,9 +317,9 @@ CarIndicator.prototype._mappingTable = {
 		subscribeFunction : function() { 
 			"use strict";
 			console.log("AMB: in TyrePressureFRMS  subscribeFunc.");
-			tizen.vehicle.tyrePressureFRMS.subscribe(function(tirePressure) {
+			  vehicle.tyrePressureFRMS.subscribe(function(tirePressure) {
 				console.log("AMB TyrePressureFRMS  changed to: " + tirePressure.tyrePressureFRMS);
-		//		vehicle.steeringWheelAngle.unsubscribe(steeringWheelAngle);
+
 		  
 			});
 		}
@@ -333,7 +334,7 @@ CarIndicator.prototype._mappingTable = {
 		getFunction : function() { 
 			"use strict";
 			var zone = new Zone([]);
-			 tizen.vehicle.tyrePressureRLMS.get(zone).then(function(tirePressure) 
+			   vehicle.tyrePressureRLMS.get(zone).then(function(tirePressure) 
 			 {
 				 // TODO: add != 0 conditional, or a try/catch.
 				 GlobalSelf._mappingTable["TyrePressureRLMS"].curValue = tirePressure.tyrePressureRLMS;
@@ -346,9 +347,9 @@ CarIndicator.prototype._mappingTable = {
 		subscribeFunction : function() { 
 			"use strict";
 			console.log("AMB: in TyrePressureRLMS  subscribeFunc.");
-			tizen.vehicle.tyrePressureRLMS.subscribe(function(tirePressure) {
+			  vehicle.tyrePressureRLMS.subscribe(function(tirePressure) {
 				console.log("AMB TyrePressureRLMS  changed to: " + tirePressure.tyrePressureRLMS);
-		//		vehicle.steeringWheelAngle.unsubscribe(steeringWheelAngle);
+
 		  
 			});
 		}
@@ -363,7 +364,7 @@ CarIndicator.prototype._mappingTable = {
 		getFunction : function() { 
 			"use strict";
 			var zone = new Zone([]);
-			 tizen.vehicle.tyrePressureRRMS.get(zone).then(function(tirePressure) 
+			   vehicle.tyrePressureRRMS.get(zone).then(function(tirePressure) 
 			 {
 				 // TODO: add != 0 conditional, or a try/catch.
 				 GlobalSelf._mappingTable["TyrePressureRRMS"].curValue = tirePressure.tyrePressureRRMS;
@@ -376,9 +377,9 @@ CarIndicator.prototype._mappingTable = {
 		subscribeFunction : function() { 
 			"use strict";
 			console.log("AMB: in TyrePressureRRMS  subscribeFunc.");
-			tizen.vehicle.tyrePressureRRMS.subscribe(function(tirePressure) {
+			  vehicle.tyrePressureRRMS.subscribe(function(tirePressure) {
 				console.log("AMB TyrePressureRRMS  changed to: " + tirePressure.tyrePressureRRMS);
-		//		vehicle.steeringWheelAngle.unsubscribe(steeringWheelAngle);
+
 		  
 			});
 		}
@@ -392,7 +393,7 @@ CarIndicator.prototype._mappingTable = {
 		getFunction : function() { 
 			"use strict";
 			var zone = new Zone([]);
-			 tizen.vehicle.ChildLockStatus.get(zone).then(function(childLock) 
+			   vehicle.ChildLockStatus.get(zone).then(function(childLock) 
 			 {
 				 var value2 = tirePressure.value;
 				 // TODO: add != 0 conditional, or a try/catch.
@@ -406,9 +407,9 @@ CarIndicator.prototype._mappingTable = {
 		subscribeFunction : function() { 
 			"use strict";
 			console.log("AMB: in childLock  subscribeFunc.");
-			tizen.vehicle.childLockStatus.subscribe(function(childLock) {
+			  vehicle.childLockStatus.subscribe(function(childLock) {
 				console.log("AMB childLock  changed to: " + childLock.value);
-		//		vehicle.steeringWheelAngle.unsubscribe(steeringWheelAngle);
+
 		  
 			});
 		}
@@ -518,7 +519,7 @@ CarIndicator.prototype._mappingTable = {
 		getFunction : function() { 
 			"use strict";
 			var zone = new Zone([]);
-			 tizen.vehicle.ambientTemp.get(zone).then(function(temp) 
+			   vehicle.ambientTemp.get(zone).then(function(temp) 
 			 {
 				 // TODO: add != 0 conditional, or a try/catch.
 				 GlobalSelf._mappingTable["AmbientTemp"].curValue = temp.ambientTemp;
@@ -531,9 +532,9 @@ CarIndicator.prototype._mappingTable = {
 		subscribeFunction : function() { 
 			"use strict";
 			console.log("AMB: in AmbientTemp  subscribeFunc.");
-			tizen.vehicle.ambientTemp.subscribe(function(temp) {
+			  vehicle.ambientTemp.subscribe(function(temp) {
 				console.log("AMB AmbientTemp  changed to: " + temp.ambientTemp);
-		//		vehicle.steeringWheelAngle.unsubscribe(steeringWheelAngle);
+
 		  
 			});
 		}
@@ -549,7 +550,7 @@ CarIndicator.prototype._mappingTable = {
 		getFunction : function() { 
 			"use strict";
 			var zone = new Zone([]);
-			 tizen.vehicle.inCarTemp.get(zone).then(function(temp) 
+			   vehicle.inCarTemp.get(zone).then(function(temp) 
 			 {
 				 // TODO: add != 0 conditional, or a try/catch.
 				 GlobalSelf._mappingTable["InCarTemp"].curValue = temp.inCarTemp;
@@ -562,9 +563,9 @@ CarIndicator.prototype._mappingTable = {
 		subscribeFunction : function() { 
 			"use strict";
 			console.log("AMB: in InCarTemp  subscribeFunc.");
-			tizen.vehicle.inCarTemp.subscribe(function(temp) {
+			  vehicle.inCarTemp.subscribe(function(temp) {
 				console.log("AMB InCarTemp  changed to: " + temp.inCarTemp);
-		//		vehicle.steeringWheelAngle.unsubscribe(steeringWheelAngle);
+
 		  
 			});
 		}
@@ -579,7 +580,7 @@ CarIndicator.prototype._mappingTable = {
 		getFunction : function() { 
 			"use strict";
 			var zone = new Zone([]);
-			 tizen.vehicle.fuelLevelIndicatedMS.get(zone).then(function(level) 
+			   vehicle.fuelLevelIndicatedMS.get(zone).then(function(level) 
 			 {
 				 // TODO: add != 0 conditional, or a try/catch.
 				 GlobalSelf._mappingTable["FuelLevelIndicatedMS"].curValue = level.fuelLevelIndicatedMS;
@@ -592,9 +593,9 @@ CarIndicator.prototype._mappingTable = {
 		subscribeFunction : function() { 
 			"use strict";
 			console.log("AMB: in FuelLevelIndicatedMS  subscribeFunc.");
-			tizen.vehicle.fuelLevelIndicatedMS.subscribe(function(level) {
+			  vehicle.fuelLevelIndicatedMS.subscribe(function(level) {
 				console.log("AMB FuelLevelIndicatedMS  changed to: " + level.fuelLevelIndicatedMS);
-		//		vehicle.steeringWheelAngle.unsubscribe(steeringWheelAngle);
+
 		  
 			});
 		}
@@ -609,7 +610,7 @@ CarIndicator.prototype._mappingTable = {
 		getFunction : function() { 
 			"use strict";
 			var zone = new Zone([]);
-			 tizen.vehicle.distanceToEmpty.get(zone).then(function(dist) 
+			   vehicle.distanceToEmpty.get(zone).then(function(dist) 
 			 {
 				 // TODO: add != 0 conditional, or a try/catch.
 				 GlobalSelf._mappingTable["DistanceToEmpty"].curValue = dist.distanceToEmpty;
@@ -623,9 +624,9 @@ CarIndicator.prototype._mappingTable = {
 		subscribeFunction : function() { 
 			"use strict";
 			console.log("AMB: in DistanceToEmpty  subscribeFunc.");
-			tizen.vehicle.distanceToEmpty.subscribe(function(dist) {
+			  vehicle.distanceToEmpty.subscribe(function(dist) {
 				console.log("AMB DistanceToEmpty  changed to: " + dist.distanceToEmpty);
-		//		vehicle.steeringWheelAngle.unsubscribe(steeringWheelAngle);
+
 		  
 			});
 		}
@@ -640,7 +641,7 @@ CarIndicator.prototype._mappingTable = {
 		getFunction : function() { 
 			"use strict";
 			var zone = new Zone([]);
-			 tizen.vehicle.oDORollingCount2101.get(zone).then(function(dist) 
+			   vehicle.oDORollingCount2101.get(zone).then(function(dist) 
 			 {
 				 // TODO: add != 0 conditional, or a try/catch.
 				 GlobalSelf._mappingTable["ODORollingCount2101"].curValue = dist.oDORollingCount2101;
@@ -653,9 +654,9 @@ CarIndicator.prototype._mappingTable = {
 		subscribeFunction : function() { 
 			"use strict";
 			console.log("AMB: in ODORollingCount2101  subscribeFunc.");
-			tizen.vehicle.oDORollingCount2101.subscribe(function(dist) {
+			  vehicle.oDORollingCount2101.subscribe(function(dist) {
 				console.log("AMB ODORollingCount2101  changed to: " + dist.oDORollingCount2101);
-		//		vehicle.steeringWheelAngle.unsubscribe(steeringWheelAngle);
+
 		  
 			});
 		}
@@ -692,7 +693,7 @@ CarIndicator.prototype._mappingTable = {
 		getFunction : function() { 
 			"use strict";
 			var zone = new Zone([]);
-			 tizen.vehicle.vehicleSpeed.get(zone).then(function(vehicleSpeed) 
+			   vehicle.vehicleSpeed.get(zone).then(function(vehicleSpeed) 
 			 {
 				 var value2 = vehicleSpeed.speed;
 				 // TODO: add != 0 conditional, or a try/catch.
@@ -707,7 +708,7 @@ CarIndicator.prototype._mappingTable = {
 		subscribeFunction : function() { 
 			"use strict";
 			console.log("AMB: in vehicleSpeed subscribeFunc.");
-			tizen.vehicle.vehicleSpeed.subscribe(function(vehicleSpeed) {
+			  vehicle.vehicleSpeed.subscribe(function(vehicleSpeed) {
 				console.log("AMB vehicle speed changed to: " + vehicleSpeed.speed);
 	//			vehicle.vehicleSpeed.unsubscribe(vehicleSpeedSub);
 		  
@@ -870,6 +871,7 @@ CarIndicator.prototype.addListener = function(aCallbackObject) {
 		self.onDataUpdate(data, self);
 	};
 
+
 	/* Example entry in _mappingTable:
 	 * 	"VehicleSpeed" : {
 		propertyName : "VehicleSpeed",
@@ -896,7 +898,7 @@ CarIndicator.prototype.addListener = function(aCallbackObject) {
 					}
 					if (mapping.callBackPropertyName.toLowerCase() === prop.toLowerCase() && !mapping.subscribeCount) {
 						mapping.subscribeCount = typeof (mapping.subscribeCount) === 'undefined' ? 0 : mapping.subscribeCount++;
-						if (typeof (tizen) !== 'undefined') {
+				//		if (typeof (tizen) !== 'undefined') {
 							console.log(tizen);
 
 							if (!(subscribeName.toString().trim().toLowerCase() === "nightmode" && id === this._listenerIDs[0])) {
@@ -917,13 +919,14 @@ CarIndicator.prototype.addListener = function(aCallbackObject) {
 							}
 							else
 								{
-								console.log("AMB subscribeFunc undef for "+signal.toString());
+								console.log("AMB: subscribeFunc undef for "+signal.toString());
 								}
 
 							//TODO: tizen.vehicle.subscribe(subscribeName, subscribeCallback, zone);
-						} else {
-							console.warn("Tizen API is not available, cannot subscribe to signal", signal);
-						}
+			//			} else {
+			//				console.warn("AMB: Tizen API is not available, cannot subscribe to signal", signal);
+			//			}
+						
 					}
 				}
 			}
@@ -1182,8 +1185,8 @@ uiUpdateFunc = function() {
 	
 	var o;
 	
-	console.info("AMB: uiUpdateFunc called.");
-	
+//	console.info("AMB: uiUpdateFunc called.");
+
 	GlobalSelf._mappingTable["VehicleSpeed"].getFunction();
 	if(logit) { console.log("AMB: testFunc VehicleSpeed, get rets: " + GlobalSelf._mappingTable["VehicleSpeed"].curValue); }
 	o = {zone: '000000', signalAndValue: { signalName: "VehicleSpeed", signalVal: GlobalSelf._mappingTable["VehicleSpeed"].curValue }  };
@@ -1236,7 +1239,7 @@ uiUpdateFunc = function() {
 
 //	GlobalSelf._mappingTable["VehicleSpeed"].getFunction();
 //	console.log("AMB: testFunc VehicleSpeed, get2 rets: " + GlobalSelf._mappingTable["VehicleSpeed"].curValue);
-	GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);	
+//	GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);	
 /*	
 	o = {zone: '000000', TyrePressureRRMS: GlobalSelf._mappingTable["TyrePressureRRMS"].curValue};
 	GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);	

@@ -11,7 +11,12 @@ function depenancyMet(name) {
 			Dependancies[index].met = true;
 			while (Dependancies[index].callbacks.length >0) {
 				var item = Dependancies[index].callbacks.pop();
-				item.callback();
+				try {
+					item.callback();
+				} catch(error)
+				{
+					console.error("depenancy callback failed source=",item,"error=",error);
+				}
 			}
 		}
 	}

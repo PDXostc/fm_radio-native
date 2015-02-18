@@ -21,7 +21,7 @@ overflow: hidden;
 	/*z-index:20;*/
 }
 .topTask{
-	height:114px;
+	height:112px;
 	width:114px;
 }
 .topTask img{
@@ -76,9 +76,8 @@ overflow: hidden;
 #hexGridView{
 	display:none;
 	position:absolute;
-	top:115px;
+	top:114px;
 	bottom:130px;
-	left:-1px;
 	padding:32px;
 	width:100%;
 	z-index:5;

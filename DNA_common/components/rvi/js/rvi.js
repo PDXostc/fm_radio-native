@@ -77,8 +77,8 @@ rviSettingsPage.includeHTMLSucess = function(linkobj) {
    rviSettingsPage.rviDeviceHTML = rviSettingsPage.import.getElementById('rviDeviceTemplate');
    //$("#settingsPage").append(rviSettingsPage.import.getElementById('rviPage'));
    //$("body").append(rviSettingsPage.import.getElementById('rviPage'));
-   
-   rviSettingsPage.pageUpdate();
+   onDepenancy("Settings.settingsPage",rviSettingsPage.pageUpdate,"Rvi");
+   //rviSettingsPage.pageUpdate();
 };
 
 rviSettingsPage.includeHTMLFailed = function(linkobj) {

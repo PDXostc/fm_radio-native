@@ -132,7 +132,7 @@ BluetoothSettingsPage.listBluetoothDevice = function(template,device){
 //Bluetooth settings interacts with the rest of the page. 
 function BluetoothSettings(){
 	var self = this;
-
+	console.log("Initializing Bluetooth; If your device hangs here, update your bluetooth RPM stack!");
 	this.adapter = tizen.bluetooth.getDefaultAdapter();
 	this.devices = []; //object to hold discovered devices.
 	this.known = [];
