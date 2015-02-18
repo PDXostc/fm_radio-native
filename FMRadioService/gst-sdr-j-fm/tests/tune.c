@@ -25,6 +25,13 @@ typedef enum
   RDS_SECOND
 } RDSState;
 
+typedef enum
+{
+  STARTSTOP_BEGIN = 1,
+  STARTSTOP_STOP,
+  STARTSTOP_SECOND_START
+} StartStopState;
+
 typedef struct _TestData TestData;
 struct _TestData
 {
@@ -36,6 +43,7 @@ struct _TestData
   void (*rds_label_clear_cb) (TestData*);
   void (*rds_label_change_cb) (TestData*, const gchar *);
   void (*rds_label_complete_cb) (TestData*, const gchar *);
+  void (*state_changed_cb) (TestData*, GstState);
   gint timeout;
   GMainLoop *loop;
   gint freqs[10];
@@ -44,6 +52,7 @@ struct _TestData
   guint timeout_id;
   SeekState seek_state;
   RDSState rds_state;
+  StartStopState startstop_state;
 };
 
 static gboolean
@@ -59,6 +68,8 @@ bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
         gst_message_parse_state_changed (message, NULL, &state, NULL);
         if (state == GST_STATE_PLAYING && data->playing_cb)
           data->playing_cb (data);
+	if (data->state_changed_cb)
+	  data->state_changed_cb(data, state);
       }
       break;
 
@@ -99,6 +110,7 @@ bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
 	    else if (gst_structure_has_name (s, "sdrjfmsrc-rds-station-label-complete"))
 	      {
 		if (data->rds_label_complete_cb)
+
 		  data->rds_label_complete_cb (data, label);
 	      }
 	  }
@@ -128,7 +140,8 @@ tearup (gint freq, void (*playing_cb) (TestData*),
 	void (*station_found_cb) (TestData*, gint),
 	void (*rds_label_clear_cb) (TestData*),
 	void (*rds_label_change_cb) (TestData*, const gchar *),
-	void (*rds_label_complete_cb) (TestData*, const gchar *))
+	void (*rds_label_complete_cb) (TestData*, const gchar *),
+	void (*state_changed_cb) (TestData*, GstState))
 {
   GError *error = NULL;
   TestData *data = g_slice_new0 (TestData);
@@ -150,12 +163,14 @@ tearup (gint freq, void (*playing_cb) (TestData*),
   data->timeout = 60;
   data->seek_state = SEEK_START;
   data->rds_state = RDS_FIRST;
+  data->startstop_state = STARTSTOP_BEGIN;
   data->playing_cb = playing_cb;
   data->frequency_changed_cb = frequency_changed_cb;
   data->station_found_cb = station_found_cb;
   data->rds_label_clear_cb = rds_label_clear_cb;
   data->rds_label_change_cb = rds_label_change_cb;
   data->rds_label_complete_cb = rds_label_complete_cb;
+  data->state_changed_cb = state_changed_cb;
 
   bus = gst_pipeline_get_bus (GST_PIPELINE (data->pipeline));
   gst_bus_add_watch (bus, bus_cb, data);
@@ -245,7 +260,7 @@ test_tune ()
   TestData *data = tearup (96700000,
 			   test_tune_playing_cb,
 			   test_tune_freq_changed_cb,
-			   NULL, NULL, NULL, NULL);
+			   NULL, NULL, NULL, NULL, NULL);
   test_run (data);
 }
 
@@ -325,7 +340,7 @@ test_seek ()
 			   test_seek_up,
 			   NULL,
 			   test_seek_station_found_cb,
-                           NULL, NULL, NULL);
+                           NULL, NULL, NULL, NULL);
   test_run (data);
 }
 
@@ -353,6 +368,7 @@ static void
 test_rds_label_change (TestData *data, const gchar *label)
 {
   GST_DEBUG_OBJECT (data->fmsrc, "RDS station label changed to: `%s'", label);
+
 }
 
 static void
@@ -388,7 +404,78 @@ test_rds ()
 			   NULL,
 			   test_rds_label_clear,
 			   test_rds_label_change,
-			   test_rds_label_complete);
+			   test_rds_label_complete,
+			   NULL);
+  data->timeout = 300;
+
+  test_run (data);
+}
+
+
+static gboolean
+test_startstop_begin_cb (void *userdata)
+{
+  TestData *data = userdata;
+  GST_DEBUG_OBJECT (data->fmsrc, "Beginning wait elapsed, stopping element");
+  data->startstop_state = STARTSTOP_STOP;
+  GstStateChangeReturn ret = gst_element_set_state (data->pipeline, GST_STATE_PAUSED);
+  if (ret != GST_STATE_CHANGE_SUCCESS)
+    GST_ERROR_OBJECT (data->fmsrc, "Setting pipeline state was not successful, return value: %i",
+		      (int)ret);
+  return FALSE;
+}
+
+static gboolean
+test_startstop_stop_cb (void *userdata)
+{
+  TestData *data = userdata;
+  GST_DEBUG_OBJECT (data->fmsrc, "Stopping wait elapsed, starting element again");
+  data->startstop_state = STARTSTOP_SECOND_START;
+  gst_element_set_state (data->pipeline, GST_STATE_PLAYING);
+  return FALSE;
+}
+
+static gboolean
+test_startstop_second_start_cb (void *userdata)
+{
+  TestData *data = userdata;
+  GST_DEBUG_OBJECT (data->fmsrc, "Second start wait elapsed, test complete");
+  test_done (data);
+  return FALSE;
+}
+
+static void
+test_startstop_state_changed (TestData *data, GstState state)
+{
+  GST_DEBUG_OBJECT (data->fmsrc, "Pipeline state is %i with startstop state %i",
+		    (int)state, (int)data->startstop_state);
+
+  switch (data->startstop_state)
+    {
+    case STARTSTOP_BEGIN:
+      if (state == GST_STATE_PLAYING)
+	g_timeout_add_seconds (2, test_startstop_begin_cb, data);
+      break;
+    case STARTSTOP_STOP:
+      if (state == GST_STATE_PAUSED)
+	g_timeout_add_seconds (2, test_startstop_stop_cb, data);
+      break;
+    case STARTSTOP_SECOND_START:
+      if (state == GST_STATE_PLAYING)
+	g_timeout_add_seconds (2, test_startstop_second_start_cb, data);
+      break;
+    };
+}
+
+
+static void
+test_startstop ()
+{
+  GST_DEBUG ("Starting Start/Stop test");
+  TestData *data = tearup (RDS_CAPABLE_STATION,
+			   NULL, NULL, NULL, NULL, NULL, NULL,
+			   &test_startstop_state_changed);
+
   data->timeout = 300;
 
   test_run (data);
@@ -406,6 +493,7 @@ main (gint argc, gchar **argv)
   g_test_add_func ("/tune/live", test_tune);
   g_test_add_func ("/tune/seek", test_seek);
   g_test_add_func ("/tune/rds", test_rds);
+  g_test_add_func ("/tune/startstop", test_startstop);
   g_test_run ();
   return 0;
 }

@@ -57,9 +57,14 @@ public:
 	 * 
 	 * Request up to \a length samples and store them in the array pointed to by \a data.
 	 * This function will block until there are samples available.
-	 * \returns the actual number of samples written to \a data.
+	 * \returns the actual number of samples written to \a data, or -1 is the get
+	 * was cancelled by cancelGet
 	 */
-	uint32_t	getSamples		(DSPFLOAT *data, uint32_t length);
+	int32_t		getSamples		(DSPFLOAT *data, uint32_t length);
+
+	/** \brief Cancel any wait in getSamples */
+	void		cancelGet		(void);
+
 	/** \brief Set the tuner to receive \a frequency Hz */
 	void		setTuner		(int32_t frequency);
 
@@ -92,6 +97,9 @@ public:
 	 * frequency it was on before the seek was started.
 	 */
 	void		cancelSeek		();
+
+	void		start			(void);
+	void		stop			(void);
 
 private:
 	bool		doInit;
@@ -154,8 +162,6 @@ private:
  *	to the GUI code
  */
 private:
-	void	setStart		(void);
-	void	clickPause		(void);
 	void	setGainSelector		(int);
 
 	void	setAttenuation		(int);

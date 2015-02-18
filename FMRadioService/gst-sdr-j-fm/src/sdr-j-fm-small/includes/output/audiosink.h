@@ -40,17 +40,19 @@ public:
 			~audioSink		(void);
 	int32_t		putSample		(DSPCOMPLEX);
 	int32_t		putSamples		(DSPCOMPLEX *, int32_t);
-	uint32_t        getSamples              (DSPFLOAT *, uint32_t);
+	int32_t	        getSamples              (DSPFLOAT *, uint32_t);
 	int32_t		capacity		(void);
+	void		cancelGet		(void);
 private:
-	bool		wait			(int32_t = 30);
-	void		signal			(void);    
+	int		wait			(int32_t = 30);
+	void		signal			(bool cancel = false);
 	int32_t		size;
 	uint8_t		Latency;
 	int16_t		bufSize;
 	RingBuffer<float>	*_O_Buffer;
 	pthread_mutex_t	lock;
 	pthread_cond_t	sig;
+	bool		cancelled;
 };
 
 #endif

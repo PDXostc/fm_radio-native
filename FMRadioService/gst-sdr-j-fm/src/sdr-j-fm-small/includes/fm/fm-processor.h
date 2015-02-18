@@ -72,6 +72,7 @@ public:
 				     LabelCallback = 0,	// rds station label complete callback
 				     void * = 0);	// rds callbacks userdata
 	        	~fmProcessor (void);
+        void		start		(void);
 	void		stop		(void);		// stop the processor
 	void		setfmMode	(uint8_t);
 	void		setFMdecoder	(int8_t);
@@ -111,6 +112,7 @@ public:
 	};
 
 	void		set_squelchValue	(int16_t);
+
 private:
 	/** This holds data on a station found while scanning */
 	struct StationData {
@@ -121,7 +123,6 @@ private:
 	typedef std::vector<StationData> StationDataList;
 
         static void *   c_run (void * userdata);
-        void		start		(void);
 	void		run		(void);
         pthread_t       threadId;
 	virtualInput	*myRig;

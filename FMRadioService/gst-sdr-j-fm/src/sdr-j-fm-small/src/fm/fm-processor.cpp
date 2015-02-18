@@ -180,12 +180,11 @@ GST_DEBUG_CATEGORY_EXTERN (sdrjfm_debug);
 	myCount			= 0;
 
 	setDeemphasis(50);
-
-	start ();
 }
 
 	fmProcessor::~fmProcessor (void) {
-	stop	();
+	if (running)
+		stop	();
 
 	delete	TheDemodulator;
 	delete	rds_plldecoder;

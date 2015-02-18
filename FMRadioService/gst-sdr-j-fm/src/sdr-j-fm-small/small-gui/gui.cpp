@@ -119,7 +119,6 @@ bool	success;
 					    changeCallback,
 					    completeCallback,
 					    callbackUserData);
-	setStart();
 }
 
 	RadioInterface::~RadioInterface () {
@@ -130,12 +129,28 @@ bool	success;
 	delete myRig;
 }
 
-/*
-void	RadioInterface::newFrequency (int f) {
-	stopIncrementing	();
-	setTuner (f);
+void	RadioInterface::start	(void) {
+	if (runMode == RUNNING)
+		return;
+
+	myRig		-> restartReader ();
+	myFMprocessor   -> start ();
+
+	runMode = RUNNING;
 }
-*/
+
+void	RadioInterface::stop	(void) {
+	if (runMode != RUNNING)
+		return;
+
+	myRig		-> stopReader ();
+	myFMprocessor	-> stop ();
+
+	runMode = PAUSED;
+}
+
+
+/*
 //
 //	On start, we ensure that the streams are stopped so
 //	that they can be restarted again.
@@ -151,16 +166,15 @@ bool	r = 0;
 	r = myRig		-> restartReader ();
 	if (!r) {
 	  // FIXME: Different notification method
-	  /*
-	   QMessageBox::warning (this, tr ("sdr"),
-	                               tr ("Opening  input stream failed\n"));
-	  */
+	  //QMessageBox::warning (this, tr ("sdr"),
+	  //tr ("Opening  input stream failed\n"));
 	   return;
 	}
 
 //	and finally: recall that starting overrules pausing
 	runMode	= RUNNING;
 }
+*/
 
 void	RadioInterface::TerminateProcess (void) {
 	runMode		= STOPPING;
@@ -429,6 +443,12 @@ void	RadioInterface::set_squelchValue (int n) {
 	   myFMprocessor -> set_squelchValue (n);
 }
 
-uint32_t RadioInterface::getSamples(DSPFLOAT *data, uint32_t length) {
+int32_t RadioInterface::getSamples(DSPFLOAT *data, uint32_t length) {
 	return our_audioSink -> getSamples(data, length);
+}
+
+void	RadioInterface::cancelGet (void) {
+	GST_DEBUG("Cancelling get in audio sink");
+	our_audioSink -> cancelGet ();
+	GST_DEBUG("Audio sink get cancelled");
 }

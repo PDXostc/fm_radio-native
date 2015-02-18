@@ -41,6 +41,7 @@ GST_DEBUG_CATEGORY_EXTERN (sdrjfm_debug);
 
 	pthread_mutex_init (&lock, NULL);
 	pthread_cond_init (&sig, NULL);
+	cancelled		= false;
 }
 
 	audioSink::~audioSink	(void) {
@@ -61,7 +62,6 @@ int32_t	audioSink::capacity	(void) {
 }
 //
 //	putSample output comes from the FM receiver
-
 int32_t	audioSink::putSample	(DSPCOMPLEX v) {
 	return putSamples (&v, 1);
 }
@@ -90,7 +90,7 @@ int32_t	available = _O_Buffer -> GetRingBufferWriteAvailable ();
 	return n;
 }
 
-uint32_t audioSink::getSamples (DSPFLOAT *data, uint32_t count) {
+int32_t audioSink::getSamples (DSPFLOAT *data, uint32_t count) {
 int32_t available = _O_Buffer -> GetRingBufferReadAvailable ();
 
 
@@ -99,15 +99,27 @@ int32_t available = _O_Buffer -> GetRingBufferReadAvailable ();
 
 	if (available < 1) {
 		GST_TRACE("No samples in SDR-J RingBuffer, waiting");
-		wait ();
-		GST_TRACE("Finished waiting for samples, %d now available",
-			  _O_Buffer -> GetRingBufferReadAvailable ()); 
+		int err = wait ();
+
+		if (err == -1) {
+			GST_TRACE("Wait for SDR-J RungBuffer samples was cancelled");
+			return -1;
+		} else {
+			GST_TRACE("Finished waiting for samples, %d now available",
+				  _O_Buffer -> GetRingBufferReadAvailable ()); 
+		}
 	}
 
 	return _O_Buffer -> getDataFromBuffer (data, count);
 }
 
-bool	audioSink::wait (int32_t secs) {
+void	audioSink::cancelGet (void) {
+	GST_DEBUG("Cancelling get");
+	signal (true);
+	GST_DEBUG("Get cancelled");
+}
+
+int	audioSink::wait (int32_t secs) {
 	struct timeval now;
 	int err = gettimeofday (&now, NULL);
 	if (err != 0) {
@@ -120,23 +132,38 @@ bool	audioSink::wait (int32_t secs) {
 	timeout.tv_sec = now.tv_sec + secs;
 	timeout.tv_nsec = now.tv_usec * 1000;
 
-	bool timedout = false;
+	int ret = 0;
+
 
 	pthread_mutex_lock (&lock);
-	while (_O_Buffer -> GetRingBufferReadAvailable () < 1) {
+
+	cancelled = false;
+	while (!cancelled && _O_Buffer -> GetRingBufferReadAvailable () < 1) {
 	        err = pthread_cond_timedwait (&sig, &lock, &timeout);
 		if (err == ETIMEDOUT) { 
-			timedout = true;
+			ret = -2;
 			break;
 		}
 	}
+
+	if (cancelled) { 
+		GST_DEBUG("Wait cancelled");
+		ret = -1;
+	}
+
 	pthread_mutex_unlock (&lock);
 
-	return timedout;
+
+	return ret;
 }
 
-void	audioSink::signal (void) {
+void	audioSink::signal (bool cancel) {
 	pthread_mutex_lock (&lock);
+
+	if (cancel)
+		cancelled = true;
+
 	pthread_cond_signal (&sig);
+
 	pthread_mutex_unlock (&lock);
 }
