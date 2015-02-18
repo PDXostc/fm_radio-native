@@ -2,6 +2,15 @@
 var IconFolder = "DNA_common/images/", IconLinks = [], IconType = ".png", IconCount=0;
 var Debug = false;
 
+var registeredApps;
+var jReq = new XMLHttpRequest();
+	jReq.onload = reqListener;
+	jReq.open("get", "/DNA_common/json/apps.json", true);
+	jReq.send();
+function reqListener(e){
+	registeredApps = JSON.parse(this.responseText)[0];
+}
+
 //Definitions
 var ScreenScale=1.5;
 	ScreenWidth = 720*ScreenScale,
@@ -691,43 +700,6 @@ function initListeners(){
 
 //App Icon functions
 function onAppRecallSuccess(list) {
-	var registeredApps = {"Home Screen":"./DNA_common/images/return_arrow_inactive.png",
-						   "DNA":"./DNA_common/images/return_arrow_inactive.png",
-						   "AMB Simulator":"./DNA_common/images/amb_simulator_inactive.png",
-						   "Hello Tizen":"./DNA_common/images/tizen_inactive.png",
-						   "Audio Settings":"./DNA_common/images/audio_settings_inactive.png",
-						   "MOST AUDIO":"./DNA_common/images/audio_settings_inactive.png",
-						   "Fingerprint":"./DNA_common/images/fingerprint_inactive.png",
-						   "Multimedia Player":"./DNA_common/images/mediaplayer_inactive.png",
-						   "SmartDeviceLink":"./DNA_common/images/sdl_inactive.png",
-						   "pkgmgr-install":"./DNA_common/images/pkgmgr-install_inactive.png",
-						   "syspopup-app":"./DNA_common/images/syspopup-app_inactive.png",
-						   ApplicationVisibility:"./DNA_common/images/app_visibility_inactive.png",
-						   Boilerplate:"./DNA_common/images/grid_inactive.png",
-						   Browser:"./DNA_common/images/browser_inactive.png", 
-						   "DNA Browser":"./DNA_common/images/browser_inactive.png", 
-						   Dashboard:"./DNA_common/images/dashboard_inactive.png",
-						   Dialer:"./DNA_common/images/dialer_inactive.png",
-						   Email:"./DNA_common/images/email_inactive.png",
-						   HVAC:"./DNA_common/images/hvac_inactive.png",
-						   Handwriting:"./DNA_common/images/handwriting_inactive.png",
-						   Keyboard:"./DNA_common/images/keyboard_inactive.png",
-						   MiniBrowser:"./DNA_common/images/mini_browser_inactive.png", 
-						   NFC:"./DNA_common/images/nfc_inactive.png",
-						   Navigation:"./DNA_common/images/navigation_inactive.png",
-						   News:"./DNA_common/images/news_inactive.png",
-						   Phone:"./DNA_common/images/phone_inactive.png",
-						   Settings:"./DNA_common/images/settings_inactive.png",
-						   Terminal:"./DNA_common/images/terminal_inactive.png",
-						   Tizen:"./DNA_common/images/tizen_inactive.png",
-						   Voiceprint:"./DNA_common/images/voiceprint_inactive.png",
-						   Weather:"./DNA_common/images/weather_inactive.png",
-						   gestureGame:"./DNA_common/images/gesture_game_inactive.png",
-						   GestureGame:"./DNA_common/images/gesture_game_inactive.png",
-						   saythis:"./DNA_common/images/say_this_inactive.png",
-						   FMRADIO:"./DNA_common/images/fmradio.png",
-						   Cameras:"./DNA_common/images/camera_icon.png"
-						 };
 	var i = 0;
 	var path="";
 	try {
@@ -741,8 +713,8 @@ function onAppRecallSuccess(list) {
 		for (i = 0; i < list.length; i++) {
 			var app = list[i];
 			if(app.name != "Home Screen"){
-				if (registeredApps[app.name]) {
-					addIcon(app.name, null, registeredApps[app.name], app.id);
+				if (registeredApps[app.id]) {
+					addIcon(app.name, null, registeredApps[app.id], app.id);
 				}else{
 					if(app.iconPath.substr(app.iconPath.length - 4) != ".png"){
 						var path="./DNA_common/images/tizen_inactive.png";
