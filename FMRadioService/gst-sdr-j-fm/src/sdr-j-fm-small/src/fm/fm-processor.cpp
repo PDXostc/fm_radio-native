@@ -474,7 +474,7 @@ int16_t		audioIndex	= 0;
 	      v = v * DSPFLOAT (Gain);
 //	second step: if we are scanning, do the scan
 	      if (checkStation (v))
-	         continue;	// no signal processing!!!!
+		 v = 0;
 
 //	Now we have the signal ready for decoding
 //	keep track of the peaklevel, we take segments

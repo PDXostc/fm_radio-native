@@ -7,10 +7,6 @@
 GST_DEBUG_CATEGORY (sdrjfm_seek_debug);
 #define GST_CAT_DEFAULT sdrjfm_seek_debug
 
-#define KNOWN_GOOD_STATION_FREQUENCY 105900000
-#define START_OFFSET (-1000000)
-#define MAX_GAP_WITHOUT_STATION 500000
-#define CONFIRMATIONS 9
 #define SEEK_DELAY 333
 
 typedef struct _TestData TestData;
@@ -39,6 +35,12 @@ seek (TestData *data)
   do_seek(data);
 
   //g_timeout_add (SEEK_DELAY, do_seek, data);
+}
+
+static void
+frequency_changed (TestData *data, gint frequency)
+{
+  GST_DEBUG_OBJECT (data->fmsrc, "Radio frequency changed to %i", frequency);
 }
 
 static void
@@ -76,7 +78,9 @@ bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
 	gint freq;
 	gst_structure_get_int (s, "frequency", &freq);
 
-	if (gst_structure_has_name (s, "sdrjfmsrc-station-found")) {
+	if (gst_structure_has_name (s, "sdrjfmsrc-frequency-changed")) {
+	  frequency_changed (data, freq);
+	} else if (gst_structure_has_name (s, "sdrjfmsrc-station-found")) {
           station_found (data, freq);
 	}
       }
@@ -151,6 +155,9 @@ signal_handler(int signum)
 {
   GST_DEBUG_OBJECT (evil_data->fmsrc, "Signal received, cancelling seek");
   g_signal_emit_by_name (evil_data->fmsrc, "cancel-seek");
+
+  //GST_DEBUG_OBJECT (evil_data->fmsrc, "Seek cancelled, setting frequency");
+  //g_object_set (evil_data->fmsrc, "frequency", 88500000, NULL);
 
   GST_DEBUG_OBJECT (evil_data->fmsrc, "Waiting 3 seconds");
   g_timeout_add_seconds (3, wait_cb, evil_data);
