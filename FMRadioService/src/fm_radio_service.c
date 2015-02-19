@@ -22,6 +22,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include <glib.h>
 #include <gst/gst.h>
@@ -290,7 +293,12 @@ radio_server_class_init(RadioServerClass *klass)
 static void
 radio_server_init(RadioServer *server)
 {
-    g_message("radio_server_init");
+    // fmradioservice and pulseaudio needs to have /tmp/pulseaudio
+    // present... so create it.
+    struct stat st = {0};
+    if (stat("/tmp/pulseaudio", &st) == -1) {
+        mkdir("/tmp/pulseaudio", 0755);
+    }
 
     GError *error = NULL;
     DBusGProxy *driver_proxy;
