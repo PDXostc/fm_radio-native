@@ -89,6 +89,7 @@ class FMRadioInstance : public common::Instance {
         static guint on_disabled_listener_id_;
         static guint on_frequency_changed_listener_id_;
         static guint on_station_found_listener_id_;
+        static guint on_rds_complete_listener_id_;
 
         GMainLoop* main_loop_;
         std::thread thread_;

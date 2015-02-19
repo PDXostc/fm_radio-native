@@ -36,6 +36,9 @@
 		<signal name="onstationfound">
 			<arg name="frequency" type="d"/>
 		</signal>
+		<signal name="onrdscomplete">
+			<arg name="label" type="s"/>
+		</signal>
 
 		<!-- boolean (b) property 'enabled' -->
 		<property name="enabled" type="b" access="read"/>

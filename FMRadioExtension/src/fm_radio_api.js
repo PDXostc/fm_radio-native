@@ -17,6 +17,10 @@ var _on_station_found_listeners = {};
 var _on_station_found_listener_id = 0;
 var _on_station_found_listeners_count = 0;
 
+var _on_rds_complete_listeners = {};
+var _on_rds_complete_listener_id = 0;
+var _on_rds_complete_listeners_count = 0;
+
 var webFMListener = null;
 
 function getNextReplyId() {
@@ -62,6 +66,9 @@ extension.setMessageListener(function(msg) {
         } else if (m.signal_name === 'onstationfound') {
             console.log('fm_radio_api.js: messageListener StationChanged');
             handleOnStationFoundSignal(m);
+        } else if (m.signal_name === 'onrdscomplete') {
+            console.log('fm_radio_api.js: messageListener OnRdsComplete');
+            handleOnRdsCompleteSignal(m);
         }
     } else if (!isNaN(parseInt(replyId)) && (typeof(callback) === 'function')) {
         // Error callbacks when C ext message handling fails.
@@ -114,6 +121,18 @@ function handleOnStationFoundSignal(msg) {
             console.error('No StationFound listener found for id ' + key);
         }
         console.log("fm_radio_api.js: handleOnStationFound : " +
+                    msg.signal_params);
+        cb(msg.signal_params);
+    }
+}
+
+function handleOnRdsCompleteSignal(msg) {
+    for (var key in _on_rds_complete_listeners) {
+        var cb = _on_rds_complete_listeners[key];
+        if (!cb || typeof(cb) !== 'function') {
+            console.error('No RdsComplete listener found for id ' + key);
+        }
+        console.log("fm_radio_api.js: handleOnRdsComplete : " +
                     msg.signal_params);
         cb(msg.signal_params);
     }
@@ -324,6 +343,35 @@ exports.addOnStationFoundListener = function(listener) {
     }
 
     return _on_station_found_listener_id;
+};
+
+exports.addOnRdsCompleteListener = function(listener) {
+    console.log("fm_radio_api.js: entered export.addRdsCompleteListener");
+    if (!(listener instanceof Function) && listener != undefined) {
+        console.error('fm_radio_api.js: AddRdsCompleteListener failed');
+        return;
+    }
+
+    for (var key in _on_rds_complete_listeners) {
+        if (_on_rds_complete_listeners[key] == listener) {
+            console.log('fm_radio_api.js: same listener added');
+            return key;
+        }
+    }
+
+    _on_rds_complete_listeners[++_on_rds_complete_listener_id] =
+        listener;
+    _on_rds_complete_listeners_count++;
+    if (_on_rds_complete_listeners_count == 1) {
+        var msg = { cmd: 'AddOnRdsCompleteListener' };
+        postMessage(msg, function(result) {
+            if (result.isError) {
+                console.error('fm_radio_api.js: AddRdsCompleteLis failed');
+            }
+        });
+    }
+
+    return _on_rds_complete_listener_id;
 };
 
 // ***************************************************************************
