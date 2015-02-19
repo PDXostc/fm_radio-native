@@ -1073,7 +1073,6 @@ function onKeyESCClick(e) {
  */
 function onClassFmRadioBoxClick(e) {
 
-    console.error("DEBUG: radiobox click");
     // Extract pressed preset # from the element's id
     // freqHz *must* be a number to feed freqIsValid()
     var index = $(this).attr('preset');
@@ -1096,7 +1095,6 @@ function onClassFmRadioBoxClick(e) {
  */
 function onClassFmRadioBoxTouchStart(e) {
 
-    console.error("DEBUG: radiobox touchstart");
 
     mouseState = "STATE_MOUSE_DOWN";
     buttonUserFeedback($(this), "fm-gray", "dna-orange");
@@ -1121,7 +1119,6 @@ function onClassFmRadioBoxTouchStart(e) {
  */
 function onClassFmRadioBoxTouchEnd(e) {
 
-    console.error("DEBUG: radiobox touchend");
     mouseState = "STATE_MOUSE_UP";
     buttonUserFeedback($(this), "dna-orange", "fm-gray");
 

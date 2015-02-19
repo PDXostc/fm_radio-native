@@ -24,6 +24,7 @@ var _on_rds_complete_listeners_count = 0;
 var webFMListener = null;
 
 function getNextReplyId() {
+
     return _nextReplyId++;
 }
 
@@ -31,6 +32,7 @@ function getNextReplyId() {
 // Gets a unique callback (back to upper JS caller-defined foos) so we
 // can have concurrent calls and asynchronosity at the JS API level.
 function postMessage(msg, callback) {
+
     var replyId = getNextReplyId();
     _callbacks[replyId] = callback;
     msg.replyId = replyId;
@@ -38,11 +40,13 @@ function postMessage(msg, callback) {
 }
 
 var sendSyncMessage = function(msg) {
+
     return JSON.parse(extension.internal.sendSyncMessage(JSON.stringify(msg)));
 };
 
 // Main message listener treating messages coming from lower C extension.
 extension.setMessageListener(function(msg) {
+
     var m = JSON.parse(msg);
     var replyId = m.replyId;
     var callback = _callbacks[replyId];
@@ -50,29 +54,24 @@ extension.setMessageListener(function(msg) {
     // Signals going up from C ext --> JS/HTML
     if (m.cmd === 'signal') {
         if (!m.signal_name) {
-            console.log('fm_radio_api.js: Invalid signal from Radio api');
+            console.error('fm_radio_api.js: Invalid signal from Radio api');
             return;
         }
 
         if (m.signal_name === 'onenabled') {
-            console.log('fm_radio_api.js: messageListener Enabled');
             handleOnEnabledSignal(m);
         } else if (m.signal_name === 'ondisabled') {
-            console.log('fm_radio_api.js: messageListener Disabled');
             handleOnDisabledSignal(m);
         } else if (m.signal_name === 'onfrequencychanged') {
-            console.log('fm_radio_api.js: messageListener FrequencyChanged');
             handleOnFrequencyChangedSignal(m);
         } else if (m.signal_name === 'onstationfound') {
-            console.log('fm_radio_api.js: messageListener StationChanged');
             handleOnStationFoundSignal(m);
         } else if (m.signal_name === 'onrdscomplete') {
-            console.log('fm_radio_api.js: messageListener OnRdsComplete');
             handleOnRdsCompleteSignal(m);
         }
     } else if (!isNaN(parseInt(replyId)) && (typeof(callback) === 'function')) {
         // Error callbacks when C ext message handling fails.
-        // Callback functions are defined by radio.XXX "callers" from main.js
+        // Callback functions are defined by radio.XX "callers" from main.js
         callback(m);
         delete m.replyId;
         delete _callbacks[replyId];
@@ -83,6 +82,7 @@ extension.setMessageListener(function(msg) {
 });
 
 function handleOnEnabledSignal(msg) {
+
     for (var key in _on_enabled_listeners) {
         var cb = _on_enabled_listeners[key];
         if (!cb || typeof(cb) !== 'function') {
@@ -93,6 +93,7 @@ function handleOnEnabledSignal(msg) {
 }
 
 function handleOnDisabledSignal(msg) {
+
     for (var key in _on_disabled_listeners) {
         var cb = _on_disabled_listeners[key];
         if (!cb || typeof(cb) !== 'function') {
@@ -103,37 +104,34 @@ function handleOnDisabledSignal(msg) {
 }
 
 function handleOnFrequencyChangedSignal(msg) {
+
     for (var key in _on_frequency_changed_listeners) {
         var cb = _on_frequency_changed_listeners[key];
         if (!cb || typeof(cb) !== 'function') {
             console.error('No frequencychanged listener found for id ' + key);
         }
-        console.log("fm_radio_api.js: handleOnFrequencyChange : " +
-                    msg.signal_params);
         cb(msg.signal_params);
     }
 }
 
 function handleOnStationFoundSignal(msg) {
+
     for (var key in _on_station_found_listeners) {
         var cb = _on_station_found_listeners[key];
         if (!cb || typeof(cb) !== 'function') {
             console.error('No StationFound listener found for id ' + key);
         }
-        console.log("fm_radio_api.js: handleOnStationFound : " +
-                    msg.signal_params);
         cb(msg.signal_params);
     }
 }
 
 function handleOnRdsCompleteSignal(msg) {
+
     for (var key in _on_rds_complete_listeners) {
         var cb = _on_rds_complete_listeners[key];
         if (!cb || typeof(cb) !== 'function') {
             console.error('No RdsComplete listener found for id ' + key);
         }
-        console.log("fm_radio_api.js: handleOnRdsComplete : " +
-                    msg.signal_params);
         cb(msg.signal_params);
     }
 }
@@ -146,8 +144,8 @@ function handleOnRdsCompleteSignal(msg) {
 // functions.
 
 exports.enable = function(errorCallback) {
+
     var msg = { cmd: 'Enable' };
-    console.log("fm_radio_api.js: entered export.enable");
     postMessage(msg, function(result) {
     if (result.isError) {
         console.error('fm_radio_api.js: Enable failed');
@@ -162,8 +160,8 @@ exports.enable = function(errorCallback) {
 };
 
 exports.setFrequency = function(freqVal, errorCallback) {
+
     var msg = { cmd: 'SetFrequency', frequency: freqVal};
-    console.log("fm_radio_api.js: entered export.setFrequency,freq=" + freqVal);
     postMessage(msg, function(result) {
     if (result.isError) {
         console.error('fm_radio_api.js: SetFrequency failed');
@@ -178,8 +176,8 @@ exports.setFrequency = function(freqVal, errorCallback) {
 };
 
 exports.seekup = function(errorCallback) {
+
     var msg = { cmd: 'Seek', direction: true};
-    console.log("fm_radio_api.js: entered export.seekup");
     postMessage(msg, function(result) {
     if (result.isError) {
         console.error('fm_radio_api.js: SeekUp failed');
@@ -194,8 +192,8 @@ exports.seekup = function(errorCallback) {
 };
 
 exports.seekdown = function(errorCallback) {
+
     var msg = { cmd: 'Seek', direction: false};
-    console.log("fm_radio_api.js: entered export.seekdown");
     postMessage(msg, function(result) {
     if (result.isError) {
         console.error('fm_radio_api.js: SeekDown failed');
@@ -210,8 +208,8 @@ exports.seekdown = function(errorCallback) {
 };
 
 exports.cancelSeek = function(errorCallback) {
+
     var msg = { cmd: 'CancelSeek' };
-    console.log("fm_radio_api.js: entered export.cancelSeek");
     postMessage(msg, function(result) {
     if (result.isError) {
         console.error('fm_radio_api.js: cancelSeek failed');
@@ -233,7 +231,7 @@ exports.cancelSeek = function(errorCallback) {
 //
 
 exports.addOnEnabledListener = function(listener) {
-    console.log("fm_radio_api.js: entered export.addEnabledListener");
+
     if (!(listener instanceof Function) && listener != undefined) {
         console.error('fm_radio_api.js: AddEnabledListener failed');
         return;
@@ -241,7 +239,7 @@ exports.addOnEnabledListener = function(listener) {
 
     for (var key in _on_enabled_listeners) {
         if (_on_enabled_listeners[key] == listener) {
-            console.log('fm_radio_api.js: same listener added');
+            console.log('fm_radio_api.js: same listener added !');
             return key;
         }
     }
@@ -261,6 +259,7 @@ exports.addOnEnabledListener = function(listener) {
 };
 
 exports.addOnDisabledListener = function(listener) {
+
     if (!(listener instanceof Function) && listener != undefined) {
         console.error('fm_radio_api.js: AddDisabledListener failed');
         return;
@@ -288,7 +287,7 @@ exports.addOnDisabledListener = function(listener) {
 };
 
 exports.addOnFrequencyChangedListener = function(listener) {
-    console.log("fm_radio_api.js: entered export.addFrequencyChangedListener");
+
     if (!(listener instanceof Function) && listener != undefined) {
         console.error('fm_radio_api.js: AddFrequencyChangedListener failed');
         return;
@@ -296,7 +295,7 @@ exports.addOnFrequencyChangedListener = function(listener) {
 
     for (var key in _on_frequency_changed_listeners) {
         if (_on_frequency_changed_listeners[key] == listener) {
-            console.log('fm_radio_api.js: same listener added');
+            console.log('fm_radio_api.js: same listener added !');
             return key;
         }
     }
@@ -317,7 +316,7 @@ exports.addOnFrequencyChangedListener = function(listener) {
 };
 
 exports.addOnStationFoundListener = function(listener) {
-    console.log("fm_radio_api.js: entered export.addStationFoundListener");
+
     if (!(listener instanceof Function) && listener != undefined) {
         console.error('fm_radio_api.js: AddStationFoundListener failed');
         return;
@@ -346,7 +345,7 @@ exports.addOnStationFoundListener = function(listener) {
 };
 
 exports.addOnRdsCompleteListener = function(listener) {
-    console.log("fm_radio_api.js: entered export.addRdsCompleteListener");
+
     if (!(listener instanceof Function) && listener != undefined) {
         console.error('fm_radio_api.js: AddRdsCompleteListener failed');
         return;
@@ -380,6 +379,7 @@ exports.addOnRdsCompleteListener = function(listener) {
 //
 
 exports.enabled = function () {
+
     var result = sendSyncMessage({ cmd: 'GetEnabled' });
     if (result.isError) {
         // TODO: Get WebAPIException throw BACK !
@@ -389,11 +389,12 @@ exports.enabled = function () {
     if (result.value != undefined) {
         return result.value["enabled"];
     }
-    console.log("fm_radio_api.js: exports.enabled failed!");
+    console.error("fm_radio_api.js: exports.enabled failed!");
     return null;
 };
 
 exports.frequency = function () {
+
     var result = sendSyncMessage({ cmd: 'GetFrequency' });
     if (result.isError) {
         // TODO: Get WebAPIException throw BACK !
@@ -403,6 +404,6 @@ exports.frequency = function () {
     if (result.value != undefined) {
         return result.value["frequency"];
     }
-    console.log("fm_radio_api.js: exports.frequency failed!");
+    console.error("fm_radio_api.js: exports.frequency failed!");
     return null;
 };
