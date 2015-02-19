@@ -405,6 +405,18 @@ function stopFlash() {
 }
 
 /**
+ * Put RDS label back to FMRadio generic text
+ *
+ * @method resetRDSLabel
+ * @static
+ */
+function resetRDSLabel(){
+
+    // Reset RDS label to "FMRadio"
+    (document.getElementById("rds-label")).innerHTML = "FMRadio";
+}
+
+/**
  * Put state back to Normal state.
  *
  * @method goBackToNormal
@@ -460,8 +472,6 @@ function addSignalListeners() {
     try {
         fmradio.addOnStationFoundListener(function(signal_value){
 
-            setStationIdFrequency(signal_value);
-
             // update the state with regard to current seek/scan state
             if (state == "STATE_SEEKING") {
                 state = "STATE_NORMAL";
@@ -481,9 +491,21 @@ function addSignalListeners() {
 
                 state = "STATE_SCANNING_WAIT";
             }
+
+            setStationIdFrequency(signal_value);
         });
     } catch(e) {
         console.error("addStationFoundListener failed with error : " + e);
+    }
+
+   try {
+        fmradio.addOnRdsCompleteListener(function(signal_value){
+            var element = document.getElementById("rds-label");
+
+            element.innerHTML = signal_value;
+        });
+    } catch(e) {
+        console.error("addRdsCompleteListener failed with error : " + e);
     }
 }
 
@@ -696,6 +718,7 @@ function callSetFrequency(freqHz) {
         console.error("callSetFrequency error catch : " + e);
         return false;
     }
+    resetRDSLabel();
     return true;
 }
 
@@ -722,6 +745,7 @@ function callSeek(direction) {
         console.error("callSeek error catch : " + e);
         return false;
     }
+    resetRDSLabel();
     return true;
 }
 
@@ -743,6 +767,7 @@ function callCancelSeek() {
         console.error("FMRadio.cancelSeek Exception caught : " + e);
         return false;
     }
+    resetRDSLabel();
     return true;
 }
 

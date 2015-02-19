@@ -39,6 +39,7 @@ typedef enum {
     E_SIGNAL_ON_DISABLED,
     E_SIGNAL_ON_FREQUENCY_CHANGED,
     E_SIGNAL_ON_STATION_FOUND,
+    E_SIGNAL_ON_RDS_COMPLETE,
 
     E_SIGNAL_COUNT              /**< E_SIGNAL_COUNT is not an actual signal */
 } signal_enum;
@@ -58,6 +59,16 @@ typedef enum {
 } prop_enum;
 
 /**
+ * RDS enums
+ */
+typedef enum
+{
+  RDS_FIRST = 1,
+  RDS_CLEAR,
+  RDS_SECOND
+} RDSState;
+
+/**
  * GStreamer element data structure.
  * Useful struct to keep data about fmsrc gstreamer element.
  */
@@ -67,9 +78,11 @@ struct _GstData
     GstElement *pipeline;
     GstElement *fmsrc;
     void *server;
+    RDSState rds_state;
     void (*playing_cb) (GstData*);
     void (*frequency_changed_cb) (GstData*, gint);
     void (*station_found_cb) (GstData*, gint);
+    void (*rds_label_complete_cb) (GstData*, const gchar *);
 };
 
 /** Main GObject RadioServer object. */
@@ -127,7 +140,8 @@ static GParamSpec *obj_properties[E_PROP_COUNT] = {NULL,};
 static GstData *sdrjfm_init (RadioServer *server,
                              void (*playing_cb) (GstData*),
                              void (*frequency_changed_cb) (GstData*, gint freq),
-                             void (*station_found_cb) (GstData*, gint freq));
+                             void (*station_found_cb) (GstData*, gint freq),
+                             void (*rds_label_complete_cb) (GstData*, const gchar*));
 static void radio_set_property (GObject *object, uint property_id,
                                 const GValue *value, GParamSpec *pspec);
 static void radio_get_property (GObject *object, guint property_id,
@@ -144,7 +158,8 @@ radio_server_create_signals(RadioServerClass *klass)
         SIGNAL_ON_ENABLED,
         SIGNAL_ON_DISABLED,
         SIGNAL_ON_FREQUENCY_CHANGED,
-        SIGNAL_ON_STATION_FOUND
+        SIGNAL_ON_STATION_FOUND,
+        SIGNAL_ON_RDS_COMPLETE
     };
 
     guint signal_id;
@@ -194,6 +209,18 @@ radio_server_create_signals(RadioServerClass *klass)
                              1,
                              G_TYPE_DOUBLE);
     klass->signals[E_SIGNAL_ON_STATION_FOUND] = signal_id;
+
+    signal_id = g_signal_new(signal_names[E_SIGNAL_ON_RDS_COMPLETE],
+                             G_OBJECT_CLASS_TYPE(klass),
+                             G_SIGNAL_RUN_LAST,
+                             0,
+                             NULL,
+                             NULL,
+                             g_cclosure_marshal_VOID__VOID,
+                             G_TYPE_NONE,
+                             1,
+                             G_TYPE_STRING);
+    klass->signals[E_SIGNAL_ON_RDS_COMPLETE] = signal_id;
 }
 
 /**
@@ -298,12 +325,9 @@ radio_server_init(RadioServer *server)
 * Handler called when the radio is just been enabled.
 * @param data GstData structure.
 */
-void
+static void
 handle_on_enabled(GstData *data)
 {
-    g_message("handle_on_enabled");
-
-    //GError *error = NULL;
     RadioServer *server;
 
 
@@ -320,7 +344,7 @@ handle_on_enabled(GstData *data)
 * Handle called when the radio is just been disabled.
 * @param data GstData structure.
 */
-void
+static void
 handle_on_disabled(GstData* data)
 {
     RadioServer *server;
@@ -337,11 +361,9 @@ handle_on_disabled(GstData* data)
 * @param data GstData structure.
 * @param freq gint.
 */
-void
+static void
 handle_on_frequency_changed(GstData* data, gint freq)
 {
-    g_message("handle_on_frequency_changed");
-
     RadioServer *server;
     server = (RadioServer *) data->server;
     RadioServerClass* klass = RADIO_SERVER_GET_CLASS(server);
@@ -358,11 +380,9 @@ handle_on_frequency_changed(GstData* data, gint freq)
 * @param data GstData structure.
 * @param freq gint.
 */
-void
+static void
 handle_on_station_found(GstData* data, gint freq)
 {
-    g_message("handle_on_station_found");
-
     RadioServer *server;
     server = (RadioServer *) data->server;
     RadioServerClass* klass = RADIO_SERVER_GET_CLASS(server);
@@ -373,6 +393,24 @@ handle_on_station_found(GstData* data, gint freq)
                   klass->signals[E_SIGNAL_ON_STATION_FOUND],
                   0,
                   server->frequency);
+}
+
+/**
+* Handler called when a RDS string has been completely received
+* @param data GstData structure.
+* @param label gchar*
+*/
+static void
+handle_on_rds_complete (GstData *data, const gchar *label)
+{
+    RadioServer *server;
+    server = (RadioServer *) data->server;
+    RadioServerClass* klass = RADIO_SERVER_GET_CLASS(server);
+
+    g_signal_emit(server,
+                  klass->signals[E_SIGNAL_ON_RDS_COMPLETE],
+                  0,
+                  label);
 }
 
 // **********************************************************
@@ -400,7 +438,8 @@ server_enable (RadioServer *server, GError **error)
         sdrjfm_init(server,
                     handle_on_enabled,
                     handle_on_frequency_changed,
-                    handle_on_station_found);
+                    handle_on_station_found,
+                    handle_on_rds_complete);
         g_message("FMRadioService: server enabled");
     } else {
         // We still broadcast our current frequency
@@ -576,21 +615,28 @@ bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
             if (GST_MESSAGE_SRC (message) == GST_OBJECT (data->fmsrc)) {
                 const GstStructure *s = gst_message_get_structure (message);
 
-                if (!gst_structure_has_field_typed (s, "frequency", G_TYPE_INT))
-                    break;
+                if (gst_structure_has_field_typed (s, "frequency", G_TYPE_INT)) {
 
-                gint freq;
-                gst_structure_get_int (s, "frequency", &freq);
-                g_assert_cmpint (freq, >=, FM_RADIO_SERVICE_MIN_FREQ);
-                g_assert_cmpint (freq, <=, FM_RADIO_SERVICE_MAX_FREQ);
+                    gint freq;
+                    gst_structure_get_int (s, "frequency", &freq);
+                    g_assert_cmpint (freq, >=, FM_RADIO_SERVICE_MIN_FREQ);
+                    g_assert_cmpint (freq, <=, FM_RADIO_SERVICE_MAX_FREQ);
 
+                    if (gst_structure_has_name (s, "sdrjfmsrc-frequency-changed")) {
+                        if (data->frequency_changed_cb)
+                            data->frequency_changed_cb (data, freq);
+                    } else if (gst_structure_has_name (s, "sdrjfmsrc-station-found")) {
+                        if (data->station_found_cb)
+                            data->station_found_cb (data, freq);
+                    }
 
-                if (gst_structure_has_name (s, "sdrjfmsrc-frequency-changed")) {
-                    if (data->frequency_changed_cb)
-                        data->frequency_changed_cb (data, freq);
-                } else if (gst_structure_has_name (s, "sdrjfmsrc-station-found")) {
-                    if (data->station_found_cb)
-                        data->station_found_cb (data, freq);
+                } else if (gst_structure_has_field_typed (s, "station-label", G_TYPE_STRING)) {
+                    const gchar *label = gst_structure_get_string (s, "station-label");
+                    g_message("DEBUG : rds complete label = %s", label);
+                    if (gst_structure_has_name (s, "sdrjfmsrc-rds-station-label-complete")) {
+                        if (data->rds_label_complete_cb)
+                            data->rds_label_complete_cb (data, label);
+                    }
                 }
             }
         break;
@@ -620,8 +666,9 @@ bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
 */
 static GstData *
 sdrjfm_init (RadioServer *server, void (*playing_cb) (GstData*),
-                                  void (*frequency_changed_cb) (GstData*, gint freq),
-                                  void (*station_found_cb) (GstData*, gint freq))
+                                  void (*frequency_changed_cb) (GstData*, gint),
+                                  void (*station_found_cb) (GstData*, gint),
+                                  void (*rds_label_complete_cb) (GstData*, const gchar*))
 {
     g_message("sdrjfm_init");
 
@@ -640,9 +687,11 @@ sdrjfm_init (RadioServer *server, void (*playing_cb) (GstData*),
     data->fmsrc = gst_bin_get_by_name (GST_BIN (data->pipeline), "sdrjfm");
     g_assert(data->fmsrc != NULL);
 
+    data->rds_state = RDS_FIRST;
     data->playing_cb = playing_cb;
     data->frequency_changed_cb = frequency_changed_cb;
     data->station_found_cb = station_found_cb;
+    data->rds_label_complete_cb = rds_label_complete_cb;
 
     bus = gst_pipeline_get_bus (GST_PIPELINE (data->pipeline));
     gst_bus_add_watch (bus, bus_cb, data);

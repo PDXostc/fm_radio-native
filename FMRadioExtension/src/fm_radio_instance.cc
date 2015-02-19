@@ -12,6 +12,7 @@ guint FMRadioInstance::on_enabled_listener_id_ = 0;
 guint FMRadioInstance::on_disabled_listener_id_ = 0;
 guint FMRadioInstance::on_frequency_changed_listener_id_ = 0;
 guint FMRadioInstance::on_station_found_listener_id_ = 0;
+guint FMRadioInstance::on_rds_complete_listener_id_ = 0;
 
 FMRadioInstance::FMRadioInstance()
     : main_loop_(g_main_loop_new(0, FALSE)),
@@ -85,8 +86,14 @@ void FMRadioInstance::HandleMessage(const char* msg)
         HandleAddListener(on_station_found_listener_id_,
         std::string("onstationfound"), v);
     } else if (cmd == "RemoveOnStationFoundListener") {
-        HandleRemoveListener(on_frequency_changed_listener_id_,
-        std::string("onfrequencychanged"), v);
+        HandleRemoveListener(on_station_found_listener_id_,
+        std::string("onstationfound"), v);
+    } else if (cmd == "AddOnRdsCompleteListener") {
+        HandleAddListener(on_rds_complete_listener_id_,
+        std::string("onrdscomplete"), v);
+    } else if (cmd == "RemoveOnRdsCompleteListener") {
+        HandleRemoveListener(on_rds_complete_listener_id_,
+        std::string("onrdscomplete"), v);
     } else {
         g_warning("HandleMessage : Unknown command: %s", cmd.c_str());
     }
@@ -220,24 +227,26 @@ void FMRadioInstance::HandleSignal(GDBusConnection* connection,
     }
 
     if (!strcmp(signal_name, "onenabled")) {
-        // there is no 'value' (param) here.
         instance->SendSignal(picojson::value(signal_name), picojson::value());
     } else if (!strcmp(signal_name, "ondisabled")) {
-        // there is no 'value' (param) here.
         instance->SendSignal(picojson::value(signal_name), picojson::value());
     } else if (!strcmp(signal_name, "onfrequencychanged")) {
         double freq;
         g_variant_get(parameters, "(d)", &freq);
         picojson::value value(freq);
 
-        // there is no 'value' (param) here.
         instance->SendSignal(picojson::value(signal_name), value);
     } else if (!strcmp(signal_name, "onstationfound")) {
         double freq;
         g_variant_get(parameters, "(d)", &freq);
         picojson::value value(freq);
 
-        // there is no 'value' (param) here.
+        instance->SendSignal(picojson::value(signal_name), value);
+    } else if (!strcmp(signal_name, "onrdscomplete")) {
+        gchar *label;
+        g_variant_get(parameters, "(s)", &label);
+        picojson::value value(label);
+
         instance->SendSignal(picojson::value(signal_name), value);
     }
 }
