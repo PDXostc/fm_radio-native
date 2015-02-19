@@ -438,6 +438,9 @@ static void
 gst_sdrjfm_src_state_changed (GstElement *element, GstState oldstate,
 			      GstState newstate, GstState pending)
 {
+  if (GST_ELEMENT_CLASS (parent_class)->state_changed)
+	  GST_ELEMENT_CLASS (parent_class)->state_changed (element, oldstate, newstate, pending);
+
   GstSdrjfmSrc *self = GST_SDRJFM_SRC (element);
 
   if (!self->radio)
