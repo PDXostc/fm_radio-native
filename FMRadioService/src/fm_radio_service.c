@@ -435,8 +435,6 @@ handle_on_rds_complete (GstData *data, const gchar *label)
 gboolean
 server_enable (RadioServer *server, GError **error)
 {
-    g_message("server_enable");
-
     /* Enabling FM Radio is a two-step async process.
        We first enable our sdrjfm GST element in here,
        then, the GST bus GST_MESSAGE_STATE_CHANGED callback will
@@ -449,6 +447,7 @@ server_enable (RadioServer *server, GError **error)
                     handle_on_station_found,
                     handle_on_rds_complete);
         g_message("FMRadioService: server enabled");
+        g_object_set(server, "enabled", TRUE, NULL);
     } else {
         // We still broadcast our current frequency
         RadioServerClass* klass = RADIO_SERVER_GET_CLASS(server);
@@ -476,8 +475,6 @@ server_enable (RadioServer *server, GError **error)
 gboolean
 server_setfrequency (RadioServer *server, gdouble value_in, GError **error)
 {
-    g_message("server_setfrequency");
-
     // Set the GST element frequency
     g_object_set (server->gstData->fmsrc, "frequency", (gint) value_in, NULL);
     g_message("FMRadioService: frequency set to : %f", value_in);
@@ -496,8 +493,6 @@ server_setfrequency (RadioServer *server, gdouble value_in, GError **error)
 gboolean
 server_seek (RadioServer *server, gboolean value_in, GError **error)
 {
-    g_message("server_seek");
-
     // Call the Seek on our gstjsdrsrc element
     if (value_in)
         g_signal_emit_by_name (server->gstData->fmsrc, "seek-up");
@@ -519,8 +514,6 @@ server_seek (RadioServer *server, gboolean value_in, GError **error)
 gboolean
 server_cancelseek (RadioServer *server, GError **error)
 {
-    g_message("server_cancelseek");
-
     // We can only cancel a seek if GST element is currently seeking
     if (server->ongoingSeek) {
         g_signal_emit_by_name (server->gstData->fmsrc, "cancel-seek");
@@ -678,8 +671,6 @@ sdrjfm_init (RadioServer *server, void (*playing_cb) (GstData*),
                                   void (*station_found_cb) (GstData*, gint),
                                   void (*rds_label_complete_cb) (GstData*, const gchar*))
 {
-    g_message("sdrjfm_init");
-
     GError *error = NULL;
     GstData *data = g_slice_new0 (GstData);
     GstBus *bus;
@@ -705,7 +696,6 @@ sdrjfm_init (RadioServer *server, void (*playing_cb) (GstData*),
     gst_bus_add_watch (bus, bus_cb, data);
 
     gst_element_set_state (data->pipeline, GST_STATE_PLAYING);
-    g_object_set(server, "enabled", TRUE, NULL);
 
     /* Default frequency : We don't want to send a frequencyChanged event here,
        so just set server->frequency */
@@ -747,6 +737,9 @@ main(int argc, char** argv)
         g_error("Failed to create one Value instance.");
 
     gst_init(&argc, &argv);
+
+    // We enable the gstsdrj GST element BY DEFAULT at boot-time now.
+    server_enable(radio_obj, NULL);
 
     /* Start service requests on the D-Bus */
     g_main_loop_run(mainloop);
