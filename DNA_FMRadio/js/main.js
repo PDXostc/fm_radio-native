@@ -67,14 +67,13 @@ var preScanFrequency;
 @property constants {Object}
  */
 var constants = {
-    'NUM_OF_PRESETS'           : 6,                     // Number of presets to load
-    'FREQ_MAX_LIMIT'           : 108000000,             // Higher end of valid freq.
-    'FREQ_MIN_LIMIT'           : 88000000,              // Lower end of valid freq.
-    'KEYCODE_ESC'              : 27,                    // Keycode for "ESCAPE" char
-    'FLASH_TIME'               : 500,                   // flashing timer timeout
-    'MOUSE_HOLD_TIMEOUT_TIME'  : 2000,                  // Time to wait for mousehold
-    'SCAN_WAIT_TIMEOUT_TIME'   : 5000,                  // Time to wait when scanning
-    'PRESET_PREFIX'            : "com.jlr.dna-fmradio." // presets localStorage pref.
+    'NUM_OF_PRESETS'          : 6,                     // Number of presets
+    'FREQ_MAX_LIMIT'          : 108000000,             // Higher end of freq.
+    'FREQ_MIN_LIMIT'          : 88000000,              // Lower end of freq.
+    'FLASH_TIME'              : 500,                   // flashing timeout
+    'MOUSE_HOLD_TIMEOUT_TIME' : 2000,                  // Time for mousehold
+    'SCAN_WAIT_TIMEOUT_TIME'  : 5000,                  // Time when scanning
+    'PRESET_PREFIX'           : "com.jlr.dna-fmradio." // presets localStorage
 };
 
 /**
