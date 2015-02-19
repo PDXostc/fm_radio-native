@@ -413,7 +413,7 @@ function stopFlash() {
 function resetRDSLabel(){
 
     // Reset RDS label to "FMRadio"
-    (document.getElementById("rds-label")).innerHTML = "FMRadio";
+    (document.getElementById("rds-label")).innerHTML = "FM RADIO";
 }
 
 /**
@@ -492,6 +492,7 @@ function addSignalListeners() {
                 state = "STATE_SCANNING_WAIT";
             }
 
+            resetRDSLabel();
             setStationIdFrequency(signal_value);
         });
     } catch(e) {
