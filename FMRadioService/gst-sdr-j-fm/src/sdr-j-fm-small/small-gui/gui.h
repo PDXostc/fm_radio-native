@@ -62,8 +62,14 @@ public:
 	 */
 	int32_t		getSamples		(DSPFLOAT *data, uint32_t length);
 
+	/** \brief Get the number of samples waiting in the audio output buffer */
+	uint32_t	getWaitingSamples	(void);
+
 	/** \brief Cancel any wait in getSamples */
 	void		cancelGet		(void);
+
+	/** \brief Flush any remaining samples */
+	void		flush			(void);
 
 	/** \brief Set the tuner to receive \a frequency Hz */
 	void		setTuner		(int32_t frequency);

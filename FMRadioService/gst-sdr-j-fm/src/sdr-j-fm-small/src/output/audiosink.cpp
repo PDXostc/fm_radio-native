@@ -60,6 +60,9 @@ int32_t	minimum (int32_t a, int32_t b) {
 int32_t	audioSink::capacity	(void) {
 	return _O_Buffer -> GetRingBufferWriteAvailable () / 2;
 }
+int32_t	audioSink::waiting	(void) {
+	return _O_Buffer -> GetRingBufferReadAvailable () / 2;
+}
 //
 //	putSample output comes from the FM receiver
 int32_t	audioSink::putSample	(DSPCOMPLEX v) {
@@ -102,7 +105,7 @@ int32_t available = _O_Buffer -> GetRingBufferReadAvailable ();
 		int err = wait ();
 
 		if (err == -1) {
-			GST_TRACE("Wait for SDR-J RungBuffer samples was cancelled");
+			GST_TRACE("Wait for SDR-J RingBuffer samples was cancelled");
 			return -1;
 		} else {
 			GST_TRACE("Finished waiting for samples, %d now available",
@@ -117,6 +120,11 @@ void	audioSink::cancelGet (void) {
 	GST_DEBUG("Cancelling get");
 	signal (true);
 	GST_DEBUG("Get cancelled");
+}
+
+void	audioSink::flush (void) {
+	_O_Buffer -> FlushRingBuffer ();
+	GST_DEBUG("SDR-J RingBuffer flushed");
 }
 
 int	audioSink::wait (int32_t secs) {

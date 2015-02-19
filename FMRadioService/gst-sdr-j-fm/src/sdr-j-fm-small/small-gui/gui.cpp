@@ -443,12 +443,23 @@ void	RadioInterface::set_squelchValue (int n) {
 	   myFMprocessor -> set_squelchValue (n);
 }
 
-int32_t RadioInterface::getSamples(DSPFLOAT *data, uint32_t length) {
-	return our_audioSink -> getSamples(data, length);
+int32_t RadioInterface::getSamples (DSPFLOAT *data, uint32_t length) {
+	if (getWaitingSamples () == 0 && runMode != RUNNING)
+		return -1;
+
+	return our_audioSink -> getSamples (data, length);
+}
+
+uint32_t RadioInterface::getWaitingSamples () {
+	return our_audioSink -> waiting ();
 }
 
 void	RadioInterface::cancelGet (void) {
 	GST_DEBUG("Cancelling get in audio sink");
 	our_audioSink -> cancelGet ();
 	GST_DEBUG("Audio sink get cancelled");
+}
+
+void	RadioInterface::flush (void) {
+	our_audioSink -> flush ();
 }

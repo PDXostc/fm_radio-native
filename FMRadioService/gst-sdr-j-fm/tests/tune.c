@@ -124,6 +124,9 @@ bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
 
     case GST_MESSAGE_WARNING:
       gst_message_parse_warning (message, &error, NULL);
+      GST_WARNING ("Warning: `%s'", error->message);
+      if (strcmp (error->message, "Can't record audio fast enough") == 0)
+	break;
       g_assert_no_error (error);
       break;
 
@@ -148,7 +151,7 @@ tearup (gint freq, void (*playing_cb) (TestData*),
   GstBus *bus;
 
   data->pipeline =
-      gst_parse_launch ("sdrjfmsrc name=fmsrc ! pulsesink",
+      gst_parse_launch ("sdrjfmsrc name=fmsrc ! queue ! pulsesink",
       &error);
   g_assert_no_error (error);
   g_assert(data->pipeline != NULL);

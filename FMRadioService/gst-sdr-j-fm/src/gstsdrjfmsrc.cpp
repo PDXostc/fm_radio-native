@@ -352,8 +352,12 @@ gst_sdrjfm_src_read (GstAudioSrc * asrc, gpointer data, guint length,
 
     if (count == -1)
       {
-        GST_DEBUG_OBJECT(self, "Read cancelled");
-	return length - remaining;
+	 // Either we're stopped, or the read has been cancelled
+	 GST_TRACE_OBJECT(self, "Read cancelled or stopped");
+	 //return length - (remaining * sizeof(DSPFLOAT));
+
+	 // Work around bug in GstAudioSrc
+	 return G_MAXUINT;
       }
 
     GST_TRACE_OBJECT(self, "Read %i samples out of %u remaining from %u (length: %u)",
@@ -369,17 +373,17 @@ gst_sdrjfm_src_read (GstAudioSrc * asrc, gpointer data, guint length,
 static guint
 gst_sdrjfm_src_delay (GstAudioSrc * asrc)
 {
-  GST_FIXME_OBJECT (asrc, "not implemented");
-  return 0;
+  GstSdrjfmSrc *self =  GST_SDRJFM_SRC (asrc);
+  return self->radio->getWaitingSamples ();
+  //GST_FIXME_OBJECT (asrc, "not implemented");
+  //return 0;
 }
 
 static void
 gst_sdrjfm_src_reset (GstAudioSrc * asrc)
 {
   GstSdrjfmSrc *self =  GST_SDRJFM_SRC (asrc);
-  GST_DEBUG_OBJECT (self, "Restting by cancelling get");
   self->radio->cancelGet ();
-  GST_DEBUG_OBJECT (self, "Cancelled get");
 }
 
 static void
@@ -440,9 +444,17 @@ gst_sdrjfm_src_state_changed (GstElement *element, GstState oldstate,
     return;
 
   if (newstate == GST_STATE_PLAYING)
-    self->radio->start();
+    {
+      GST_DEBUG_OBJECT(self, "Starting radio...");
+      self->radio->start();
+      GST_DEBUG_OBJECT(self, "...radio started");
+    }
   else
-    self->radio->stop();
+    {
+      GST_DEBUG_OBJECT(self, "Stopping radio..");
+      self->radio->stop();
+      GST_DEBUG_OBJECT(self, "...radio stopped");
+    }
 }
 
 static void

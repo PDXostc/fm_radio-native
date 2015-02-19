@@ -42,7 +42,9 @@ public:
 	int32_t		putSamples		(DSPCOMPLEX *, int32_t);
 	int32_t	        getSamples              (DSPFLOAT *, uint32_t);
 	int32_t		capacity		(void);
+	int32_t		waiting			(void);
 	void		cancelGet		(void);
+	void		flush			(void);
 private:
 	int		wait			(int32_t = 30);
 	void		signal			(bool cancel = false);
