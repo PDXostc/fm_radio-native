@@ -565,11 +565,9 @@ var init = function () {
     $(".keypad-box").on('touchstart', onClassKeypadBoxTouchStart);
     $(".keypad-box").on('touchend',   onClassKeypadBoxTouchEnd);
     $("#smartCancelBtn").on('click', onSmartCancelBtnClick);
-
-    // When closing the app, we have to make sure no seek is pending.
     onDepenancy("homeScreenIconClick", function(){
-			$("#homeScreenIcon").on('OnAppClose', onSmartCancelBtnClick);
-    });
+			$("#homeScreenIcon").on('OnAppClose',function(){console.log("OnAppClose");});
+		});
 
     if (fmradio) {
         // We start by registering our various signal listeners

@@ -420,7 +420,7 @@ test_startstop_second_start_cb (void *userdata)
     if (i & 1)
       gst_element_set_state (data->pipeline, GST_STATE_PLAYING);
     else
-      gst_element_set_state (data->pipeline, GST_STATE_NULL);
+      gst_element_set_state (data->pipeline, GST_STATE_READY);
   }
 
   test_done (data);
@@ -443,7 +443,7 @@ test_startstop_begin_cb (void *userdata)
   TestData *data = userdata;
   GST_DEBUG_OBJECT (data->fmsrc, "Beginning wait elapsed, stopping element");
   data->startstop_state = STARTSTOP_STOP;
-  GstStateChangeReturn ret = gst_element_set_state (data->pipeline, GST_STATE_NULL);
+  GstStateChangeReturn ret = gst_element_set_state (data->pipeline, GST_STATE_READY);
   if (ret != GST_STATE_CHANGE_SUCCESS)
     GST_ERROR_OBJECT (data->fmsrc, "Setting pipeline state was not successful, return value: %i",
 		      (int)ret);
