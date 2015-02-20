@@ -566,7 +566,7 @@ var init = function () {
     $(".keypad-box").on('touchend',   onClassKeypadBoxTouchEnd);
     $("#smartCancelBtn").on('click', onSmartCancelBtnClick);
     onDepenancy("homeScreenIconClick", function(){
-			$("#homeScreenIcon").on('OnAppClose',function(){console.log("OnAppClose");});
+			$("#homeScreenIcon").on('OnAppClose', onSmartCancelBtnClick);
 		});
 
     if (fmradio) {
