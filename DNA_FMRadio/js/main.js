@@ -632,12 +632,16 @@ function loadPresetsList() {
 
         // Set station memory slots presets frequencies
         for (i = 0; i < Object.keys(presets).length; i++) {
+            var readVal = presets[String(i)];
             var element = document.getElementById("preset_" + i);
-            var freqMHz = parseFloat(presets[String(i)] / 1000000);
-            element.innerHTML = freqMHz;
+            if (readVal != -1) {
+                var freqMHz = parseFloat(readVal / 1000000);
+                element.innerHTML = freqMHz;
+            } else {
+                element.innerHTML = "empty";
+            }
         }
     } else {
-
         for (i = 0; i < Object.keys(presets).length; i++) {
             var element = document.getElementById("preset_" + i);
             element.innerHTML = "empty";
