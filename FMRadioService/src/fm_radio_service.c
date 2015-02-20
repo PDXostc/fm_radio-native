@@ -55,6 +55,7 @@ typedef enum {
 typedef enum {
     E_PROP_0,                   /**< first prop_enum (0) has a special meaning */
 
+    E_PROP_INIT,
     E_PROP_ENABLED,
     E_PROP_FREQUENCY,
 
@@ -83,6 +84,7 @@ struct _GstData
     void *server;
     RDSState rds_state;
     void (*playing_cb) (GstData*);
+    void (*nulling_cb) (GstData*);
     void (*frequency_changed_cb) (GstData*, gint);
     void (*station_found_cb) (GstData*, gint);
     void (*rds_label_complete_cb) (GstData*, const gchar *);
@@ -93,6 +95,7 @@ typedef struct {
     GObject parent;
 
     /* Actual properties */
+    gboolean init;              /**< This is not avail. from dbus */
     gboolean enabled;
     gdouble  frequency;         /**< frequency is in Hz */
 
@@ -130,6 +133,7 @@ G_DEFINE_TYPE(RadioServer, radio_server, G_TYPE_OBJECT)
 /* Stub functions must be declared before the bindings are included */
 /* Our dbus interface is defined in this automatically generated header */
 gboolean server_enable (RadioServer *server, GError **error);
+gboolean server_disable (RadioServer *server, GError **error);
 gboolean server_setfrequency (RadioServer *server, gdouble value_in,
                               GError **error);
 gboolean server_seek (RadioServer *server, gboolean value_in,
@@ -142,6 +146,7 @@ static GParamSpec *obj_properties[E_PROP_COUNT] = {NULL,};
 
 static GstData *sdrjfm_init (RadioServer *server,
                              void (*playing_cb) (GstData*),
+                             void (*nulling_cb) (GstData*),
                              void (*frequency_changed_cb) (GstData*, gint freq),
                              void (*station_found_cb) (GstData*, gint freq),
                              void (*rds_label_complete_cb) (GstData*, const gchar*));
@@ -234,6 +239,13 @@ static void
 radio_server_create_properties(GObjectClass *gobject_class)
 {
 
+    obj_properties[E_PROP_INIT] =
+        g_param_spec_boolean ("init",
+                              "radio-init-state",
+                              "Tells if FMRadio init yet",
+                              FALSE,
+                              G_PARAM_CONSTRUCT | G_PARAM_READWRITE);
+
     obj_properties[E_PROP_ENABLED] =
         g_param_spec_boolean ("enabled",
                               "radio-enabled-state",
@@ -304,6 +316,7 @@ radio_server_init(RadioServer *server)
     DBusGProxy *driver_proxy;
     RadioServerClass *klass = RADIO_SERVER_GET_CLASS (server);
     guint request_ret;
+    server->init = FALSE;
 
     /* Register the service name */
     driver_proxy = dbus_g_proxy_new_for_name (klass->connection,
@@ -336,6 +349,7 @@ radio_server_init(RadioServer *server)
 static void
 handle_on_enabled(GstData *data)
 {
+    g_message("DEBUG: entered handle_on_enabled");
     RadioServer *server;
 
 
@@ -355,6 +369,7 @@ handle_on_enabled(GstData *data)
 static void
 handle_on_disabled(GstData* data)
 {
+    g_message("DEBUG: entered handle_on_disabled");
     RadioServer *server;
     server = (RadioServer *) data->server;
     RadioServerClass* klass = RADIO_SERVER_GET_CLASS(server);
@@ -435,33 +450,91 @@ handle_on_rds_complete (GstData *data, const gchar *label)
 gboolean
 server_enable (RadioServer *server, GError **error)
 {
+    g_message("DEBUG: entered server_enable");
     /* Enabling FM Radio is a two-step async process.
        We first enable our sdrjfm GST element in here,
        then, the GST bus GST_MESSAGE_STATE_CHANGED callback will
        send the "enabled" signal if gst's state is set to GST_STATE_PLAYING */
 
-    if (!server->enabled) {
+    if (!server->init) {
+        g_message("DEBUG: server_enable : initializing");
+        // server is not initialized... so let's init it and enable it
+        g_object_set(server, "init", TRUE, NULL);
         sdrjfm_init(server,
                     handle_on_enabled,
+                    handle_on_disabled,
                     handle_on_frequency_changed,
                     handle_on_station_found,
                     handle_on_rds_complete);
-        g_message("FMRadioService: server enabled");
+
+        // Enable the GST element now...
+        gst_element_set_state (server->gstData->pipeline,
+                               GST_STATE_PLAYING);
         g_object_set(server, "enabled", TRUE, NULL);
+        g_message("FMRadioService: server enabled");
+
+        /* Default frequency : signalling of the default freq. to client is
+           goin to be done by onFrequencyChanged callback */
+        // TODO: instead of the "default" frequency here, READ it from a file
+        g_object_set (server->gstData->fmsrc, "frequency",
+            (gint) server->frequency, NULL);
+
     } else {
-        // We still broadcast our current frequency
         RadioServerClass* klass = RADIO_SERVER_GET_CLASS(server);
-        g_signal_emit(server,
-                      klass->signals[E_SIGNAL_ON_ENABLED],
-                      0);
-        g_signal_emit(server,
-                      klass->signals[E_SIGNAL_ON_FREQUENCY_CHANGED],
-                      0,
-                      server->frequency);
-        g_message("FMRadioService: server already enabled");
+        if (server->enabled) {
+            g_message("DEBUG: server_enable : just signalling");
+            /* Radio is already enabled (playing).
+               We still broadcast our current frequency */
+            g_signal_emit(server,
+                          klass->signals[E_SIGNAL_ON_ENABLED],
+                          0);
+            g_signal_emit(server,
+                          klass->signals[E_SIGNAL_ON_FREQUENCY_CHANGED],
+                          0,
+                          server->frequency);
+            g_message("FMRadioService: server already enabled");
+        } else {
+            g_message("DEBUG: server_enable : enabling....");
+            // Server is init, but radio is not playing. Enable it!
+            gst_element_set_state (server->gstData->pipeline, GST_STATE_PLAYING);
+
+            // We still have to inform clients about current frequency
+            g_signal_emit(server,
+                          klass->signals[E_SIGNAL_ON_FREQUENCY_CHANGED],
+                          0,
+                          server->frequency);
+        }
     }
 
+    // FIXME: Development HACK !! Remove !!
+    g_object_set (server->gstData->fmsrc, "threshold", 24, NULL);
+
     // TODO: Return false and set error in case something went wrong.
+    return TRUE;
+}
+
+/**
+* Disables (mute) the radio
+* @param server Main server object.
+* @param error GError containing code and message for calling dbus client.
+* @return TRUE is successful.
+*/
+gboolean
+server_disable (RadioServer *server, GError **error)
+{
+    g_message("DEBUG: entered server_disable");
+    /* Disabling FM Radio is a two-step async process.
+       We first diable our sdrjfm GST element in here,
+       then, the GST bus GST_MESSAGE_STATE_CHANGED callback will
+       send the "disable" signal if gst's state is set to GST_STATE_NULL */
+
+    if (server->enabled) {
+        gst_element_set_state (server->gstData->pipeline, GST_STATE_NULL);
+        g_object_set(server, "enabled", FALSE, NULL);
+    } else {
+        g_message("FMRadioService: server already disabled");
+    }
+
     return TRUE;
 }
 
@@ -541,6 +614,10 @@ radio_get_property (GObject    *object,
     RadioServer *server = (RadioServer *) object;
 
     switch (property_id) {
+        case E_PROP_INIT:
+            g_value_set_boolean (value, server->init);
+        break;
+
         case E_PROP_ENABLED:
             g_value_set_boolean (value, server->enabled);
         break;
@@ -571,14 +648,16 @@ radio_set_property (GObject       *object,
     RadioServer *server = (RadioServer *) object;
 
     switch (property_id) {
+        case E_PROP_INIT:
+            server->init = g_value_get_boolean(value);
+        break;
+
         case E_PROP_ENABLED:
             server->enabled = g_value_get_boolean(value);
         break;
 
         case E_PROP_FREQUENCY:
             server->frequency = g_value_get_double(value);
-            // TODO: remove
-            // handle_on_frequency_changed(server);
         break;
 
         default:
@@ -606,8 +685,13 @@ bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
             if (GST_MESSAGE_SRC (message) == GST_OBJECT (data->pipeline)) {
                 GstState state;
                 gst_message_parse_state_changed (message, NULL, &state, NULL);
-                if (state == GST_STATE_PLAYING && data->playing_cb)
+                if (state == GST_STATE_PLAYING && data->playing_cb) {
+                    g_message("DEBUG : bus_cb : calling playing_cb CB");
                     data->playing_cb (data);
+                } else if (state == GST_STATE_NULL && data->nulling_cb) {
+                    g_message("DEBUG : bus_cb : calling nulling_cb CB");
+                    data->nulling_cb (data);
+                }
             }
         break;
 
@@ -663,14 +747,20 @@ bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
 * Gstreamer element initialization and pipeline creation.
 * @param server Pointer to main GObject RadioServer object.
 * @param playing_cb A callback function pointer for the "playing" state
+* @param nulling_cb A callback function pointer for the "null" state
+* @param frequency_changed_cb A callback function pointer when freq. is changed
+* @param station_found_cb A callback function pointer when station is found
+* @param rds_label_complete_cb A callback function pointer when rds is complete
 * @param Pointer to GstData struct filled-in with all required fields.
 */
 static GstData *
 sdrjfm_init (RadioServer *server, void (*playing_cb) (GstData*),
+                                  void (*nulling_cb) (GstData*),
                                   void (*frequency_changed_cb) (GstData*, gint),
                                   void (*station_found_cb) (GstData*, gint),
                                   void (*rds_label_complete_cb) (GstData*, const gchar*))
 {
+    g_message("DEBUG: entered sdrjfm_init");
     GError *error = NULL;
     GstData *data = g_slice_new0 (GstData);
     GstBus *bus;
@@ -688,19 +778,13 @@ sdrjfm_init (RadioServer *server, void (*playing_cb) (GstData*),
 
     data->rds_state = RDS_FIRST;
     data->playing_cb = playing_cb;
+    data->nulling_cb = nulling_cb;
     data->frequency_changed_cb = frequency_changed_cb;
     data->station_found_cb = station_found_cb;
     data->rds_label_complete_cb = rds_label_complete_cb;
 
     bus = gst_pipeline_get_bus (GST_PIPELINE (data->pipeline));
     gst_bus_add_watch (bus, bus_cb, data);
-
-    gst_element_set_state (data->pipeline, GST_STATE_PLAYING);
-
-    /* Default frequency : We don't want to send a frequencyChanged event here,
-       so just set server->frequency */
-    g_object_set (server->gstData->fmsrc, "frequency",
-        (gint) server->frequency, NULL);
 
     g_object_unref (bus);
 

@@ -565,6 +565,8 @@ var init = function () {
     $(".keypad-box").on('touchstart', onClassKeypadBoxTouchStart);
     $(".keypad-box").on('touchend',   onClassKeypadBoxTouchEnd);
     $("#smartCancelBtn").on('click', onSmartCancelBtnClick);
+    $("#EnableBtn").on('click', onEnableBtnClick);
+    $("#DisableBtn").on('click', onDisableBtnClick);
 
     if (fmradio) {
         // We start by registering our various signal listeners
@@ -691,6 +693,26 @@ function callEnable() {
         });
     } catch(e) {
         console.error("FMRadio.enable Exception caught : " + e);
+        return false;
+    }
+    return true;
+}
+
+/**
+ * Call FMRadioService disablement
+ *
+ * @method callDisable
+ * @static
+ */
+function callDisable() {
+
+    try {
+        fmradio.disable(function(error) {
+            console.error("FMRadio.disable internal error : " + error.message);
+            return false;
+        });
+    } catch(e) {
+        console.error("FMRadio.disable Exception caught : " + e);
         return false;
     }
     return true;
@@ -1182,3 +1204,18 @@ function onSmartCancelBtnClick(e) {
         console.error("smartCancelBtn.click() state error !");
     }
 }
+
+// Test button for FMRadio "Enablement"
+function onEnableBtnClick(e) {
+    if (state == "STATE_NORMAL") {
+        callEnable();
+    }
+}
+
+// Test button for FMRadio "Disablement"
+function onDisableBtnClick(e) {
+    if (state == "STATE_NORMAL") {
+        callDisable();
+    }
+}
+

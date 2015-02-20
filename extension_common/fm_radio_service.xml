@@ -17,6 +17,8 @@
 		<annotation name="org.freedesktop.DBus.GLib.CSymbol" value="server"/>
 		<method name="enable">
 		</method>
+		<method name="disable">
+		</method>
 		<method name="setfrequency">
 			<arg type='d' name='frequency' direction='in'/>"
 		</method>

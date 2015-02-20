@@ -159,6 +159,22 @@ exports.enable = function(errorCallback) {
     });
 };
 
+exports.disable = function(errorCallback) {
+
+    var msg = { cmd: 'Disable' };
+    postMessage(msg, function(result) {
+    if (result.isError) {
+        console.error('fm_radio_api.js: Disable failed');
+        if (errorCallback) {
+            var error = { message: 'Disable failed' };
+            if (result.errorMessage)
+                error.message += ', error: ' + result.errorMessage;
+                errorCallback(error);
+            }
+        }
+    });
+};
+
 exports.setFrequency = function(freqVal, errorCallback) {
 
     var msg = { cmd: 'SetFrequency', frequency: freqVal};
