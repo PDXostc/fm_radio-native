@@ -26,6 +26,7 @@ TopBar.TemplateHTML = "DNA_common/components/topBar/topBar.html";
 
 TopBar.topbarBack = function() {
 	if(tizen.application.getCurrentApplication().appInfo.packageId != "JLRPOCX001"){
+		$("#homeScreenIcon").trigger('OnAppClose');
 		tizen.application.launch('JLRPOCX001.HomeScreen', TopBar.backButtonWin, TopBar.backButtonFail);
 		//Uncomment for Singletasking mode
 		tizen.application.getCurrentApplication().exit();
@@ -45,6 +46,7 @@ topbarTouchstart = function(event){
 TopBar.pageUpdate = function() {
 	$('#topBar').replaceWith(TopBar.topBarHTML.valueOf());
 	$("#homeScreenIcon").click(TopBar.topbarBack);
+	depenancyMet("homeScreenIconClick");
 	$("#appGridIcon").click(TopBar.topbarGrid);
 	$(".exitButton").click(TopBar.topbarGrid);
 	initAppGrid();
@@ -84,6 +86,7 @@ function launchApplication(id) {
 	console.log(app);
 	if ( !! app) {
 		if( app != tizen.application.getCurrentApplication() ){
+			$("#homeScreenIcon").trigger('OnAppClose');
 			tizen.application.launch(app.id, onLaunchSuccess, onError);
 			tizen.application.getCurrentApplication().exit();
 		}
@@ -139,6 +142,7 @@ function onFrameClick(appData) {
 						Settings.show();
 					}
 				} else {
+					$("#homeScreenIcon").trigger('OnAppClose');
 					tizen.application.launch(appData.id, onLaunchSuccess, onError);
 					tizen.application.getCurrentApplication().exit();
 				}
@@ -493,6 +497,7 @@ function primeIcon(id,content){
 	if(content.length>0){
 		$("#topTask"+id).html("<img class='draggable' src='"+content+"''>");
 		$("#topTask"+id).click(function(){
+			$("#homeScreenIcon").trigger('OnAppClose');
 			tizen.application.launch(taskList[id].cb, TopBar.backButtonFail, TopBar.backButtonFail);
 			tizen.application.getCurrentApplication().exit();
 		});
