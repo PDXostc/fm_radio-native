@@ -165,6 +165,9 @@ static void radio_set_property (GObject *object, uint property_id,
 static void radio_get_property (GObject *object, guint property_id,
                                 GValue *value, GParamSpec *pspec);
 
+static int load_last_station(GString* fileName);
+static void save_last_station(GString* filename, int freq);
+
 /**
 * Function that creates all the glib signals.
 * @param klass Pointer on the main gobject class.
@@ -484,10 +487,13 @@ server_enable (RadioServer *server, GError **error)
         g_message("FMRadioService: server enabled");
 
         /* Default frequency : signalling of the default freq. to client is
-           goin to be done by onFrequencyChanged callback */
-        // TODO: instead of the "default" frequency here, READ it from a file
+           going to be done by onFrequencyChanged callback */
+
+        int default_freq = load_last_station(server->configFile);
+        if (default_freq == -1)
+            default_freq = FM_RADIO_SERVICE_DEF_FREQ;
         g_object_set (server->gstData->fmsrc, "frequency",
-            (gint) server->frequency, NULL);
+            (gint) default_freq, NULL);
 
     } else {
         RadioServerClass* klass = RADIO_SERVER_GET_CLASS(server);
@@ -562,6 +568,10 @@ server_setfrequency (RadioServer *server, gdouble value_in, GError **error)
     // Set the GST element frequency
     g_object_set (server->gstData->fmsrc, "frequency", (gint) value_in, NULL);
     g_message("FMRadioService: frequency set to : %f", value_in);
+
+    // everytime we set the frequency, we write it out.
+    // that's the only way we'll recover last station freq. in any case (crash)
+    save_last_station(server->configFile, (int) value_in);
 
     // TODO: Return false and set error in case something went wrong.
     return TRUE;
@@ -860,27 +870,30 @@ getConfigFile()
 }
 
 static void
-save_last_station(gchar* fileName, int freq)
+save_last_station(GString* filename, int freq)
 {
-    GError *error;
-
-    FILE *f = g_fopen(fileName, "w");
+    FILE *f = g_fopen(filename->str, "w");
     if (f != NULL) {
         fprintf(f, "%i", freq);
-        g_close(f, &error);
+        fclose(f);
     }
 }
 
 static int
-load_last_station(gchar* fileName)
+load_last_station(GString* filename)
 {
-    GError *error;
     int freq;
 
-    FILE *f = g_fopen(fileName, "r");
-    if (f != NULL) {
-        fscanf(f, "%i", &freq);
-        g_close(f, &error);
+    struct stat st;
+    if (stat(filename->str, &st) >= 0) {
+        FILE *f = g_fopen(filename->str, "r");
+        if (f != NULL) {
+            fscanf(f, "%i", &freq);
+            fclose(f);
+        }
+        return freq;
+    } else {
+        return -1;
     }
 }
 
@@ -892,6 +905,8 @@ handle_unix_termination_signal (gpointer user_data)
     GMainLoop *loop = server->mainloop;
     if (server->gstData != NULL)
         sdrjfm_deinit(server->gstData);
+    if (server->configFile != NULL)
+        g_string_free(server->configFile, TRUE);
     g_main_loop_quit (loop);
     return FALSE;
 }
