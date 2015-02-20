@@ -328,12 +328,24 @@ gst_sdrjfm_src_close (GstAudioSrc * asrc)
 static gboolean
 gst_sdrjfm_src_prepare (GstAudioSrc * asrc, GstAudioRingBufferSpec * spec)
 {
+  GstSdrjfmSrc *self = GST_SDRJFM_SRC (asrc);
+
+  GST_DEBUG_OBJECT(self, "Starting radio...");
+  self->radio->start();
+  GST_DEBUG_OBJECT(self, "...radio started");
+
   return TRUE;
 }
 
 static gboolean
 gst_sdrjfm_src_unprepare (GstAudioSrc * asrc)
 {
+  GstSdrjfmSrc *self = GST_SDRJFM_SRC (asrc);
+
+  GST_DEBUG_OBJECT(self, "Stopping radio..");
+  self->radio->stop();
+  GST_DEBUG_OBJECT(self, "...radio stopped");
+
   return TRUE;
 }
 
@@ -435,32 +447,6 @@ gst_sdrjfm_src_cancel_seek (GstSdrjfmSrc * self)
 }
 
 static void
-gst_sdrjfm_src_state_changed (GstElement *element, GstState oldstate,
-			      GstState newstate, GstState pending)
-{
-  if (GST_ELEMENT_CLASS (parent_class)->state_changed)
-	  GST_ELEMENT_CLASS (parent_class)->state_changed (element, oldstate, newstate, pending);
-
-  GstSdrjfmSrc *self = GST_SDRJFM_SRC (element);
-
-  if (!self->radio)
-    return;
-
-  if (newstate == GST_STATE_PLAYING)
-    {
-      GST_DEBUG_OBJECT(self, "Starting radio...");
-      self->radio->start();
-      GST_DEBUG_OBJECT(self, "...radio started");
-    }
-  else
-    {
-      GST_DEBUG_OBJECT(self, "Stopping radio..");
-      self->radio->stop();
-      GST_DEBUG_OBJECT(self, "...radio stopped");
-    }
-}
-
-static void
 gst_sdrjfm_src_init (GstSdrjfmSrc * self)
 {
   GstAudioBaseSrc *basrc = GST_AUDIO_BASE_SRC (self);
@@ -494,8 +480,6 @@ gst_sdrjfm_src_class_init (GstSdrjfmSrcClass * klass)
   gobject_class->finalize = (GObjectFinalizeFunc) gst_sdrjfm_src_finalize;
   gobject_class->get_property = gst_sdrjfm_src_get_property;
   gobject_class->set_property = gst_sdrjfm_src_set_property;
-
-  gstelement_class->state_changed = GST_DEBUG_FUNCPTR (gst_sdrjfm_src_state_changed);
 
   gstaudiosrc_class->open = GST_DEBUG_FUNCPTR (gst_sdrjfm_src_open);
   gstaudiosrc_class->prepare = GST_DEBUG_FUNCPTR (gst_sdrjfm_src_prepare);
