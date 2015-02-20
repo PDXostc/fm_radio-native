@@ -319,8 +319,12 @@ gst_sdrjfm_src_close (GstAudioSrc * asrc)
 {
   GstSdrjfmSrc *self = GST_SDRJFM_SRC (asrc);
 
-  delete self->radio;
-  self->radio = 0;
+  if (self->radio)
+    {
+      self->radio->stop();
+      delete self->radio;
+      self->radio = 0;
+    }
 
   return TRUE;
 }
