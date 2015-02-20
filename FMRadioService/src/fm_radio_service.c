@@ -27,11 +27,18 @@
 #include <unistd.h>
 
 #include <glib.h>
+#include <glib/gstdio.h>
 #include <gst/gst.h>
 #include <gio/gio.h>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-bindings.h>
 #include "../../extension_common/fm_radio_common.h"
+
+#ifdef G_OS_UNIX
+#include <glib-unix.h>
+#endif
+
+#define CONFIG_DIR "/fmradioservice"
 
 /**
  * Signal enum types.
@@ -97,8 +104,11 @@ typedef struct {
     gdouble  frequency;         /**< frequency is in Hz */
 
     GstData *gstData;
+    GMainLoop *mainloop;
 
     gboolean ongoingSeek;
+
+    GString *configFile;
 } RadioServer;
 
 /** Main GObject RadioServerClass class. */
@@ -721,6 +731,87 @@ sdrjfm_deinit(GstData *data)
     g_slice_free (GstData, data);
 }
 
+/**
+* Finds a file provider for config file
+*/
+static GString *
+getConfigFile()
+{
+    GString* configFile = g_string_new("");
+    GString* configDir = g_string_new("");
+
+    // We first check for standard XDG directories
+    gchar* s = getenv("XDG_CONFIG_HOME");
+    if (s != NULL) {
+        g_string_assign(configDir, s);
+        g_string_append(configDir, CONFIG_DIR);
+    } else {
+        gchar* homeDir = getenv("HOME");
+        if (homeDir != NULL) {
+            g_string_append(configDir, homeDir);
+            g_string_append(configDir, "/.config");
+            g_string_append(configDir, CONFIG_DIR);
+        } else {
+            // ouch! last resort :(
+            g_string_append(configDir, ".");
+        }
+    }
+
+    // create configDir if it's absent
+    struct stat st;
+    int err = g_stat(configDir->str, &st);
+    if(err == -1) {
+        if(errno == ENOENT) {
+            /* does not exist, create it */
+            g_mkdir_with_parents(configDir->str, 0x755);
+        }
+    }
+
+    // then we have our fileName
+    g_string_assign(configFile, configDir->str);
+    g_string_append(configFile, "/lastStation.freq");
+
+    return configFile;
+}
+
+static void
+save_last_station(gchar* fileName, int freq)
+{
+    GError *error;
+
+    FILE *f = g_fopen(fileName, "w");
+    if (f != NULL) {
+        fprintf(f, "%i", freq);
+        g_close(f, &error);
+    }
+}
+
+static int
+load_last_station(gchar* fileName)
+{
+    GError *error;
+    int freq;
+
+    FILE *f = g_fopen(fileName, "r");
+    if (f != NULL) {
+        fscanf(f, "%i", &freq);
+        g_close(f, &error);
+    }
+}
+
+#ifdef G_OS_UNIX
+static gboolean
+handle_unix_termination_signal (gpointer user_data)
+{
+    RadioServer* server = (RadioServer*) user_data;
+    GMainLoop *loop = server->mainloop;
+    if (server->gstData != NULL)
+        sdrjfm_deinit(server->gstData);
+    g_main_loop_quit (loop);
+    return FALSE;
+}
+#endif
+
 int
 main(int argc, char** argv)
 {
@@ -735,6 +826,14 @@ main(int argc, char** argv)
     radio_obj = g_object_new(TYPE_RADIO_SERVER, NULL);
     if (radio_obj == NULL)
         g_error("Failed to create one Value instance.");
+
+    radio_obj->mainloop = mainloop;
+    radio_obj->configFile = getConfigFile();
+
+#ifdef G_OS_UNIX
+    g_unix_signal_add (SIGTERM, handle_unix_termination_signal, radio_obj);
+    g_unix_signal_add (SIGINT,  handle_unix_termination_signal, radio_obj);
+#endif
 
     gst_init(&argc, &argv);
 
