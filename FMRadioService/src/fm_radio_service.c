@@ -27,11 +27,18 @@
 #include <unistd.h>
 
 #include <glib.h>
+#include <glib/gstdio.h>
 #include <gst/gst.h>
 #include <gio/gio.h>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-bindings.h>
 #include "../../extension_common/fm_radio_common.h"
+
+#ifdef G_OS_UNIX
+#include <glib-unix.h>
+#endif
+
+#define CONFIG_DIR "/fmradioservice"
 
 /**
  * Signal enum types.
@@ -100,8 +107,11 @@ typedef struct {
     gdouble  frequency;         /**< frequency is in Hz */
 
     GstData *gstData;
+    GMainLoop *mainloop;
 
     gboolean ongoingSeek;
+
+    GString *configFile;
 } RadioServer;
 
 /** Main GObject RadioServerClass class. */
@@ -154,6 +164,9 @@ static void radio_set_property (GObject *object, uint property_id,
                                 const GValue *value, GParamSpec *pspec);
 static void radio_get_property (GObject *object, guint property_id,
                                 GValue *value, GParamSpec *pspec);
+
+static int load_last_station(GString* fileName);
+static void save_last_station(GString* filename, int freq);
 
 /**
 * Function that creates all the glib signals.
@@ -349,7 +362,6 @@ radio_server_init(RadioServer *server)
 static void
 handle_on_enabled(GstData *data)
 {
-    g_message("DEBUG: entered handle_on_enabled");
     RadioServer *server;
 
 
@@ -369,7 +381,6 @@ handle_on_enabled(GstData *data)
 static void
 handle_on_disabled(GstData* data)
 {
-    g_message("DEBUG: entered handle_on_disabled");
     RadioServer *server;
     server = (RadioServer *) data->server;
     RadioServerClass* klass = RADIO_SERVER_GET_CLASS(server);
@@ -416,6 +427,10 @@ handle_on_station_found(GstData* data, gint freq)
                   klass->signals[E_SIGNAL_ON_STATION_FOUND],
                   0,
                   server->frequency);
+
+    // everytime we set the frequency, we write it out.
+    // that's the only way we'll recover last station freq. in any case (crash)
+    save_last_station(server->configFile, (int) freq);
 }
 
 /**
@@ -450,14 +465,12 @@ handle_on_rds_complete (GstData *data, const gchar *label)
 gboolean
 server_enable (RadioServer *server, GError **error)
 {
-    g_message("DEBUG: entered server_enable");
     /* Enabling FM Radio is a two-step async process.
        We first enable our sdrjfm GST element in here,
        then, the GST bus GST_MESSAGE_STATE_CHANGED callback will
        send the "enabled" signal if gst's state is set to GST_STATE_PLAYING */
 
     if (!server->init) {
-        g_message("DEBUG: server_enable : initializing");
         // server is not initialized... so let's init it and enable it
         g_object_set(server, "init", TRUE, NULL);
         sdrjfm_init(server,
@@ -474,15 +487,17 @@ server_enable (RadioServer *server, GError **error)
         g_message("FMRadioService: server enabled");
 
         /* Default frequency : signalling of the default freq. to client is
-           goin to be done by onFrequencyChanged callback */
-        // TODO: instead of the "default" frequency here, READ it from a file
+           going to be done by onFrequencyChanged callback */
+
+        int default_freq = load_last_station(server->configFile);
+        if (default_freq == -1)
+            default_freq = FM_RADIO_SERVICE_DEF_FREQ;
         g_object_set (server->gstData->fmsrc, "frequency",
-            (gint) server->frequency, NULL);
+            (gint) default_freq, NULL);
 
     } else {
         RadioServerClass* klass = RADIO_SERVER_GET_CLASS(server);
         if (server->enabled) {
-            g_message("DEBUG: server_enable : just signalling");
             /* Radio is already enabled (playing).
                We still broadcast our current frequency */
             g_signal_emit(server,
@@ -494,7 +509,6 @@ server_enable (RadioServer *server, GError **error)
                           server->frequency);
             g_message("FMRadioService: server already enabled");
         } else {
-            g_message("DEBUG: server_enable : enabling....");
             // Server is init, but radio is not playing. Enable it!
             gst_element_set_state (server->gstData->pipeline, GST_STATE_PLAYING);
 	    g_object_set(server, "enabled", TRUE, NULL);
@@ -523,7 +537,6 @@ server_enable (RadioServer *server, GError **error)
 gboolean
 server_disable (RadioServer *server, GError **error)
 {
-    g_message("DEBUG: entered server_disable");
     /* Disabling FM Radio is a two-step async process.
        We first diable our sdrjfm GST element in here,
        then, the GST bus GST_MESSAGE_STATE_CHANGED callback will
@@ -552,6 +565,10 @@ server_setfrequency (RadioServer *server, gdouble value_in, GError **error)
     // Set the GST element frequency
     g_object_set (server->gstData->fmsrc, "frequency", (gint) value_in, NULL);
     g_message("FMRadioService: frequency set to : %f", value_in);
+
+    // everytime we set the frequency, we write it out.
+    // that's the only way we'll recover last station freq. in any case (crash)
+    save_last_station(server->configFile, (int) value_in);
 
     // TODO: Return false and set error in case something went wrong.
     return TRUE;
@@ -682,22 +699,18 @@ bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
 
     switch (message->type) {
         case GST_MESSAGE_STATE_CHANGED:
-            g_message("bus_cb - GST_MESSAGE_STATE_CHANGED");
             if (GST_MESSAGE_SRC (message) == GST_OBJECT (data->pipeline)) {
                 GstState state;
                 gst_message_parse_state_changed (message, NULL, &state, NULL);
                 if (state == GST_STATE_PLAYING && data->playing_cb) {
-                    g_message("DEBUG : bus_cb : calling playing_cb CB");
                     data->playing_cb (data);
                 } else if (state == GST_STATE_READY && data->not_playing_cb) {
-                    g_message("DEBUG : bus_cb : calling not_playing_cb CB");
                     data->not_playing_cb (data);
                 }
             }
         break;
 
         case GST_MESSAGE_ELEMENT:
-            g_message("bus_cb - GST_MESSAGE_ELEMENT");
             if (GST_MESSAGE_SRC (message) == GST_OBJECT (data->fmsrc)) {
                 const GstStructure *s = gst_message_get_structure (message);
 
@@ -718,7 +731,6 @@ bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
 
                 } else if (gst_structure_has_field_typed (s, "station-label", G_TYPE_STRING)) {
                     const gchar *label = gst_structure_get_string (s, "station-label");
-                    g_message("DEBUG : rds complete label = %s", label);
                     if (gst_structure_has_name (s, "sdrjfmsrc-rds-station-label-complete")) {
                         if (data->rds_label_complete_cb)
                             data->rds_label_complete_cb (data, label);
@@ -761,7 +773,6 @@ sdrjfm_init (RadioServer *server, void (*playing_cb) (GstData*),
                                   void (*station_found_cb) (GstData*, gint),
                                   void (*rds_label_complete_cb) (GstData*, const gchar*))
 {
-    g_message("DEBUG: entered sdrjfm_init");
     GError *error = NULL;
     GstData *data = g_slice_new0 (GstData);
     GstBus *bus;
@@ -802,11 +813,100 @@ sdrjfm_init (RadioServer *server, void (*playing_cb) (GstData*),
 static void
 sdrjfm_deinit(GstData *data)
 {
-    gst_element_set_state (data->pipeline, GST_STATE_NULL);
+    gst_element_set_state (data->pipeline, GST_STATE_READY);
     g_object_unref (data->fmsrc);
     g_object_unref (data->pipeline);
     g_slice_free (GstData, data);
 }
+
+/**
+* Finds a file provider for config file
+*/
+static GString *
+getConfigFile()
+{
+    GString* configFile = g_string_new("");
+    GString* configDir = g_string_new("");
+
+    // We first check for standard XDG directories
+    gchar* s = getenv("XDG_CONFIG_HOME");
+    if (s != NULL) {
+        g_string_assign(configDir, s);
+        g_string_append(configDir, CONFIG_DIR);
+    } else {
+        gchar* homeDir = getenv("HOME");
+        if (homeDir != NULL) {
+            g_string_append(configDir, homeDir);
+            g_string_append(configDir, "/.config");
+            g_string_append(configDir, CONFIG_DIR);
+        } else {
+            // ouch! last resort :(
+            g_string_append(configDir, ".");
+        }
+    }
+
+    // create configDir if it's absent
+    struct stat st;
+    int err = g_stat(configDir->str, &st);
+    if(err == -1) {
+        if(errno == ENOENT) {
+            /* does not exist, create it */
+            g_mkdir_with_parents(configDir->str, 0755);
+        }
+    }
+
+    // then we have our fileName
+    g_string_assign(configFile, configDir->str);
+    g_string_append(configFile, "/lastStation.freq");
+
+    return configFile;
+}
+
+static void
+save_last_station(GString* filename, int freq)
+{
+    FILE *f = fopen(filename->str, "w+");
+    if (f != NULL) {
+        fprintf(f, "%i", freq);
+        fclose(f);
+    } else
+        perror("Error");
+}
+
+static int
+load_last_station(GString* filename)
+{
+    int freq;
+
+    struct stat st;
+    if (stat(filename->str, &st) >= 0) {
+        FILE *f = fopen(filename->str, "r");
+        if (f != NULL) {
+            fscanf(f, "%i", &freq);
+            fclose(f);
+        }
+        return freq;
+    } else {
+        return -1;
+    }
+}
+
+#ifdef G_OS_UNIX
+static gboolean
+handle_unix_termination_signal (gpointer user_data)
+{
+    RadioServer* server = (RadioServer*) user_data;
+    GMainLoop *loop = server->mainloop;
+    if (server->gstData != NULL) {
+        sdrjfm_deinit(server->gstData);
+    }
+    if (server->configFile != NULL) {
+        g_string_free(server->configFile, TRUE);
+    }
+    g_main_loop_quit (loop);
+    return FALSE;
+}
+#endif
 
 int
 main(int argc, char** argv)
@@ -822,6 +922,14 @@ main(int argc, char** argv)
     radio_obj = g_object_new(TYPE_RADIO_SERVER, NULL);
     if (radio_obj == NULL)
         g_error("Failed to create one Value instance.");
+
+    radio_obj->mainloop = mainloop;
+    radio_obj->configFile = getConfigFile();
+
+#ifdef G_OS_UNIX
+    g_unix_signal_add (SIGTERM, handle_unix_termination_signal, radio_obj);
+    g_unix_signal_add (SIGINT,  handle_unix_termination_signal, radio_obj);
+#endif
 
     gst_init(&argc, &argv);
 
