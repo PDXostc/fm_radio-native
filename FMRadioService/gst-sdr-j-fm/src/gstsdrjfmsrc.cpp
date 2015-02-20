@@ -319,6 +319,8 @@ gst_sdrjfm_src_close (GstAudioSrc * asrc)
 {
   GstSdrjfmSrc *self = GST_SDRJFM_SRC (asrc);
 
+  GST_DEBUG_OBJECT (asrc, "Closing FM source.");
+
   if (self->radio)
     {
       self->radio->stop();
