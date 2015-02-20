@@ -84,7 +84,7 @@ struct _GstData
     void *server;
     RDSState rds_state;
     void (*playing_cb) (GstData*);
-    void (*nulling_cb) (GstData*);
+    void (*not_playing_cb) (GstData*);
     void (*frequency_changed_cb) (GstData*, gint);
     void (*station_found_cb) (GstData*, gint);
     void (*rds_label_complete_cb) (GstData*, const gchar *);
@@ -146,7 +146,7 @@ static GParamSpec *obj_properties[E_PROP_COUNT] = {NULL,};
 
 static GstData *sdrjfm_init (RadioServer *server,
                              void (*playing_cb) (GstData*),
-                             void (*nulling_cb) (GstData*),
+                             void (*not_playing_cb) (GstData*),
                              void (*frequency_changed_cb) (GstData*, gint freq),
                              void (*station_found_cb) (GstData*, gint freq),
                              void (*rds_label_complete_cb) (GstData*, const gchar*));
@@ -497,6 +497,7 @@ server_enable (RadioServer *server, GError **error)
             g_message("DEBUG: server_enable : enabling....");
             // Server is init, but radio is not playing. Enable it!
             gst_element_set_state (server->gstData->pipeline, GST_STATE_PLAYING);
+	    g_object_set(server, "enabled", TRUE, NULL);
 
             // We still have to inform clients about current frequency
             g_signal_emit(server,
@@ -529,7 +530,7 @@ server_disable (RadioServer *server, GError **error)
        send the "disable" signal if gst's state is set to GST_STATE_NULL */
 
     if (server->enabled) {
-        gst_element_set_state (server->gstData->pipeline, GST_STATE_NULL);
+        gst_element_set_state (server->gstData->pipeline, GST_STATE_READY);
         g_object_set(server, "enabled", FALSE, NULL);
     } else {
         g_message("FMRadioService: server already disabled");
@@ -688,9 +689,9 @@ bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
                 if (state == GST_STATE_PLAYING && data->playing_cb) {
                     g_message("DEBUG : bus_cb : calling playing_cb CB");
                     data->playing_cb (data);
-                } else if (state == GST_STATE_NULL && data->nulling_cb) {
-                    g_message("DEBUG : bus_cb : calling nulling_cb CB");
-                    data->nulling_cb (data);
+                } else if (state == GST_STATE_READY && data->not_playing_cb) {
+                    g_message("DEBUG : bus_cb : calling not_playing_cb CB");
+                    data->not_playing_cb (data);
                 }
             }
         break;
@@ -747,7 +748,7 @@ bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
 * Gstreamer element initialization and pipeline creation.
 * @param server Pointer to main GObject RadioServer object.
 * @param playing_cb A callback function pointer for the "playing" state
-* @param nulling_cb A callback function pointer for the "null" state
+* @param not_playing_cb A callback function pointer for a state which is not playing state
 * @param frequency_changed_cb A callback function pointer when freq. is changed
 * @param station_found_cb A callback function pointer when station is found
 * @param rds_label_complete_cb A callback function pointer when rds is complete
@@ -755,7 +756,7 @@ bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
 */
 static GstData *
 sdrjfm_init (RadioServer *server, void (*playing_cb) (GstData*),
-                                  void (*nulling_cb) (GstData*),
+                                  void (*not_playing_cb) (GstData*),
                                   void (*frequency_changed_cb) (GstData*, gint),
                                   void (*station_found_cb) (GstData*, gint),
                                   void (*rds_label_complete_cb) (GstData*, const gchar*))
@@ -778,7 +779,7 @@ sdrjfm_init (RadioServer *server, void (*playing_cb) (GstData*),
 
     data->rds_state = RDS_FIRST;
     data->playing_cb = playing_cb;
-    data->nulling_cb = nulling_cb;
+    data->not_playing_cb = not_playing_cb;
     data->frequency_changed_cb = frequency_changed_cb;
     data->station_found_cb = station_found_cb;
     data->rds_label_complete_cb = rds_label_complete_cb;
