@@ -143,7 +143,8 @@ void	RadioInterface::stop	(void) {
 	if (runMode != RUNNING)
 		return;
 
-	myRig		-> stopReader ();
+	// FIXME: This is a workaround for old libusb on Tizen
+	//myRig		-> stopReader ();
 	myFMprocessor	-> stop ();
 
 	runMode = PAUSED;
