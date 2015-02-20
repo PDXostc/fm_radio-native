@@ -565,6 +565,9 @@ var init = function () {
     $(".keypad-box").on('touchstart', onClassKeypadBoxTouchStart);
     $(".keypad-box").on('touchend',   onClassKeypadBoxTouchEnd);
     $("#smartCancelBtn").on('click', onSmartCancelBtnClick);
+    onDepenancy("homeScreenIconClick", function(){
+			$("#homeScreenIcon").on('OnAppClose',function(){console.log("OnAppClose");});
+		});
 
     if (fmradio) {
         // We start by registering our various signal listeners
