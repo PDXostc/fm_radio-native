@@ -58,6 +58,8 @@ void FMRadioInstance::HandleMessage(const char* msg)
     const std::string cmd = v.get("cmd").to_str();
     if (cmd == "Enable") {
         HandleEnable(v);
+    } else if (cmd == "Disable") {
+        HandleDisable(v);
     } else if (cmd == "SetFrequency") {
         HandleSetFrequency(v);
     } else if (cmd == "Seek") {
@@ -306,6 +308,28 @@ void FMRadioInstance::HandleEnable(const picojson::value& msg)
                         std::string(error->message) + "'\n";
         else
             error_str = "FMRadioService:enable() unknown error occured\n";
+
+        g_warning("%s", error_str.c_str());
+        PostAsyncErrorReply(msg, error_str);
+        return;
+    }
+
+    PostAsyncSuccessReply(msg);
+}
+
+void FMRadioInstance::HandleDisable(const picojson::value& msg)
+{
+    GError* error = NULL;
+    //TODO:: Transform CallDBus to specify the bus name/path/iface
+    //       so it can be used to GetEnabled, etc... and return the value.
+    // CallDBus("Hangup", NULL, &error);
+    if (!com_jlr_fmradioservice_disable(busProxy, &error)) {
+        std::string error_str;
+        if (error)
+            error_str = "FMRadioService:disable() error occured '" +
+                        std::string(error->message) + "'\n";
+        else
+            error_str = "FMRadioService:disable() unknown error occured\n";
 
         g_warning("%s", error_str.c_str());
         PostAsyncErrorReply(msg, error_str);

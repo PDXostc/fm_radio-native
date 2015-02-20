@@ -48,6 +48,7 @@ class FMRadioInstance : public common::Instance {
 
         // Asynchronous messages
         void HandleEnable(const picojson::value& msg);
+        void HandleDisable(const picojson::value& msg);
         void HandleSetFrequency(const picojson::value& msg);
         void HandleSeek(const picojson::value& msg);
         void HandleAddListener(guint& listener_id,
