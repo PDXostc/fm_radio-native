@@ -524,7 +524,6 @@ server_enable (RadioServer *server, GError **error)
     // FIXME: Development HACK !! Remove !!
     g_object_set (server->gstData->fmsrc, "threshold", 24, NULL);
 
-    // TODO: Return false and set error in case something went wrong.
     return TRUE;
 }
 
@@ -570,7 +569,6 @@ server_setfrequency (RadioServer *server, gdouble value_in, GError **error)
     // that's the only way we'll recover last station freq. in any case (crash)
     save_last_station(server->configFile, (int) value_in);
 
-    // TODO: Return false and set error in case something went wrong.
     return TRUE;
 }
 
@@ -592,7 +590,6 @@ server_seek (RadioServer *server, gboolean value_in, GError **error)
 
     server->ongoingSeek = TRUE;
 
-    // TODO: Return false and set error in case something went wrong.
     return TRUE;
 }
 
@@ -610,7 +607,6 @@ server_cancelseek (RadioServer *server, GError **error)
         g_signal_emit_by_name (server->gstData->fmsrc, "cancel-seek");
     }
 
-    // TODO: Return false and set error in case something went wrong.
     return TRUE;
 }
 
@@ -805,7 +801,6 @@ sdrjfm_init (RadioServer *server, void (*playing_cb) (GstData*),
     return data;
 }
 
-// TODO: Call this when relevant
 /**
 * Gstreamer element destruction and pipeline teardown.
 * @param data Some GstData.
