@@ -501,8 +501,15 @@ function addSignalListeners() {
    try {
         fmradio.addOnRdsCompleteListener(function(signal_value){
             var element = document.getElementById("rds-label");
+            var NewLabel = element.innerHTML + signal_value;
+            if (NewLabel.substring(0,8) === "FM RADIO") {
+				NewLabel = NewLabel.substring(8,36);
+			} else {
+				NewLabel = NewLabel.substring(0,36);
+			}
 
-            element.innerHTML = signal_value;
+            element.innerHTML = NewLabel;
+            console.log("OnRdsComplete",signal_value);
         });
     } catch(e) {
         console.error("addRdsCompleteListener failed with error : " + e);
