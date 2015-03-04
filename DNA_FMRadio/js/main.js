@@ -22,7 +22,8 @@
  * like keypad direct tuning and scanning.
  * Possible states are :
  *
- * STATE_NORMAL             : Main app state under normal operation
+ * STATE_ENABLED            : Main app state under normal operation (enabled state)
+ * STATE_DISABLED           : App state when radio is disabled (controls unresponsive)
  * STATE_DIRECT_TUNING_1    : User has entered direct tuning. Ready to input digit 1
  * STATE_DIRECT_TUNING_2    : User has entered digit1, ready to input digit 2
  * STATE_DIRECT_TUNING_3    : User has entered digit2, ready to input digit 3
@@ -36,7 +37,7 @@
  *
 @property state {String}
  */
-var state = "STATE_NORMAL";
+var state = "STATE_ENABLED";
 
 /**
  * Very simple mouse down/up states for tracking
@@ -293,9 +294,9 @@ function updateStationIdDigit(add, num_value) {
 
         // First, update the state machine, since we added or removed a digit
         switch(state) {
-            case "STATE_NORMAL":
+            case "STATE_ENABLED":
                 console.error("STATE_ERROR: keypad-box cannot be clicked" +
-                              "(hidden) when in STATE_NORMAL");
+                              "(hidden) when in STATE_ENABLED");
                 break;
             case "STATE_DIRECT_TUNING_1":
                 if (add) {
@@ -435,7 +436,7 @@ function goBackToNormal() {
     stopFlash();
 
     // Put state back to normal
-    state = "STATE_NORMAL";
+    state = "STATE_ENABLED";
 
     // Put colors back
     okBtn.classList.remove("dna-green");
@@ -473,7 +474,7 @@ function addSignalListeners() {
 
             // update the state with regard to current seek/scan state
             if (state == "STATE_SEEKING") {
-                state = "STATE_NORMAL";
+                state = "STATE_ENABLED";
                 buttonUserFeedback("smartCancelBtn", "", "hidden");
             } else if (state.indexOf("STATE_SCANNING_SEEK") > -1){
                 startFlash("digits");
@@ -590,6 +591,7 @@ var init = function () {
 
         // Load presets
         Configuration.reload(loadPresetsList);
+        state = "STATE_ENABLED";
 
     } else {
         // If underlying FMRadioService/Extension is not present, trouble!
@@ -873,8 +875,8 @@ function scanWaitCB(direction) {
  */
 function onTuneDownBtnClick(e) {
 
-    // Interaction with 'manual tuning' is only possible on STATE_NORMAL
-    if (state == "STATE_NORMAL") {
+    // Interaction with 'manual tuning' is only possible on STATE_ENABLED
+    if (state == "STATE_ENABLED") {
         // TODO:
         // fetch interval from WebAPI interval
         var frequency = fmradio.frequency() - 100000;
@@ -895,8 +897,8 @@ function onTuneDownBtnClick(e) {
  */
 function onTuneUpBtnClick(e) {
 
-    // Interaction with 'manual tuning' is only possible on STATE_NORMAL
-    if (state == "STATE_NORMAL") {
+    // Interaction with 'manual tuning' is only possible on STATE_ENABLED
+    if (state == "STATE_ENABLED") {
         var frequency = fmradio.frequency() + 100000;
 
         if (frequency > constants.FREQ_MAX_LIMIT)
@@ -915,8 +917,8 @@ function onTuneUpBtnClick(e) {
  */
 function onSeekDownBtnClick(e) {
 
-    // Interaction with 'seek' is only possible on STATE_NORMAL
-    if (state == "STATE_NORMAL") {
+    // Interaction with 'seek' is only possible on STATE_ENABLED
+    if (state == "STATE_ENABLED") {
 
         if (callSeek(false)) {
             state = "STATE_SEEKING";
@@ -934,8 +936,8 @@ function onSeekDownBtnClick(e) {
  */
 function onSeekUpBtnClick(e) {
 
-    // Interaction with 'seek' is only possible on STATE_NORMAL
-    if (state == "STATE_NORMAL") {
+    // Interaction with 'seek' is only possible on STATE_ENABLED
+    if (state == "STATE_ENABLED") {
         if (callSeek(true)) {
             state = "STATE_SEEKING";
             buttonUserFeedback("smartCancelBtn", "hidden", "");
@@ -952,8 +954,8 @@ function onSeekUpBtnClick(e) {
  */
 function onScanDownBtnClick(e) {
 
-    // Interaction with 'scan' is only possible on STATE_NORMAL
-    if (state == "STATE_NORMAL") {
+    // Interaction with 'scan' is only possible on STATE_ENABLED
+    if (state == "STATE_ENABLED") {
         preScanFrequency = fmradio.frequency();
         if (callSeek(false)) {
             state = "STATE_SCANNING_SEEK_DW";
@@ -971,8 +973,8 @@ function onScanDownBtnClick(e) {
  */
 function onScanUpBtnClick(e) {
 
-    // Interaction with 'scan' is only possible on STATE_NORMAL
-    if (state == "STATE_NORMAL") {
+    // Interaction with 'scan' is only possible on STATE_ENABLED
+    if (state == "STATE_ENABLED") {
         preScanFrequency = fmradio.frequency();
         if (callSeek(true)) {
             state = "STATE_SCANNING_SEEK_UP";
@@ -999,7 +1001,7 @@ function onStationIdTouchStart(e) {
      * For clarity of all the states, we use a switch-case here
      * even if many branches do the exact same thing */
     switch(state) {
-        case "STATE_NORMAL":
+        case "STATE_ENABLED":
             state = "STATE_DIRECT_TUNING_1";
             preset.classList.add("hidden");
             keypad.classList.remove("hidden");
@@ -1012,7 +1014,7 @@ function onStationIdTouchStart(e) {
 
         case "STATE_SCANNING_WAIT":
             // means we tune in this scanned station. User likes it !
-            state = "STATE_NORMAL";
+            state = "STATE_ENABLED";
             buttonUserFeedback("smartCancelBtn", "", "hidden");
             stopFlash();
             if (scanWaitTimeout != null) {
@@ -1101,12 +1103,14 @@ function onClassFmRadioBoxClick(e) {
 
     // Extract pressed preset # from the element's id
     // freqHz *must* be a number to feed freqIsValid()
-    var index = $(this).attr('preset');
-    var freqHz = parseInt(presets[index]);
+    if (state == "STATE_ENABLED") {
+        var index = $(this).attr('preset');
+        var freqHz = parseInt(presets[index]);
 
-    // Tune-in the preset frequency
-    if (freqIsValid(freqHz)) {
-        callSetFrequency(freqHz);
+        // Tune-in the preset frequency
+        if (freqIsValid(freqHz)) {
+            callSetFrequency(freqHz);
+        }
     }
 }
 
@@ -1121,17 +1125,18 @@ function onClassFmRadioBoxClick(e) {
  */
 function onClassFmRadioBoxTouchStart(e) {
 
+    if (state == "STATE_ENABLED") {
+        mouseState = "STATE_MOUSE_DOWN";
+        buttonUserFeedback($(this), "fm-gray", "dna-orange");
 
-    mouseState = "STATE_MOUSE_DOWN";
-    buttonUserFeedback($(this), "fm-gray", "dna-orange");
+        // sanity check. mouseDownTimeout should not be already set on mousedown
+        if (mouseHoldTimeout != null)
+            clearTimeout(mouseHoldTimeout);
 
-    // sanity check. mouseDownTimeout should not be already set on mousedown
-    if (mouseHoldTimeout != null)
-        clearTimeout(mouseHoldTimeout);
-
-    mouseHoldTimeout = setTimeout(mouseHoldCB,
-                                  constants.MOUSE_HOLD_TIMEOUT_TIME,
-                                  $(this).attr('preset'));
+        mouseHoldTimeout = setTimeout(mouseHoldCB,
+                                      constants.MOUSE_HOLD_TIMEOUT_TIME,
+                                      $(this).attr('preset'));
+    }
 }
 
 /**
@@ -1145,12 +1150,14 @@ function onClassFmRadioBoxTouchStart(e) {
  */
 function onClassFmRadioBoxTouchEnd(e) {
 
-    mouseState = "STATE_MOUSE_UP";
-    buttonUserFeedback($(this), "dna-orange", "fm-gray");
+    if (state == "STATE_ENABLED") {
+        mouseState = "STATE_MOUSE_UP";
+        buttonUserFeedback($(this), "dna-orange", "fm-gray");
 
-    if (mouseHoldTimeout != null) {
-        clearTimeout(mouseHoldTimeout);
-        mouseHoldTimeout = null;
+        if (mouseHoldTimeout != null) {
+            clearTimeout(mouseHoldTimeout);
+            mouseHoldTimeout = null;
+        }
     }
 }
 
@@ -1190,12 +1197,12 @@ function onSmartCancelBtnClick(e) {
     // We can only cancel an ongoing "seek"
     if (state == "STATE_SEEKING") {
         if (callCancelSeek()) {
-            state = "STATE_NORMAL";
+            state = "STATE_ENABLED";
             buttonUserFeedback($(this), "", "hidden");
         }
     } else if (state.indexOf("STATE_SCANNING_SEEK") > -1) {
         if (callCancelSeek()) {
-            state = "STATE_NORMAL";
+            state = "STATE_ENABLED";
             buttonUserFeedback($(this), "", "hidden");
         }
         callSetFrequency(preScanFrequency);
@@ -1208,24 +1215,28 @@ function onSmartCancelBtnClick(e) {
 
         // we hide the smartCancelbutton and put everything back to normal
         buttonUserFeedback($(this), "", "hidden");
-        state = "STATE_NORMAL"
+        state = "STATE_ENABLED"
         callSetFrequency(preScanFrequency);
-    } else {
-        console.error("smartCancelBtn.click() state error !");
     }
 }
 
 // Test button for FMRadio "Enablement"
 function onEnableBtnClick(e) {
-    if (state == "STATE_NORMAL") {
-        callEnable();
+    if (state == "STATE_DISABLED") {
+        if (callEnable())
+            state = "STATE_ENABLED";
     }
 }
 
 // Test button for FMRadio "Disablement"
 function onDisableBtnClick(e) {
-    if (state == "STATE_NORMAL") {
-        callDisable();
+    if (state != "STATE_ERROR") {
+        onSmartCancelBtnClick(null);
+
+        if (state == "STATE_ENABLED") {
+            if (callDisable())
+                state = "STATE_DISABLED";
+        }
     }
 }
 
