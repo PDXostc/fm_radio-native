@@ -1,0 +1,50 @@
+FIXED BUGS
+==============================================================================
+
+#47 - Stereo reception for Intel NUC
+16 Jan 2015 10:12
+Status : Closed
+
+#57 - DBUS : crash with SIGSEV in gstreamer
+22 Jan 2015 15:01
+Status : Closed
+
+#59 - Occasional "Can't record audio fast enough" false ASSERT
+23 Jan 2015 21:42
+Status : Closed
+
+#63 - PULSE : Need to "$ mkdir -p /tmp/pulseaudio" for audio output to work
+30 Jan 2015 08:47
+Status : Closed
+
+#70 - GESTURE: fix the "mousehold" gesture with touchscreen
+06 Feb 2015 10:05
+Status : Closed
+
+#71 - APP: preset slot text stay ORANGE after mousehold
+06 Feb 2015 11:04
+Status : Closed
+
+#72 - REQ : Client asked that keypad hides on "ESC" key
+06 Feb 2015 11:09
+Status : Closed
+
+#111 - gstsdrjfmsrc bug When cancelling a seek
+13 Feb 2015 14:32
+Status : Closed
+
+#112 - trouble when exiting DNA_FMRadio while seeking/scanning
+13 Feb 2015 14:56
+Status : Closed
+
+#113 - LocalStorage does not persist accross machine reboots
+16 Feb 2015 14:40
+Status : Closed
+
+#116 - Preset become -0.000000 when newly created on exit
+20 Feb 2015 08:02
+Status : Closed
+
+#117 - gfmradioservice crashes with SIGSEGV when disabling (GST_STATE_NULL)
+20 Feb 2015 12:27
+Status : Closed
