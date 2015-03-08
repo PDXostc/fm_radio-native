@@ -1,0 +1,46 @@
+Following are the recommended steps for setuping development environment prior to building and running FMRadioService/FMRadioExtension/DNA_FMRadio
+
+Build environment: Tested on Ubuntu 14.10
+
+The .gbs.conf file in your home directory must contain this line in the [repo.tizen_latest] heading:
+url = http://download.tizen.org/releases/milestone/tizen/ivi/tizen_20140422.1/repos/ivi/ia32/packages
+
+An example .gbs-conf file is in this project's root directory.
+
+
+STEPS SETUP
+*************************************
+In a shell:
+
+*** on TARGET DEVICE ***
+
+  * Make sure your FM radio dongle is up and running
+        * For example, when using the R820T SDR&DVB-T from NooElec, do :
+
+        $ sudo cp blacklist-rtlsdr.conf /etc/modprobe.d
+        $ sudo cp 99-librtlsdr.rules /etc/udev/rules.d
+
+  * Make sure your tizen setup supports touch events
+    (DO NOT DO this step if your touchscreen already works properly)
+
+        * Check your touchscreen's idVendor and idProduct in :
+
+                $ lsusb -v
+
+        * Check which DISPLAY port you are currently using (the actual
+          physical port in which your monitor is plugged in). This is
+          typically 'VGA', 'HDMI1', 'HDMI2', etc... You can check the
+          different known ports in : /etc/xdg/weston/weston.ini
+
+        * Edit the following .rules file with corresponding info.
+          Change idVendor, idProduct and <DPY_NAME> with the correct values
+
+                $ vim 99-touchscreen.rules
+
+        * Copy the .rules files in proper location on target device
+
+                $ sudo cp 99-touchscreen.rules /etc/udev/rules.d
+
+  * reboot the device
+        $ sudo reboot
+
