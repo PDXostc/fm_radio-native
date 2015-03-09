@@ -1,0 +1,64 @@
+Following are the recommended steps to generate documentation
+for all three sub-projects :
+  * FMRadioService + gstsdrjfm
+  * FMRadioExtension
+  * DNA_FMRadio application
+
+
+*** on HOST or TARGET SYSTEM ***
+
+    * Make sure you have installed all the required deps
+        Depending on your system/distro, package names will
+        vary, but make sure to install :
+
+            - doxygen
+            - graphviz
+            - node.js
+            - npm
+            - yuidoc (npm -g install yuidocjs)
+
+
+STEPS TO BUILD DOCUMENTATION FOR FMRadioService + gstsdrjfm
+************************************************************
+
+    * Go to subdir root directory
+        $ cd <X004_FMRadio>/FMRadioService
+
+    * Generate documentation
+        $ make doc
+
+    * Read documentation with preferred <BROWSER_BIN>
+        $ <BROWSER_BIN> <X004_FMRadio>/FMRadioService/docs/index.html
+
+
+
+STEPS TO BUILD DOCUMENTATION FOR FMRadioExtension
+************************************************************
+
+    * Go to subdir root directory
+        $ cd <X004_FMRadio_ROOTDIR>/FMRadioExtension
+
+    * Generate documentation
+        $ make doc
+
+    * Read documentation with preferred <BROWSER_BIN>
+        $ <BROWSER_BIN> <X004_FMRadio>/FMRadioExtension/docs/index.html
+
+
+
+STEPS TO BUILD DOCUMENTATION FOR DNA_FMRadio
+************************************************************
+
+    * Go to subdir root directory
+        $ cd <X004_FMRadio_ROOTDIR>/DNA_FMRadio
+
+    * Generate documentation
+        yuidoc .
+
+    * Read documentation with preferred <BROWSER_BIN>
+        $ <BROWSER_BIN> <X004_FMRadio>/DNA_FMRadio/docs/index.html
+
+    NOTE: note that most of the resultant documentation will be
+          about ../DNA_common components. To get specific DNA_FMRadio
+          documentation, select the DNA_FMRadio URL from the left pane
+          in index.html page.
