@@ -24,6 +24,37 @@
  *  Author : Frederic Plourde <frederic.plourde@collabora.co.uk>
  */
 
+// Doxygen-based "general/mainpage" information section
+/*! \mainpage Jaguar Land Rover FM Radio
+ *
+ * \section intro_sec Introduction
+ *
+ * This project provides a proof of concept FM Radio application for the Tizen
+ * IVI environment. It is accomplished by enabling the reference FM radio
+ * hardware through a background dbus service/daemon (FMRadioService) that
+ * controls GStreamer and other low level libraries (gstsdrjfm) that demodulate
+ * the FM signal into audio data. The background service will provides a D-Bus
+ * API that exposes WebFM API (MPL) to the Crosswalk Web Runtime though a
+ * matching JavaScript API. The application (DNA_FMRadio) uses these APIs for
+ * the selection of radio stations, starting and stopping playback. The
+ * application is the user-facing section of the project. It is built using the
+ * Crosswalk Web Runtime infrastructure, and takes advantage of the state of
+ * already provided 'DNA' UI framework from customer.
+ *
+ * \section note_sec Important note
+ *
+ * This Doxygen-generated documentation only covers the following components :
+ *  * FMRadioService - fm_radio_service.c (FM radio dbus daemon)
+ *  * gstsdrjfm - GstSdrjfmSrc class      (GST element doing actual demodulation using third-party sdrj)
+ *
+ * Please, find documentation of these other components in the below locations :
+ *  * FMRadioExtension (Crosswalk plugin bridging high-level app to dbus daemon)
+ *     * <X004_DNAFMRadio/FMRadioExtension/docs/html/index.html>
+ *
+ *  * DNA_FMRadio (crosswalk Web application)
+ *     * ...
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
