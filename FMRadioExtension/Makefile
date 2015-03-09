@@ -1,14 +1,17 @@
 
 all: lib
 
-install: 
+install:
 	make -C src install
 
-lib: 
+lib:
 	make -C src
 
 clean:
 	make -C src clean
+
+doc:
+	doxygen Doxyfile
 
 .PHONY: all clean
 

@@ -17,43 +17,77 @@
 
 class FMRadioInstance;
 
+
 typedef struct {
     //DBusGProxyCall  *call;
     FMRadioInstance *obj;
     picojson::value *msg;
 } DBusReplyListener;
 
+/**
+ * Main class containing crosswalk extension/plugin fm radio implementation.
+ * Main purpose of this class is to serve as a bridge between HTML5/JS calls
+ * and C/C++ dbus daemon FM radio functionalities.
+*/
 class FMRadioInstance : public common::Instance {
     public:
         FMRadioInstance();
         ~FMRadioInstance();
 
+        /**
+         * Called to close an async message call loop with no
+         * particular regard to success criterion of the call
+         */
         void PostAsyncReply(const picojson::value& msg,
                             picojson::value::object& value);
+        /**
+         * Called to close an async message call loop with
+         * boilerplate error messages.
+         */
         void PostAsyncErrorReply(const picojson::value& msg,
                                  const std::string& error_msg);
+        /**
+         * Called to close an async message call loop with
+         * boilerplate success messages and a specific value
+         */
         void PostAsyncSuccessReply(const picojson::value& msg,
                                    const picojson::value& value);
+        /**
+         * Called to close an async message call loop with
+         * boilerplate success messages and general value msg
+         */
         void PostAsyncSuccessReply(const picojson::value& msg);
 
     private:
-        // common::Instance implementation.
+        /** Main method and AddListener processing function */
         virtual void HandleMessage(const char* msg);
+        /** Main property (getters) processing function */
         virtual void HandleSyncMessage(const char* msg);
 
         // Synchronous messages
+        /** Implementation AddListener processing function */
+        /** Bridge implementation when property "enabled' is fecthed */
         void HandleGetEnabled(const picojson::value& msg);
+        /** Bridge implementation when property "frequency' is fecthed */
         void HandleGetFrequency(const picojson::value& msg);
+
+        /** Bridge implementation when API method "cancelSeek' is called */
         void HandleCancelSeek(const picojson::value& msg);
 
         // Asynchronous messages
+        /** Bridge implementation when API method "enable' is called */
         void HandleEnable(const picojson::value& msg);
+        /** Bridge implementation when API method "disable' is called */
         void HandleDisable(const picojson::value& msg);
+        /** Bridge implementation when API method "setFrequency' is called */
         void HandleSetFrequency(const picojson::value& msg);
+        /** Bridge implementation when API method "seek' is called */
         void HandleSeek(const picojson::value& msg);
+        /** Bridge implementation when API method "addListener' is called */
         void HandleAddListener(guint& listener_id,
                                const std::string& signal_name,
                                const picojson::value& msg);
+        /** Bridge implementation when API method "removeListener' is called */
         void HandleRemoveListener(guint& listener_id,
                                   const std::string& signal_name,
                                   const picojson::value& msg);
@@ -76,6 +110,7 @@ class FMRadioInstance : public common::Instance {
         static GVariant* CallDBusGet(const gchar* method_name,
                                      GError **error);
 
+        /** Main Signal (coming from dbus daemon) handler that relay then to UI */
         static void HandleSignal(GDBusConnection* connection,
                                  const gchar* sender_name,
                                  const gchar* object_path,
