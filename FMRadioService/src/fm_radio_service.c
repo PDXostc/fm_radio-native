@@ -1,3 +1,8 @@
+/**
+* The main FMRadioService daemon that implements FM radio functionalities
+*/
+/*! \file */
+
 /*
  * Copyright 2014 Collabora Ltd.
  *
@@ -45,13 +50,13 @@
  * Signal enums are used in g_signal_new as name/id.
  */
 typedef enum {
-    E_SIGNAL_ON_ENABLED,
-    E_SIGNAL_ON_DISABLED,
-    E_SIGNAL_ON_FREQUENCY_CHANGED,
-    E_SIGNAL_ON_STATION_FOUND,
-    E_SIGNAL_ON_RDS_COMPLETE,
+    E_SIGNAL_ON_ENABLED,           /**< Emitted when demod. is enabled*/
+    E_SIGNAL_ON_DISABLED,          /**< Emitted when demod. is disabled*/
+    E_SIGNAL_ON_FREQUENCY_CHANGED, /**< Emitted when freq. is changed*/
+    E_SIGNAL_ON_STATION_FOUND,     /**< Emitted when station is sought*/
+    E_SIGNAL_ON_RDS_COMPLETE,      /**< Emitted when RDS data is complete*/
 
-    E_SIGNAL_COUNT              /**< E_SIGNAL_COUNT is not an actual signal */
+    E_SIGNAL_COUNT                 /**< Not an actual signal */
 } signal_enum;
 
 /**
@@ -60,18 +65,16 @@ typedef enum {
  * properties/values to the connected clients.
  */
 typedef enum {
-    E_PROP_0,                   /**< first prop_enum (0) has a special meaning */
+    E_PROP_0,         /**< first prop_enum (0) has a special meaning */
 
-    E_PROP_INIT,
-    E_PROP_ENABLED,
-    E_PROP_FREQUENCY,
+    E_PROP_INIT,      /**< Tells if internal radio is initialized (bool)*/
+    E_PROP_ENABLED,   /**< Tells if internal radio is enabled (bool)*/
+    E_PROP_FREQUENCY, /**< Holds current frequency in Hz (double)*/
 
-    E_PROP_COUNT                /**< E_PROP_COUNT is not an actual property */
+    E_PROP_COUNT      /**< This is not an actual property */
 } prop_enum;
 
-/**
- * RDS enums
- */
+/** RDS enums */
 typedef enum
 {
   RDS_FIRST = 1,
@@ -102,24 +105,24 @@ typedef struct {
     GObject parent;
 
     /* Actual properties */
-    gboolean init;              /**< This is not avail. from dbus */
-    gboolean enabled;
-    gdouble  frequency;         /**< frequency is in Hz */
+    gboolean init;        /**< internal radio initialized state */
+    gboolean enabled;     /**< internal radio enabled state */
+    gdouble  frequency;   /**< frequency is in Hz */
 
-    GstData *gstData;
-    GMainLoop *mainloop;
+    GstData *gstData;     /**< GST element data needed throughout radio ops*/
+    GMainLoop *mainloop;  /**< the Glib mainloop*/
 
-    gboolean ongoingSeek;
+    gboolean ongoingSeek; /**< state bool that keeps track of seek operations*/
 
-    GString *configFile;
+    GString *configFile;  /**< filename of the lastStation configfile*/
 } RadioServer;
 
 /** Main GObject RadioServerClass class. */
 typedef struct {
-    GObjectClass parent;
-    DBusGConnection *connection;
+    GObjectClass parent;           /**< Object parent*/
+    DBusGConnection *connection;   /**< Dbus connection used throughout radio*/
 
-    guint signals[E_SIGNAL_COUNT];
+    guint signals[E_SIGNAL_COUNT]; /**< the various signals exposed to dbus*/
 } RadioServerClass;
 
 GType radio_server_get_type (void);
@@ -462,7 +465,7 @@ handle_on_rds_complete (GstData *data, const gchar *label)
 * @param error GError containing code and message for calling dbus client.
 * @return TRUE is successful.
 */
-gboolean
+static gboolean
 server_enable (RadioServer *server, GError **error)
 {
     /* Enabling FM Radio is a two-step async process.
@@ -533,7 +536,7 @@ server_enable (RadioServer *server, GError **error)
 * @param error GError containing code and message for calling dbus client.
 * @return TRUE is successful.
 */
-gboolean
+static gboolean
 server_disable (RadioServer *server, GError **error)
 {
     /* Disabling FM Radio is a two-step async process.
@@ -558,7 +561,7 @@ server_disable (RadioServer *server, GError **error)
 * @param error GError containing code and message for calling dbus client.
 * @return TRUE is successful.
 */
-gboolean
+static gboolean
 server_setfrequency (RadioServer *server, gdouble value_in, GError **error)
 {
     // Set the GST element frequency
@@ -579,7 +582,7 @@ server_setfrequency (RadioServer *server, gdouble value_in, GError **error)
 * @param error GError containing code and message for calling dbus client.
 * @return TRUE is successful.
 */
-gboolean
+static gboolean
 server_seek (RadioServer *server, gboolean value_in, GError **error)
 {
     // Call the Seek on our gstjsdrsrc element
@@ -599,7 +602,7 @@ server_seek (RadioServer *server, gboolean value_in, GError **error)
 * @param error GError containing code and message for calling dbus client.
 * @return TRUE is successful.
 */
-gboolean
+static gboolean
 server_cancelseek (RadioServer *server, GError **error)
 {
     // We can only cancel a seek if GST element is currently seeking
