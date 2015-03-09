@@ -1,0 +1,13 @@
+{
+  "name": "DNA_FMRadio",
+  "description": "FM Radio HTML5/js tizen IVI web application based on Xwalk",
+  "version": "1.0",
+  "options": {
+    "linkNatives": "true",
+    "attributesEmit": "true",
+    "paths": [
+      "./js"
+    ],
+    "outdir": "./docs"
+  }
+}

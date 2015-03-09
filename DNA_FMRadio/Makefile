@@ -57,6 +57,8 @@ deploy: wgtPkg
 all:
 	@echo "Nothing to build"
 
+doc:
+	yuidoc .
 
 clean:
 	-rm $(PROJECT).wgt

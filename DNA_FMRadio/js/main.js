@@ -17,6 +17,13 @@
 *
 */
 
+// We have no class in this top-level main.js file
+// So define one for yuidoc's sake !
+
+/**
+@class DNA_FMRadio
+ */
+
 /**
  * Very Simple Application state tracker mechanism for operations
  * like keypad direct tuning and scanning.
