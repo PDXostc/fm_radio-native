@@ -176,13 +176,13 @@ G_DEFINE_TYPE(RadioServer, radio_server, G_TYPE_OBJECT)
 
 /* Stub functions must be declared before the bindings are included */
 /* Our dbus interface is defined in this automatically generated header */
-gboolean server_enable (RadioServer *server, GError **error);
-gboolean server_disable (RadioServer *server, GError **error);
-gboolean server_setfrequency (RadioServer *server, gdouble value_in,
+static gboolean server_enable (RadioServer *server, GError **error);
+static gboolean server_disable (RadioServer *server, GError **error);
+static gboolean server_setfrequency (RadioServer *server, gdouble value_in,
                               GError **error);
-gboolean server_seek (RadioServer *server, gboolean value_in,
+static gboolean server_seek (RadioServer *server, gboolean value_in,
                       GError **error);
-gboolean server_cancelseek (RadioServer *server, GError **error);
+static gboolean server_cancelseek (RadioServer *server, GError **error);
 
 #include "server-bindings.h"
 
