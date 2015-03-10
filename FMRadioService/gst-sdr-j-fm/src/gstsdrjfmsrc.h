@@ -132,6 +132,13 @@ struct GstSdrjfmSrc {
    * trailing whitespace.
    */
   gchar station_label[9];
+  /** \brief The RDS radio text.
+   * 
+   * This is a sixty-four-character buffer.  We store
+   * it with a closing NUL character and also insert a NUL when there is only
+   * trailing whitespace.
+   */
+  gchar radio_text[65];
 
   RadioInterface *radio;
 };

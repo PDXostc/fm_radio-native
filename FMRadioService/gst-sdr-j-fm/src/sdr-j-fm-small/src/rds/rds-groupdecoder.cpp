@@ -43,13 +43,19 @@ GST_DEBUG_CATEGORY_EXTERN (sdrjfm_debug);
 #define GST_CAT_DEFAULT sdrjfm_debug
 
 
-rdsGroupDecoder::rdsGroupDecoder (ClearCallback clearCallback,
-				  LabelCallback changeCallback,
-				  LabelCallback completeCallback,
+rdsGroupDecoder::rdsGroupDecoder (ClearCallback labelClearCallback,
+				  StringCallback labelChangeCallback,
+				  StringCallback labelCompleteCallback,
+				  ClearCallback textClearCallback,
+				  StringCallback textChangeCallback,
+				  StringCallback textCompleteCallback,
 				  void *callbackUserData) {
-	this -> clearCallback = clearCallback;
-	this -> changeCallback = changeCallback;
-	this -> completeCallback = completeCallback;
+	this -> labelClearCallback = labelClearCallback;
+	this -> labelChangeCallback = labelChangeCallback;
+	this -> labelCompleteCallback = labelCompleteCallback;
+	this -> textClearCallback = textClearCallback;
+	this -> textChangeCallback = textChangeCallback;
+	this -> textCompleteCallback = textCompleteCallback;
 	this -> callbackUserData = callbackUserData;
 	stationLabel[STATION_LABEL_LENGTH] = '\0';
 	reset ();
@@ -72,8 +78,10 @@ void	rdsGroupDecoder::reset (void) {
 	textABflag		= -1; // Not defined
 	textSegmentRegister	= 0;
 
-	if (clearCallback)
-		clearCallback(callbackUserData);
+	if (labelClearCallback)
+		labelClearCallback(callbackUserData);
+	if (textClearCallback)
+		textClearCallback(callbackUserData);
 }
 
 bool rdsGroupDecoder::decode (RDSGroup *grp) {
@@ -165,9 +173,9 @@ void	rdsGroupDecoder::addtoStationLabel (uint32_t index,
 	segment [0] = (char)(name >> 8);
 	segment [1] = (char)(name & 0xFF);
 
-	if (changeCallback
+	if (labelChangeCallback
 	    && (old [0] != segment [0] || old [1] != segment [1]))
-		changeCallback(stationLabel, callbackUserData);
+		labelChangeCallback(stationLabel, callbackUserData);
 
 //	Reset segment counter on first segment
 	if (index == 0)
@@ -181,8 +189,8 @@ void	rdsGroupDecoder::addtoStationLabel (uint32_t index,
 	if ((int32_t)stationNameSegmentRegister + 1 ==
 	                     (1 << NUMBER_OF_NAME_SEGMENTS)) {
 	   stationNameSegmentRegister = 0;
-	   if (completeCallback)
-		   completeCallback(stationLabel, callbackUserData);
+	   if (labelCompleteCallback)
+		   labelCompleteCallback(stationLabel, callbackUserData);
 	}
 }
 
@@ -212,26 +220,14 @@ uint16_t	i;
 
 	if (textABflag != new_txtABflag) {
 	   textABflag = new_txtABflag;
+
 //	If the textA/B has changed, we clear the old displayed message ...
-	   // FIXME: Signals needed
-	   //clearRadioText ();
-
-//	... and we check if we have received a continous stream of segments
-	   for (uint32_t i = 1; i < NUM_OF_FRAGMENTS; i++) {
-	      if ((1 << i) == (int32_t) textSegmentRegister + 1)  {
-	         // FIXME: Signals needed
-	         //setRadioText ((char *)textBuffer,
-		 //                      i * NUM_CHARS_PER_RTXT_SEGMENT);
-	         return;
-	      }
-	   }
-
-//	Reset the segment buffer
 	   textSegmentRegister = 0;
 	   memset (textBuffer, ' ',
 	          NUM_OF_CHARS_RADIOTEXT * sizeof (char));
-	   if (clearCallback)
-		   clearCallback(callbackUserData);
+
+	   if (textClearCallback)
+		   textClearCallback (callbackUserData);
 	}
 
 	textPart1	= grp -> getBlock_C ();
@@ -245,21 +241,21 @@ uint16_t	i;
 
 //	current segment is received (set bit in segment register to 1)
 	textSegmentRegister |= 1 << currentSegment;
-	// FIXME: Signals needed
-	//setRadioText ((char *)textBuffer,
-	//                              NUM_OF_CHARS_RADIOTEXT);
+	if (textChangeCallback)
+	    textChangeCallback (textBuffer, callbackUserData);
 
 //	check for end of message
 	for (i = 0; i < 4; i ++)
-	   if (textFragment [i] == END_OF_RADIO_TEXT)
-	      endF = true;
+	    if (textFragment [i] == END_OF_RADIO_TEXT) {
+	        endF = true;
+		break;
+	    }
 
 // Check if all fragments are in or we had an end of message
 	if (endF ||
 	    (textSegmentRegister == (1 << NUM_OF_FRAGMENTS) - 1)) {
-	     // FIXME: Signals needed
-	     //setRadioText ((char *)textBuffer,
-	     //                         NUM_OF_CHARS_RADIOTEXT);
+	     if (textCompleteCallback)
+		 textCompleteCallback (textBuffer, callbackUserData);
 	     textSegmentRegister = 0;
 	     memset (textBuffer, ' ',
 	          NUM_OF_CHARS_RADIOTEXT * sizeof (char));

@@ -47,9 +47,12 @@ class	audioSink;
 class RadioInterface {
 public:
 		RadioInterface		(int32_t = KHz(96700),
-					 ClearCallback = 0, // rds clear callback
-					 LabelCallback = 0, //  rds station label change callback
-					 LabelCallback = 0, // rds station label complete callback
+					 ClearCallback = 0,	// rds station label clear callback
+					 StringCallback = 0,	// rds station label change callback
+					 StringCallback = 0,	// rds station label complete callback
+					 ClearCallback = 0,	// rds radio text clear callback
+					 StringCallback = 0,	// rds radio text change callback
+					 StringCallback = 0,	// rds radio text complete callback
 					 void * = 0); // rds callbacks userdata
 		~RadioInterface		();
 

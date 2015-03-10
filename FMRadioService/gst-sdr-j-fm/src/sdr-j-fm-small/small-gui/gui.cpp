@@ -52,9 +52,12 @@ GST_DEBUG_CATEGORY_EXTERN (sdrjfm_debug);
  *	is embedded in actions, initiated by gui buttons
  */
 	RadioInterface::RadioInterface (int32_t frequency,
-					ClearCallback		clearCallback,
-					LabelCallback		changeCallback,
-					LabelCallback		completeCallback,
+					ClearCallback		labelClearCallback,
+					StringCallback	labelChangeCallback,
+					StringCallback	labelCompleteCallback,
+					ClearCallback		textClearCallback,
+					StringCallback	textChangeCallback,
+					StringCallback	textCompleteCallback,
 					void *		callbackUserData): myFMprocessor(0) {
 std::string h;
 bool	success;
@@ -115,9 +118,12 @@ bool	success;
 	                                    fmRate,
 	                                    this -> audioRate,
 	                                    thresHold,
-					    clearCallback,
-					    changeCallback,
-					    completeCallback,
+					    labelClearCallback,
+					    labelChangeCallback,
+					    labelCompleteCallback,
+					    textClearCallback,
+					    textChangeCallback,
+					    textCompleteCallback,
 					    callbackUserData);
 }
 

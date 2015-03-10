@@ -20,6 +20,12 @@ typedef enum
 
 typedef enum
 {
+  RDS_STATION_LABEL = 1,
+  RDS_RADIO_TEXT
+} RDSStringType;
+
+typedef enum
+{
   RDS_FIRST = 1,
   RDS_CLEAR,
   RDS_SECOND
@@ -40,9 +46,9 @@ struct _TestData
   void (*playing_cb) (TestData*);
   void (*frequency_changed_cb) (TestData*, gint);
   void (*station_found_cb) (TestData*, gint);
-  void (*rds_label_clear_cb) (TestData*);
-  void (*rds_label_change_cb) (TestData*, const gchar *);
-  void (*rds_label_complete_cb) (TestData*, const gchar *);
+  void (*rds_clear_cb) (TestData*, RDSStringType);
+  void (*rds_change_cb) (TestData*, RDSStringType, const gchar *);
+  void (*rds_complete_cb) (TestData*, RDSStringType, const gchar *);
   gint timeout;
   GMainLoop *loop;
   gint freqs[10];
@@ -50,6 +56,7 @@ struct _TestData
   gint target_freq;
   guint timeout_id;
   SeekState seek_state;
+  RDSStringType rds_type;
   RDSState rds_state;
   StartStopState startstop_state;
 };
@@ -92,8 +99,13 @@ bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
 	  }
 	else if (gst_structure_has_name (s, "sdrjfmsrc-rds-station-label-clear"))
 	  {
-		if (data->rds_label_clear_cb)
-		  data->rds_label_clear_cb (data);
+		if (data->rds_clear_cb)
+		  data->rds_clear_cb (data, RDS_STATION_LABEL);
+	  }
+	else if (gst_structure_has_name (s, "sdrjfmsrc-rds-radio-text-clear"))
+	  {
+		if (data->rds_clear_cb)
+		  data->rds_clear_cb (data, RDS_RADIO_TEXT);
 	  }
 	else if (gst_structure_has_field_typed (s, "station-label", G_TYPE_STRING))
 	  {
@@ -101,14 +113,28 @@ bus_cb (GstBus *bus, GstMessage *message, gpointer user_data)
 	    const gchar *label = gst_structure_get_string (s, "station-label");
 	    if (gst_structure_has_name (s, "sdrjfmsrc-rds-station-label-change"))
 	      {
-		if (data->rds_label_change_cb)
-		  data->rds_label_change_cb (data, label);
+		if (data->rds_change_cb)
+		  data->rds_change_cb (data, RDS_STATION_LABEL, label);
 	      }
 	    else if (gst_structure_has_name (s, "sdrjfmsrc-rds-station-label-complete"))
 	      {
-		if (data->rds_label_complete_cb)
+		if (data->rds_complete_cb)
+		  data->rds_complete_cb (data, RDS_STATION_LABEL, label);
+	      }
+	  }
+	else if (gst_structure_has_field_typed (s, "radio-text", G_TYPE_STRING))
+	  {
 
-		  data->rds_label_complete_cb (data, label);
+	    const gchar *label = gst_structure_get_string (s, "radio-text");
+	    if (gst_structure_has_name (s, "sdrjfmsrc-rds-radio-text-change"))
+	      {
+		if (data->rds_change_cb)
+		  data->rds_change_cb (data, RDS_RADIO_TEXT, label);
+	      }
+	    else if (gst_structure_has_name (s, "sdrjfmsrc-rds-radio-text-complete"))
+	      {
+		if (data->rds_complete_cb)
+		  data->rds_complete_cb (data, RDS_RADIO_TEXT, label);
 	      }
 	  }
       }
@@ -138,9 +164,9 @@ static TestData *
 tearup (gint freq, void (*playing_cb) (TestData*),
 	void (*frequency_changed_cb) (TestData*, gint),
 	void (*station_found_cb) (TestData*, gint),
-	void (*rds_label_clear_cb) (TestData*),
-	void (*rds_label_change_cb) (TestData*, const gchar *),
-	void (*rds_label_complete_cb) (TestData*, const gchar *))
+	void (*rds_clear_cb) (TestData*, RDSStringType),
+	void (*rds_change_cb) (TestData*, RDSStringType, const gchar *),
+	void (*rds_complete_cb) (TestData*, RDSStringType, const gchar *))
 {
   GError *error = NULL;
   TestData *data = g_slice_new0 (TestData);
@@ -166,9 +192,9 @@ tearup (gint freq, void (*playing_cb) (TestData*),
   data->playing_cb = playing_cb;
   data->frequency_changed_cb = frequency_changed_cb;
   data->station_found_cb = station_found_cb;
-  data->rds_label_clear_cb = rds_label_clear_cb;
-  data->rds_label_change_cb = rds_label_change_cb;
-  data->rds_label_complete_cb = rds_label_complete_cb;
+  data->rds_clear_cb = rds_clear_cb;
+  data->rds_change_cb = rds_change_cb;
+  data->rds_complete_cb = rds_complete_cb;
 
   bus = gst_pipeline_get_bus (GST_PIPELINE (data->pipeline));
   gst_bus_add_watch (bus, bus_cb, data);
@@ -314,7 +340,8 @@ test_seek_station_found_cb (TestData *data, gint frequency)
       case SEEK_UP:
 	data->seek_state = SEEK_DOWN;
 	g_signal_emit_by_name (data->fmsrc, "seek-down");
-	GST_DEBUG_OBJECT (data->fmsrc, "Found station at %d while seeking up, seeking down", frequency);
+	GST_DEBUG_OBJECT (data->fmsrc, "Found station at %d while seeking up, seeking down",
+			  frequency);
 	break;
 
       case SEEK_DOWN:
@@ -342,16 +369,32 @@ test_seek ()
   test_run (data);
 }
 
-static void
-test_rds_label_clear (TestData *data)
+static const char *
+rds_string_type_desc (RDSStringType type)
 {
-  GST_DEBUG_OBJECT (data->fmsrc, "RDS station label cleared");
+  switch (type)
+    {
+    case RDS_STATION_LABEL: return "station label";
+    case RDS_RADIO_TEXT: return "radio text";
+    default: return NULL;
+    };
+}
+
+static void
+test_rds_clear (TestData *data, RDSStringType type)
+{
+  const char *type_desc = rds_string_type_desc (type);
+
+  if (type != data->rds_type)
+    return;
+
+  GST_DEBUG_OBJECT (data->fmsrc, "RDS %s cleared", type_desc);
 
   switch (data->rds_state)
     {
     case RDS_CLEAR:
-      GST_DEBUG_OBJECT (data->fmsrc, "Successfully cleared RDS station label"
-                                     ", switching frequency back");
+      GST_DEBUG_OBJECT (data->fmsrc, "Successfully cleared RDS %s"
+			", switching frequency back", type_desc);
       data->rds_state = RDS_SECOND;
       g_object_set (data->fmsrc, "frequency", RDS_CAPABLE_STATION, NULL);
       break;
@@ -363,26 +406,34 @@ test_rds_label_clear (TestData *data)
 }
 
 static void
-test_rds_label_change (TestData *data, const gchar *label)
+test_rds_change (TestData *data, RDSStringType type, const gchar *label)
 {
-  GST_DEBUG_OBJECT (data->fmsrc, "RDS station label changed to: `%s'", label);
+  if (type != data->rds_type)
+    return;
 
+  GST_DEBUG_OBJECT (data->fmsrc, "RDS %s changed to: `%s'",
+		    rds_string_type_desc (type), label);
 }
 
 static void
-test_rds_label_complete (TestData *data, const gchar *label)
+test_rds_complete (TestData *data, RDSStringType type, const gchar *label)
 {
-  GST_DEBUG_OBJECT (data->fmsrc, "RDS station label complete: `%s'", label);
+  const char *type_desc = rds_string_type_desc (type);
+
+  if (type != data->rds_type)
+    return;
+
+  GST_DEBUG_OBJECT (data->fmsrc, "RDS %s complete: `%s'", type_desc, label);
 
   switch (data->rds_state)
     {
     case RDS_FIRST:
-      GST_DEBUG_OBJECT (data->fmsrc, "First RDS station label complete, switching frequency");
+      GST_DEBUG_OBJECT (data->fmsrc, "First RDS %s complete, switching frequency", type_desc);
       data->rds_state = RDS_CLEAR;
       g_object_set (data->fmsrc, "frequency", RDS_CAPABLE_STATION + 1000000, NULL);
       break;
     case RDS_SECOND:
-      GST_DEBUG_OBJECT (data->fmsrc, "Second RDS station label complete, test complete");
+      GST_DEBUG_OBJECT (data->fmsrc, "Second RDS %s complete, test complete", type_desc);
       test_done (data);
       break;
 
@@ -393,19 +444,32 @@ test_rds_label_complete (TestData *data, const gchar *label)
 
 
 static void
-test_rds ()
+test_rds (RDSStringType type)
 {
-  GST_DEBUG ("Starting RDS test");
+  GST_DEBUG ("Starting RDS %s test", rds_string_type_desc (type));
   TestData *data = tearup (RDS_CAPABLE_STATION,
 			   NULL,
 			   NULL,
 			   NULL,
-			   test_rds_label_clear,
-			   test_rds_label_change,
-			   test_rds_label_complete);
-  data->timeout = 300;
+			   test_rds_clear,
+			   test_rds_change,
+			   test_rds_complete);
+  data->timeout = 60 * 60;
+  data->rds_type = type;
 
   test_run (data);
+}
+
+static void
+test_rds_station_label ()
+{
+  test_rds (RDS_STATION_LABEL);
+}
+
+static void
+test_rds_radio_text ()
+{
+  test_rds (RDS_RADIO_TEXT);
 }
 
 static gboolean
@@ -495,7 +559,8 @@ main (gint argc, gchar **argv)
   g_test_init (&argc, &argv, NULL);
   g_test_add_func ("/tune/live", test_tune);
   g_test_add_func ("/tune/seek", test_seek);
-  g_test_add_func ("/tune/rds", test_rds);
+  g_test_add_func ("/tune/rds_station_label", test_rds_station_label);
+  g_test_add_func ("/tune/rds_radio_text", test_rds_radio_text);
   g_test_add_func ("/tune/startstop", test_startstop);
   g_test_run ();
   return 0;

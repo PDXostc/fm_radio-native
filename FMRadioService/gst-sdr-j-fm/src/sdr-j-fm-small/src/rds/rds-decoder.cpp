@@ -48,9 +48,12 @@ const DSPFLOAT	RDS_BITCLK_HZ =	1187.5;
 	rdsDecoder::rdsDecoder (RadioInterface *myRadio,
 				int32_t		rate,
 				SinCos		*mySinCos,
-				ClearCallback clearCallback,
-				LabelCallback changeCallback,
-				LabelCallback completeCallback,
+				ClearCallback labelClearCallback,
+				StringCallback labelChangeCallback,
+				StringCallback labelCompleteCallback,
+				ClearCallback textClearCallback,
+				StringCallback textChangeCallback,
+				StringCallback textCompleteCallback,
 				void *callbackUserData) {
 DSPFLOAT	synchronizerSamples;
 int16_t	i;
@@ -112,9 +115,12 @@ int16_t	length;
 	my_rdsBlockSync		= new rdsBlockSynchronizer (MyRadioInterface);
 	my_rdsBlockSync		-> setFecEnabled (true);
 
-	my_rdsGroupDecoder	= new rdsGroupDecoder	(clearCallback,
-							 changeCallback,
-							 completeCallback,
+	my_rdsGroupDecoder	= new rdsGroupDecoder	(labelClearCallback,
+							 labelChangeCallback,
+							 labelCompleteCallback,
+							 textClearCallback,
+							 textChangeCallback,
+							 textCompleteCallback,
 							 callbackUserData);
 
 	/*

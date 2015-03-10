@@ -55,6 +55,15 @@ GST_DEBUG_CATEGORY_EXTERN (sdrjfm_debug);
 #define DEFAULT_THRESHOLD              30
 
 const char DEFAULT_STATION_LABEL[9] = { '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0' };
+const char DEFAULT_RADIO_TEXT[65] = { '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
+				     '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
+				     '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
+				     '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
+				     '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
+				     '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
+				     '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
+				     '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0',
+				     '\0' };
 
 enum
 {
@@ -65,7 +74,8 @@ enum
   PROP_FREQUENCY,
   PROP_INTERVAL,
   PROP_THRESHOLD,
-  PROP_STATION_LABEL
+  PROP_STATION_LABEL,
+  PROP_RADIO_TEXT
 };
 
 /* signals and args */
@@ -168,6 +178,9 @@ gst_sdrjfm_src_get_property (GObject * object, guint prop_id,
     case PROP_STATION_LABEL:
       g_value_set_string (value, self->station_label);
       break;
+    case PROP_RADIO_TEXT:
+      g_value_set_string (value, self->radio_text);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -206,11 +219,9 @@ gst_sdrjfm_src_send_bus_message(GstSdrjfmSrc *self, GstStructure *s)
 
 template <typename V>
 static void
-gst_sdrjfm_src_send_bus_message(void * user_data, const char *name,
+gst_sdrjfm_src_send_bus_message(GstSdrjfmSrc *self, const char *name,
 				const char*field_name, GType type, V field_value)
 {
-
-  GstSdrjfmSrc *self = static_cast<GstSdrjfmSrc *>(user_data);
   GstStructure *s;
 
   s = gst_structure_new (name, field_name, type, field_value, NULL);
@@ -219,9 +230,8 @@ gst_sdrjfm_src_send_bus_message(void * user_data, const char *name,
 }
 
 static void
-gst_sdrjfm_src_send_bus_message_empty(void * user_data, const char *name)
+gst_sdrjfm_src_send_bus_message_empty(GstSdrjfmSrc * self, const char *name)
 {
-  GstSdrjfmSrc *self = static_cast<GstSdrjfmSrc *>(user_data);
   GstStructure *s;
 
   s = gst_structure_new_empty (name);
@@ -230,70 +240,151 @@ gst_sdrjfm_src_send_bus_message_empty(void * user_data, const char *name)
 }
 
 static void
-gst_sdrjfm_src_frequency_changed (void * user_data, int32_t frequency)
-{
-  gst_sdrjfm_src_send_bus_message (user_data, "sdrjfmsrc-frequency-changed",
-					   "frequency", G_TYPE_INT, frequency);
-}
-
-static void
-gst_sdrjfm_src_send_bus_message_station_label(void * user_data, const char *name,
-		const gchar * field_value)
-{
-  gst_sdrjfm_src_send_bus_message (user_data, name,
-				   "station-label", G_TYPE_STRING, field_value);
-}
-
-static void
-gst_sdrjfm_src_rds_clear(void *user_data)
+gst_sdrjfm_src_frequency_changed (void *user_data, int32_t frequency)
 {
   GstSdrjfmSrc *self = static_cast<GstSdrjfmSrc *>(user_data);
-  GST_OBJECT_LOCK (self);
-  strncpy (self->station_label, DEFAULT_STATION_LABEL, sizeof (self->station_label));
+  gst_sdrjfm_src_send_bus_message (self, "sdrjfmsrc-frequency-changed",
+				   "frequency", G_TYPE_INT, frequency);
+}
 
-  gst_sdrjfm_src_send_bus_message_empty(user_data,
-		"sdrjfmsrc-rds-station-label-clear");
+static void
+gst_sdrjfm_src_send_bus_message_string(GstSdrjfmSrc * self, const char *name,
+				       const gchar * field_name, const gchar * field_value)
+{
+  gst_sdrjfm_src_send_bus_message (self, name,
+				   field_name, G_TYPE_STRING, field_value);
+}
+
+static void
+gst_sdrjfm_src_send_bus_message_rds_string(GstSdrjfmSrc * self, const char *event,
+					   const gchar * field_name, const gchar * field_value)
+{
+  GString * message_name = g_string_new(NULL);
+  g_string_printf(message_name, "sdrjfmsrc-rds-%s-%s", field_name, event);
+
+  gst_sdrjfm_src_send_bus_message (self, message_name->str,
+				   field_name, G_TYPE_STRING, field_value);
+
+  g_string_free (message_name, TRUE);
+}
+
+static void
+gst_sdrjfm_src_send_bus_message_rds_empty(GstSdrjfmSrc * self, const char *event,
+					  const char *field_name)
+{
+  GString * name = g_string_new(NULL);
+  g_string_printf(name, "sdrjfmsrc-rds-%s-%s", field_name, event);
+
+  gst_sdrjfm_src_send_bus_message_empty (self, name->str);
+
+  g_string_free (name, TRUE);
+}
+
+static void
+gst_sdrjfm_src_rds_clear(GstSdrjfmSrc * self, char *field, size_t field_len,
+			 const char * default_value,
+			 const char * field_name)
+{
+  GST_OBJECT_LOCK (self);
+
+  strncpy (field, default_value, field_len);
+
+  gst_sdrjfm_src_send_bus_message_rds_empty(self, "clear", field_name);
 
   GST_OBJECT_UNLOCK (self);
 }
 
 static void
-gst_sdrjfm_src_rds_change(const char *label, void *user_data)
+gst_sdrjfm_src_rds_station_label_clear(void * user_data)
 {
   GstSdrjfmSrc *self = static_cast<GstSdrjfmSrc *>(user_data);
-  GST_OBJECT_LOCK (self);
+  gst_sdrjfm_src_rds_clear(self, self->station_label, sizeof (self->station_label),
+			   DEFAULT_STATION_LABEL, "station-label");
+}
 
-  char *dest = &self->station_label[0];
+static void
+gst_sdrjfm_src_rds_radio_text_clear(void * user_data)
+{
+  GstSdrjfmSrc *self = static_cast<GstSdrjfmSrc *>(user_data);
+  gst_sdrjfm_src_rds_clear(self, self->radio_text, sizeof (self->radio_text),
+			   DEFAULT_RADIO_TEXT, "radio-text");
+}
 
+static void
+gst_sdrjfm_src_rds_set(const char *string,
+		       char *dest, size_t dest_len)
+{
   // Reverse through the provided label, setting NULs locally until
   // non-space is seen and then just copy
   int i;
-  for (i = sizeof (self->station_label) - 2; i >= 0; --i)
+  for (i = dest_len - 2; i >= 0; --i)
     {
-      if (g_ascii_isspace (label[i]))
+      if (g_ascii_isspace (string[i]))
         dest[i] = '\0';
       else
 	break;
     }
   if (i >= 0)
-      strncpy (dest, label, i + 1);
+      strncpy (dest, string, i + 1);
+}
 
-  gst_sdrjfm_src_send_bus_message_station_label(user_data,
-		"sdrjfmsrc-rds-station-label-change", dest);
+static void
+gst_sdrjfm_src_rds_change(GstSdrjfmSrc * self, const char *string, char *dest,
+			  size_t dest_len, const char *field_name)
+{
+  GST_OBJECT_LOCK (self);
+
+  gst_sdrjfm_src_rds_set(string, dest, dest_len);
+
+  gst_sdrjfm_src_send_bus_message_rds_string(self, "change", field_name, dest);
 
   GST_OBJECT_UNLOCK (self);
 }
 
 static void
-gst_sdrjfm_src_rds_complete(const char *label, void *user_data)
+gst_sdrjfm_src_rds_station_label_change(const char *label, void *user_data)
 {
   GstSdrjfmSrc *self = static_cast<GstSdrjfmSrc *>(user_data);
+  gst_sdrjfm_src_rds_change(self, label, &self->station_label[0], sizeof (self->station_label),
+			    "station-label");
+}
+static void
+gst_sdrjfm_src_rds_radio_text_change(const char *text, void *user_data)
+{
+  GstSdrjfmSrc *self = static_cast<GstSdrjfmSrc *>(user_data);
+  gst_sdrjfm_src_rds_change(self, text, &self->radio_text[0], sizeof (self->radio_text),
+			    "radio-text");
+}
+
+static void
+gst_sdrjfm_src_rds_complete(GstSdrjfmSrc *self, const char *string, const char *field_name,
+			    char *field, size_t field_len)
+{
   GST_OBJECT_LOCK (self);
 
-  gst_sdrjfm_src_send_bus_message_station_label(user_data,
-		"sdrjfmsrc-rds-station-label-complete", label);
+  gst_sdrjfm_src_rds_set(string, field, field_len);
+
+  gst_sdrjfm_src_send_bus_message_rds_string(self, "complete", field_name, field);
 
   GST_OBJECT_UNLOCK (self);
+}
+
+static void
+gst_sdrjfm_src_rds_station_label_complete(const char *label, void *user_data)
+{
+  GstSdrjfmSrc *self = static_cast<GstSdrjfmSrc *>(user_data);
+
+  gst_sdrjfm_src_rds_complete(self, label, "station-label",
+			      self->station_label, sizeof (self->station_label));
+}
+
+static void
+gst_sdrjfm_src_rds_radio_text_complete(const char *label, void *user_data)
+{
+  GstSdrjfmSrc *self = static_cast<GstSdrjfmSrc *>(user_data);
+
+  gst_sdrjfm_src_rds_complete(self, label, "radio-text",
+			      self->radio_text, sizeof (self->radio_text));
 }
 
 static gboolean
@@ -302,10 +393,14 @@ gst_sdrjfm_src_open (GstAudioSrc * asrc)
   GstSdrjfmSrc *self = GST_SDRJFM_SRC (asrc);
 
   self->radio = new RadioInterface(self->frequency,
-				   gst_sdrjfm_src_rds_clear,
-				   gst_sdrjfm_src_rds_change,
-				   gst_sdrjfm_src_rds_complete,
+				   gst_sdrjfm_src_rds_station_label_clear,
+				   gst_sdrjfm_src_rds_station_label_change,
+				   gst_sdrjfm_src_rds_station_label_complete,
+				   gst_sdrjfm_src_rds_radio_text_clear,
+				   gst_sdrjfm_src_rds_radio_text_change,
+				   gst_sdrjfm_src_rds_radio_text_complete,
 				   self);
+
   GST_INFO_OBJECT (self, "Created new SDR-J FM Radio object with frequency %u",
 		   self->frequency);
 
@@ -424,7 +519,7 @@ gst_sdrjfm_src_station_found (int32_t frequency, void *user_data)
   GST_DEBUG_OBJECT (self, "Station found at frequency %i", frequency);
 
   self->frequency = frequency;
-  gst_sdrjfm_src_send_bus_message (user_data, "sdrjfmsrc-station-found",
+  gst_sdrjfm_src_send_bus_message (self, "sdrjfmsrc-station-found",
 				   "frequency", G_TYPE_INT, frequency);
 }
 
@@ -466,6 +561,7 @@ gst_sdrjfm_src_init (GstSdrjfmSrc * self)
   self->threshold = DEFAULT_THRESHOLD;
 
   strncpy(self->station_label, DEFAULT_STATION_LABEL, sizeof (self->station_label));
+  strncpy(self->radio_text, DEFAULT_RADIO_TEXT, sizeof (self->radio_text));
 
   basrc->buffer_time = 5000000;
 
@@ -540,6 +636,14 @@ gst_sdrjfm_src_class_init (GstSdrjfmSrcClass * klass)
       g_param_spec_string ("station-label", "Station Label",
 			"RDS label for the received station",
 			DEFAULT_STATION_LABEL,
+			static_cast<GParamFlags>(G_PARAM_READABLE
+						 | GST_PARAM_MUTABLE_PLAYING
+						 | G_PARAM_STATIC_STRINGS)));
+
+  g_object_class_install_property (gobject_class, PROP_RADIO_TEXT,
+      g_param_spec_string ("radio-text", "Radio Text",
+			"RDS text for the received station",
+			DEFAULT_RADIO_TEXT,
 			static_cast<GParamFlags>(G_PARAM_READABLE
 						 | GST_PARAM_MUTABLE_PLAYING
 						 | G_PARAM_STATIC_STRINGS)));

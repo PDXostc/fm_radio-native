@@ -40,12 +40,13 @@
 #include	"rds-group.h"
 
 typedef void (*ClearCallback)(void *userdata);
-typedef void (*LabelCallback)(const char * label, void *userdata);
+typedef void (*StringCallback)(const char * string, void *userdata);
 
 class	rdsGroupDecoder {
 public:
-	rdsGroupDecoder		(ClearCallback, LabelCallback,
-				 LabelCallback, void *);
+	rdsGroupDecoder		(ClearCallback, StringCallback, StringCallback,
+				 ClearCallback, StringCallback, StringCallback,
+				 void *);
 	~rdsGroupDecoder	(void);
 bool	decode			(RDSGroup *);
 void	reset			(void);
@@ -85,9 +86,12 @@ private:
 	char   textBuffer [NUM_OF_CHARS_RADIOTEXT];
 
 	// Callback members
-	ClearCallback clearCallback;
-	LabelCallback changeCallback;
-	LabelCallback completeCallback;
+	ClearCallback labelClearCallback;
+	StringCallback labelChangeCallback;
+	StringCallback labelCompleteCallback;
+	ClearCallback textClearCallback;
+	StringCallback textChangeCallback;
+	StringCallback textCompleteCallback;
 	void *callbackUserData;
 
 	//signals:

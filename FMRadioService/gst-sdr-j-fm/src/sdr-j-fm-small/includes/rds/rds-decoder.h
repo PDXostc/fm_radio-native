@@ -52,7 +52,9 @@ class	RadioInterface;
 class	rdsDecoder {
 public:
 		rdsDecoder (RadioInterface *, int32_t, SinCos *,
-			    ClearCallback, LabelCallback, LabelCallback, void *);
+			    ClearCallback, StringCallback, StringCallback,
+			    ClearCallback, StringCallback, StringCallback,
+			    void *);
 		~rdsDecoder (void);
 	enum RdsMode {
 	   NO_RDS	= 0,
