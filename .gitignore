@@ -37,6 +37,8 @@ lib/
 
 FMRadioExtension/src/client-bindings.h
 FMRadioExtension/src/fm_radio_api.cc
+FMRadioExtension/docs/
+FMRadioExtension/docs/*
 extension_common/libextension-common.a
 FMRadioService/src/fmradioservice
 FMRadioService/data/fmradioservice.service
@@ -47,6 +49,8 @@ FMRadioService/gst-sdr-j-fm/tests/tune
 
 DNA_FMRadio/DNA_FMRADIO.wgt
 DNA_FMRadio/DNA_common/
+DNA_FMRadio/docs/
+DNA_FMRadio/docs/*
 DNA_HelloTizen/DNA_HelloTizen.wgt
 DNA_HelloTizen/DNA_common/
 DNA_HomeScreen/DNA_HomeScreen.wgt
