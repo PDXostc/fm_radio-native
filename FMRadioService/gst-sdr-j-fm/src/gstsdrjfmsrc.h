@@ -100,6 +100,45 @@ typedef struct _GstSdrjfmSrcClass GstSdrjfmSrcClass;
  * </TABLE>
  * </DD>
  * 
+ * <DT>`sdrjfmsrc-rds-radio-text-clear`</DT>
+ * <DD>Emitted when the RDS radio text has been cleared.  For
+ * example, when changing frequency or because the tuned station has
+ * changed the transmitted label.
+ * <P><B>Properties</B>
+ * <P>This message has no properties.
+ * </DD>
+ * 
+ * <DT>`sdrjfmsrc-rds-radio-text-change`</DT>
+ * <DD>Emitted when the RDS radio text changes content.  As different
+ * segments of the text are received, this message will be emitted
+ * each time a new segment is successfully decoded.  Empty segments
+ * are filled with spaces.
+ * <P><B>Properties</B>
+ * <TABLE>
+ * <TR>
+ * <TD>Name</TD><TD>Type</TD><TD>Description</TD><TD>Example</TD>
+ * </TR>
+ * <TR><TD>`radio-text`</TD><TD>`G_TYPE_STRING`</TD><TD>The RDS
+ * radio text, or as much of it as has been received</TD>
+ * <TD>`This&nbsp;is&nbsp;City&nbsp;Tal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Liverpool`</TD></TR>
+ * </TABLE>
+ * </DD>
+ * 
+ * <DT>`sdrjfmsrc-rds-radio-text-complete`</DT>
+ * <DD>Emitted when each segment in the RDS radio text has been
+ * successfully decoded.  This message will be emitted in addition to
+ * a `sdrjfmsrc-rds-radio-text-change` message.
+ * <P><B>Properties</B>
+ * <TABLE>
+ * <TR>
+ * <TD>Name</TD><TD>Type</TD><TD>Description</TD><TD>Example</TD>
+ * <TR><TD>`radio-text`</TD><TD>`G_TYPE_STRING`</TD><TD>The complete RDS
+ * radio text</TD>
+ * <TD>`This&nbsp;is&nbsp;City&nbsp;Talk&nbsp;105.9&nbsp;Liverpool`</TD></TR>
+ * </TR>
+ * </TABLE>
+ * </DD>
+ * 
  * </DL>
  */
 struct GstSdrjfmSrc {
