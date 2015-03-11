@@ -44,7 +44,7 @@
  *
 @property state {String}
  */
-var state = "STATE_ENABLED";
+var state = "STATE_DISABLED";
 
 /**
  * Very simple mouse down/up states for tracking
@@ -480,6 +480,26 @@ function fluctuate(bar) {
 function addSignalListeners() {
 
     try {
+        fmradio.addOnEnabledListener(function(signal_value){
+            // the STATE_ERROR state is not recoverable for now.
+            if (state != "STATE_ERROR")
+                state = "STATE_ENABLED";
+        });
+    } catch(e) {
+        console.error("addOnEnabledListener failed with error : " + e);
+    }
+
+    try {
+        fmradio.addOnDisabledListener(function(signal_value){
+            // the STATE_ERROR state is not recoverable for now.
+            if (state != "STATE_ERROR")
+                state = "STATE_DISABLED";
+        });
+    } catch(e) {
+        console.error("addOnDisabledListener failed with error : " + e);
+    }
+
+    try {
         fmradio.addOnFrequencyChangedListener(function(signal_value){
             setStationIdFrequency(signal_value);
         });
@@ -637,7 +657,6 @@ var init = function () {
 
         // Load presets
         Configuration.reload(loadPresetsList);
-        state = "STATE_ENABLED";
 
     } else {
         // If underlying FMRadioService/Extension is not present, trouble!
@@ -1269,8 +1288,8 @@ function onSmartCancelBtnClick(e) {
 // Test button for FMRadio "Enablement"
 function onEnableBtnClick(e) {
     if (state == "STATE_DISABLED") {
-        if (callEnable())
-            state = "STATE_ENABLED";
+        callEnable();
+        // STATE_DISABLED will be set by onEnabled Listener
     }
 }
 
@@ -1280,8 +1299,8 @@ function onDisableBtnClick(e) {
         onSmartCancelBtnClick(null);
 
         if (state == "STATE_ENABLED") {
-            if (callDisable())
-                state = "STATE_DISABLED";
+            callDisable();
+            // STATE_DISABLED will be set by onDisabled Listener
         }
     }
 }
