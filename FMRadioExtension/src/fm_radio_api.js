@@ -17,6 +17,14 @@ var _on_station_found_listeners = {};
 var _on_station_found_listener_id = 0;
 var _on_station_found_listeners_count = 0;
 
+var _on_rds_clear_listeners = {};
+var _on_rds_clear_listener_id = 0;
+var _on_rds_clear_listeners_count = 0;
+
+var _on_rds_change_listeners = {};
+var _on_rds_change_listener_id = 0;
+var _on_rds_change_listeners_count = 0;
+
 var _on_rds_complete_listeners = {};
 var _on_rds_complete_listener_id = 0;
 var _on_rds_complete_listeners_count = 0;
@@ -66,6 +74,10 @@ extension.setMessageListener(function(msg) {
             handleOnFrequencyChangedSignal(m);
         } else if (m.signal_name === 'onstationfound') {
             handleOnStationFoundSignal(m);
+        } else if (m.signal_name === 'onrdsclear') {
+            handleOnRdsClearSignal(m);
+        } else if (m.signal_name === 'onrdschange') {
+            handleOnRdsChangeSignal(m);
         } else if (m.signal_name === 'onrdscomplete') {
             handleOnRdsCompleteSignal(m);
         }
@@ -120,6 +132,28 @@ function handleOnStationFoundSignal(msg) {
         var cb = _on_station_found_listeners[key];
         if (!cb || typeof(cb) !== 'function') {
             console.error('No StationFound listener found for id ' + key);
+        }
+        cb(msg.signal_params);
+    }
+}
+
+function handleOnRdsClearSignal(msg) {
+
+    for (var key in _on_rds_clear_listeners) {
+        var cb = _on_rds_clear_listeners[key];
+        if (!cb || typeof(cb) !== 'function') {
+            console.error('No RdsClear listener found for id ' + key);
+        }
+        cb(msg.signal_params);
+    }
+}
+
+function handleOnRdsChangeSignal(msg) {
+
+    for (var key in _on_rds_change_listeners) {
+        var cb = _on_rds_change_listeners[key];
+        if (!cb || typeof(cb) !== 'function') {
+            console.error('No RdsChange listener found for id ' + key);
         }
         cb(msg.signal_params);
     }
@@ -358,6 +392,64 @@ exports.addOnStationFoundListener = function(listener) {
     }
 
     return _on_station_found_listener_id;
+};
+
+exports.addOnRdsClearListener = function(listener) {
+
+    if (!(listener instanceof Function) && listener != undefined) {
+        console.error('fm_radio_api.js: AddRdsClearListener failed');
+        return;
+    }
+
+    for (var key in _on_rds_clear_listeners) {
+        if (_on_rds_clear_listeners[key] == listener) {
+            console.log('fm_radio_api.js: same listener added');
+            return key;
+        }
+    }
+
+    _on_rds_clear_listeners[++_on_rds_clear_listener_id] =
+        listener;
+    _on_rds_clear_listeners_count++;
+    if (_on_rds_clear_listeners_count == 1) {
+        var msg = { cmd: 'AddOnRdsClearListener' };
+        postMessage(msg, function(result) {
+            if (result.isError) {
+                console.error('fm_radio_api.js: AddRdsClearLis failed');
+            }
+        });
+    }
+
+    return _on_rds_clear_listener_id;
+};
+
+exports.addOnRdsChangeListener = function(listener) {
+
+    if (!(listener instanceof Function) && listener != undefined) {
+        console.error('fm_radio_api.js: AddRdsChangeListener failed');
+        return;
+    }
+
+    for (var key in _on_rds_change_listeners) {
+        if (_on_rds_change_listeners[key] == listener) {
+            console.log('fm_radio_api.js: same listener added');
+            return key;
+        }
+    }
+
+    _on_rds_change_listeners[++_on_rds_change_listener_id] =
+        listener;
+    _on_rds_change_listeners_count++;
+    if (_on_rds_change_listeners_count == 1) {
+        var msg = { cmd: 'AddOnRdsChangeListener' };
+        postMessage(msg, function(result) {
+            if (result.isError) {
+                console.error('fm_radio_api.js: AddRdsChangeLis failed');
+            }
+        });
+    }
+
+    return _on_rds_change_listener_id;
 };
 
 exports.addOnRdsCompleteListener = function(listener) {

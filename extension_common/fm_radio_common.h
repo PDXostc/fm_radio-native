@@ -33,4 +33,6 @@
 #define SIGNAL_ON_DISABLED          "ondisabled"
 #define SIGNAL_ON_FREQUENCY_CHANGED "onfrequencychanged"
 #define SIGNAL_ON_STATION_FOUND     "onstationfound"
+#define SIGNAL_ON_RDS_CLEAR         "onrdsclear"
+#define SIGNAL_ON_RDS_CHANGE        "onrdschange"
 #define SIGNAL_ON_RDS_COMPLETE      "onrdscomplete"

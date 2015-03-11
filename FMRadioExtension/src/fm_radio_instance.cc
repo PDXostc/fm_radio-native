@@ -12,6 +12,8 @@ guint FMRadioInstance::on_enabled_listener_id_ = 0;
 guint FMRadioInstance::on_disabled_listener_id_ = 0;
 guint FMRadioInstance::on_frequency_changed_listener_id_ = 0;
 guint FMRadioInstance::on_station_found_listener_id_ = 0;
+guint FMRadioInstance::on_rds_clear_listener_id_ = 0;
+guint FMRadioInstance::on_rds_change_listener_id_ = 0;
 guint FMRadioInstance::on_rds_complete_listener_id_ = 0;
 
 FMRadioInstance::FMRadioInstance()
@@ -90,6 +92,18 @@ void FMRadioInstance::HandleMessage(const char* msg)
     } else if (cmd == "RemoveOnStationFoundListener") {
         HandleRemoveListener(on_station_found_listener_id_,
         std::string("onstationfound"), v);
+    } else if (cmd == "AddOnRdsClearListener") {
+        HandleAddListener(on_rds_clear_listener_id_,
+        std::string("onrdsclear"), v);
+    } else if (cmd == "RemoveOnRdsClearListener") {
+        HandleRemoveListener(on_rds_clear_listener_id_,
+        std::string("onrdsclear"), v);
+    } else if (cmd == "AddOnRdsChangeListener") {
+        HandleAddListener(on_rds_change_listener_id_,
+        std::string("onrdschange"), v);
+    } else if (cmd == "RemoveOnRdsChangeListener") {
+        HandleRemoveListener(on_rds_change_listener_id_,
+        std::string("onrdschange"), v);
     } else if (cmd == "AddOnRdsCompleteListener") {
         HandleAddListener(on_rds_complete_listener_id_,
         std::string("onrdscomplete"), v);
@@ -194,26 +208,6 @@ void FMRadioInstance::SendSignal(const picojson::value& signal_name,
     PostMessage(msg.serialize().c_str());
 }
 
-GVariant* FMRadioInstance::CallDBusGet(const gchar* method_name,
-                                       GError** error)
-{
-    if (!method_name)
-        return NULL;
-
-    return g_dbus_connection_call_sync(
-        g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, NULL),
-        FM_RADIO_SERVICE_DBUS_NAME,
-        FM_RADIO_SERVICE_DBUS_PATH,
-        FM_RADIO_SERVICE_DBUS_IFACE,
-        method_name,
-        NULL,
-        NULL,
-        G_DBUS_CALL_FLAGS_NONE,
-        -1,
-        NULL,
-        error);
-}
-
 void FMRadioInstance::HandleSignal(GDBusConnection* connection,
                                    const gchar* sender_name,
                                    const gchar* object_path,
@@ -244,10 +238,42 @@ void FMRadioInstance::HandleSignal(GDBusConnection* connection,
         picojson::value value(freq);
 
         instance->SendSignal(picojson::value(signal_name), value);
+    } else if (!strcmp(signal_name, "onrdsclear")) {
+        guint type;
+        gchar *data;
+
+        g_variant_get(parameters, "(u)", &type);
+        g_variant_get(parameters, "(s)", &data);
+        picojson::value::object o;
+
+        // we want a guint here, but numbers are only conveyed as
+        // 'double' in picojson'
+        o["type"] = picojson::value((gdouble)type);
+        picojson::value value(o);
+
+        instance->SendSignal(picojson::value(signal_name), value);
+    } else if (!strcmp(signal_name, "onrdschange")) {
+        guint type;
+        gchar *data;
+
+        g_variant_get(parameters, "(us)", &type, &data);
+        picojson::value::object o;
+
+        o["type"] = picojson::value((gdouble)type);
+        o["data"] = picojson::value(data);
+        picojson::value value(o);
+
+        instance->SendSignal(picojson::value(signal_name), value);
     } else if (!strcmp(signal_name, "onrdscomplete")) {
-        gchar *label;
-        g_variant_get(parameters, "(s)", &label);
-        picojson::value value(label);
+        guint type;
+        gchar *data;
+
+        g_variant_get(parameters, "(us)", &type, &data);
+        picojson::value::object o;
+
+        o["type"] = picojson::value((gdouble)type);
+        o["data"] = picojson::value(data);
+        picojson::value value(o);
 
         instance->SendSignal(picojson::value(signal_name), value);
     }

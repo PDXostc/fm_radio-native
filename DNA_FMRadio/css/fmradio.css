@@ -223,6 +223,14 @@ body {
   margin-top: 50px;
 }
 
+.smaller-title {
+  font-family: sourceSansPro;
+  font-size: 40px;
+  color: #c4c4c4;
+  text-align: center;
+  margin-top: 50px;
+}
+
 #station-id {
   font-size: 386px;
   line-height: 1.2;

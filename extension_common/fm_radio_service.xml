@@ -48,9 +48,19 @@
 		<signal name="onstationfound">
 			<arg name="frequency" type="d"/>
 		</signal>
-		<!-- Signal emitted when 'label' RDS field is completely received. string (s) argument. Label data. -->
+		<!-- Signal emitted when 'label' or 'text' RDS field is cleared by emitting station. uint (u) argument. RDS string type (type) -->
+		<signal name="onrdsclear">
+			<arg name="type" type="u"/>
+		</signal>
+		<!-- Signal emitted when some 'label' or 'text' RDS field data is received. Arguments : uint (u) => RDS string type (type), string (s) => RDS string data (data)-->
+		<signal name="onrdschange">
+			<arg name="type" type="u"/>
+			<arg name="data" type="s"/>
+		</signal>
+		<!-- Signal emitted when 'label' or 'text' RDS field data is received. Arguments : uint (u) => RDS string type (type), string (s) => RDS string data (data) -->
 		<signal name="onrdscomplete">
-			<arg name="label" type="s"/>
+			<arg name="type" type="u"/>
+			<arg name="data" type="s"/>
 		</signal>
 
 		<!-- boolean (b) property 'enabled' -->

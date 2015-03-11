@@ -107,9 +107,6 @@ class FMRadioInstance : public common::Instance {
         void SendSignal(const picojson::value& signal_name,
                         const picojson::value& signal_value);
 
-        static GVariant* CallDBusGet(const gchar* method_name,
-                                     GError **error);
-
         /** Main Signal (coming from dbus daemon) handler that relay then to UI */
         static void HandleSignal(GDBusConnection* connection,
                                  const gchar* sender_name,
@@ -125,6 +122,8 @@ class FMRadioInstance : public common::Instance {
         static guint on_disabled_listener_id_;
         static guint on_frequency_changed_listener_id_;
         static guint on_station_found_listener_id_;
+        static guint on_rds_clear_listener_id_;
+        static guint on_rds_change_listener_id_;
         static guint on_rds_complete_listener_id_;
 
         GMainLoop* main_loop_;

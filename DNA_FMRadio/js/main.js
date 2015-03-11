@@ -85,6 +85,16 @@ var constants = {
 };
 
 /**
+ * RDS field types.
+ * Those types must match RdsFieldTypes enum in FMRadioService/src/fm_radio_service.c
+@property rdsFieldTypes {Object}
+ */
+var rdsFieldTypes = {
+    'RDS_STATION_LABEL'       : 1,
+    'RDS_RADIO_TEXT'          : 2
+};
+
+/**
  * Station presets channel/frequency values
  * We use the actual {int} here for values, as we have to feed FMRadioService
  * There should be constants.NUM_OF_PRESETS presets in the array
@@ -421,6 +431,7 @@ function resetRDSLabel(){
 
     // Reset RDS label to "FMRadio"
     (document.getElementById("rds-label")).innerHTML = "FM RADIO";
+    (document.getElementById("rds-text")).innerHTML = "rds text";
 }
 
 /**
@@ -506,18 +517,46 @@ function addSignalListeners() {
         console.error("addStationFoundListener failed with error : " + e);
     }
 
+    try {
+        fmradio.addOnRdsClearListener(function(signal_value){
+
+            // NOT USED
+        });
+    } catch(e) {
+        console.error("addRdsClearListener failed with error : " + e);
+    }
+
+   try {
+        fmradio.addOnRdsChangeListener(function(signal_value){
+
+            // TO IMPLEMENT BY THE CUSTOMER IS SMALLER STRING
+            // GRANULARITY FOR THE 'TEXT' FIELD IS REQUIRED.
+
+        });
+    } catch(e) {
+        console.error("addRdsChangeListener failed with error : " + e);
+    }
+
    try {
         fmradio.addOnRdsCompleteListener(function(signal_value){
-            var element = document.getElementById("rds-label");
-            var NewLabel = element.innerHTML + signal_value;
-            if (NewLabel.substring(0,8) === "FM RADIO") {
-				NewLabel = NewLabel.substring(8,36);
-			} else {
-				NewLabel = NewLabel.substring(0,36);
-			}
 
-            element.innerHTML = NewLabel;
-            console.log("OnRdsComplete",signal_value);
+            var type = signal_value.type;
+            var element;
+
+            if (type == rdsFieldTypes.RDS_STATION_LABEL) {
+                element = document.getElementById("rds-label");
+                element.innerHTML = signal_value.data;
+            } else if (type == rdsFieldTypes.RDS_RADIO_TEXT) {
+                element = document.getElementById("rds-text");
+                var NewLabel = element.innerHTML + signal_value.data;
+                if (NewLabel.substring(0,8) === "rds text") {
+    				NewLabel = NewLabel.substring(8,36);
+    			} else {
+    				NewLabel = NewLabel.substring(0,36);
+    			}
+                element.innerHTML = NewLabel;
+            }
+            console.log("OnRdsComplete", signal_value.data);
         });
     } catch(e) {
         console.error("addRdsCompleteListener failed with error : " + e);
