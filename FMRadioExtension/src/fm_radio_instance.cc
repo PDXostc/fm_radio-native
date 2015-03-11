@@ -240,10 +240,8 @@ void FMRadioInstance::HandleSignal(GDBusConnection* connection,
         instance->SendSignal(picojson::value(signal_name), value);
     } else if (!strcmp(signal_name, "onrdsclear")) {
         guint type;
-        gchar *data;
 
         g_variant_get(parameters, "(u)", &type);
-        g_variant_get(parameters, "(s)", &data);
         picojson::value::object o;
 
         // we want a guint here, but numbers are only conveyed as
