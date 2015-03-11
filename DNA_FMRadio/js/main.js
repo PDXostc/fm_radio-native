@@ -1297,6 +1297,7 @@ function onEnableBtnClick(e) {
 function onDisableBtnClick(e) {
     if (state != "STATE_ERROR") {
         onSmartCancelBtnClick(null);
+        resetRDSLabel();
 
         if (state == "STATE_ENABLED") {
             callDisable();
