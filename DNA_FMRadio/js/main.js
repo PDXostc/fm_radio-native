@@ -568,13 +568,19 @@ function addSignalListeners() {
                 element.innerHTML = signal_value.data;
             } else if (type == rdsFieldTypes.RDS_RADIO_TEXT) {
                 element = document.getElementById("rds-text");
-                var NewLabel = element.innerHTML + signal_value.data;
-                if (NewLabel.substring(0,8) === "rds text") {
-    				NewLabel = NewLabel.substring(8,36);
-    			} else {
-    				NewLabel = NewLabel.substring(0,36);
-    			}
-                element.innerHTML = NewLabel;
+                // FIXME: The following implementation of a ringbuffer
+                //        only shows the first 64 characters and
+                //        does not "roll". Final implementation
+                //        if left to the customer since there are
+                //        many possible usecases here.
+                // var NewLabel = element.innerHTML + signal_value.data;
+                // if (NewLabel.substring(0,8) === "rds text") {
+    			// 	NewLabel = NewLabel.substring(8,72);
+    			// } else {
+    			//	NewLabel = NewLabel.substring(0,64);
+    			//}
+                // element.innerHTML = NewLabel;
+                element.innerHTML = signal_value.data;
             }
             console.log("OnRdsComplete", signal_value.data);
         });
