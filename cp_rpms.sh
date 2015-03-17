@@ -45,6 +45,10 @@ then
     fi
     echo -e "${red}Copying the install script to target device...${NC}"
     scp ./install_rpms.sh app@$TIZEN_IP:
+    scp blacklist-rtlsdr.conf root@$TIZEN_IP:/etc/modprobe.d
+    scp 99-librtlsdr.rules root@$TIZEN_IP:/etc/udev/rules.d
+    ssh root@TizenVTC "mkdir -p /tmp/pulseaudio"
+    ssh root@TizenVTC "cd /home/app; ./install_rpms.sh"
 else
   echo "Error! You have to set and export TIZEN_IP prior to calling this script!"
 fi

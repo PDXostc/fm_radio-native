@@ -126,11 +126,12 @@ function refreshVolume() {
 	volLogCnt++;
 	if(volLogCnt == 5)
 	{
-		console.log("MOSTLOG refreshVolume query");
+		//console.log("MOSTLOG refreshVolume query");
 		volLogCnt=0;
 	}
-	most.mostAsync(JSON.stringify(jsonenc), volumeQueryCB);
-	
+	if (typeof(most)!=="undefined") {
+		most.mostAsync(JSON.stringify(jsonenc), volumeQueryCB);
+	}	
 }
 // Sets the variable which holds the latest updated volume
 // received from the MOST extension.

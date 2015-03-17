@@ -1,9 +1,17 @@
 /*
  * Copyright (c) 2014, Intel Corporation, Jaguar Land Rover
  *
- * This program is licensed under the terms and conditions of the
- * Apache License, version 2.0.  The full text of the Apache License is at
- * http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
  */
 
@@ -274,15 +282,17 @@ CarIndicator.prototype._mappingTable = {
 		getFunction : function() { 
 			"use strict";
 			var zone = new Zone([]);
-			  vehicle.tyrePressureFLMS.get(zone).then(function(tirePressure) 
-			 {
-				 // TODO: add != 0 conditional, or a try/catch.
-				 GlobalSelf._mappingTable["TyrePressureFLMS"].curValue = tirePressure.tyrePressureFLMS;
-			     console.log("AMB: TyrePressureFLMS  get sees value as: " + tirePressure.tyrePressureFLMS);
-			 },
-			 function(error) {
-			  console.log("AMB: There was an error on the TyrePressureFLMS get.");
-			 });	
+				if (typeof(vehicle)!=="undefined") {
+				  vehicle.tyrePressureFLMS.get(zone).then(function(tirePressure) 
+				 {
+					 // TODO: add != 0 conditional, or a try/catch.
+					 GlobalSelf._mappingTable["TyrePressureFLMS"].curValue = tirePressure.tyrePressureFLMS;
+					 console.log("AMB: TyrePressureFLMS  get sees value as: " + tirePressure.tyrePressureFLMS);
+				 },
+				 function(error) {
+				  console.log("AMB: There was an error on the TyrePressureFLMS get.");
+				 });
+			 }
 		},
 		subscribeFunction : function() { 
 			"use strict";
@@ -304,15 +314,17 @@ CarIndicator.prototype._mappingTable = {
 		getFunction : function() { 
 			"use strict";
 			var zone = new Zone([]);
-			   vehicle.tyrePressureFRMS.get(zone).then(function(tirePressure) 
-			 {
-				 // TODO: add != 0 conditional, or a try/catch.
-				 GlobalSelf._mappingTable["TyrePressureFRMS"].curValue = tirePressure.tyrePressureFRMS;
-			     console.log("AMB: TyrePressureFRMS  get sees value as: " + tirePressure.tyrePressureFRMS);
-			 },
-			 function(error) {
-			  console.log("AMB: There was an error on the TyrePressureFRMS get.");
-			 });	
+			if (typeof(vehicle)!=="undefined") {
+		   vehicle.tyrePressureFRMS.get(zone).then(function(tirePressure) 
+				 {
+					 // TODO: add != 0 conditional, or a try/catch.
+					 GlobalSelf._mappingTable["TyrePressureFRMS"].curValue = tirePressure.tyrePressureFRMS;
+					 console.log("AMB: TyrePressureFRMS  get sees value as: " + tirePressure.tyrePressureFRMS);
+				 },
+				 function(error) {
+				  console.log("AMB: There was an error on the TyrePressureFRMS get.");
+				 });
+			}
 		},
 		subscribeFunction : function() { 
 			"use strict";
@@ -334,15 +346,17 @@ CarIndicator.prototype._mappingTable = {
 		getFunction : function() { 
 			"use strict";
 			var zone = new Zone([]);
-			   vehicle.tyrePressureRLMS.get(zone).then(function(tirePressure) 
-			 {
-				 // TODO: add != 0 conditional, or a try/catch.
-				 GlobalSelf._mappingTable["TyrePressureRLMS"].curValue = tirePressure.tyrePressureRLMS;
-			     console.log("AMB: TyrePressureRLMS  get sees value as: " + tirePressure.tyrePressureRLMS);
-			 },
-			 function(error) {
-			  console.log("AMB: There was an error on the TyrePressureRLMS get.");
-			 });	
+			if (typeof(vehicle)!=="undefined") {
+		   vehicle.tyrePressureRLMS.get(zone).then(function(tirePressure) 
+				 {
+					 // TODO: add != 0 conditional, or a try/catch.
+					 GlobalSelf._mappingTable["TyrePressureRLMS"].curValue = tirePressure.tyrePressureRLMS;
+					 console.log("AMB: TyrePressureRLMS  get sees value as: " + tirePressure.tyrePressureRLMS);
+				 },
+				 function(error) {
+				  console.log("AMB: There was an error on the TyrePressureRLMS get.");
+				 });
+			 }
 		},
 		subscribeFunction : function() { 
 			"use strict";
@@ -364,15 +378,17 @@ CarIndicator.prototype._mappingTable = {
 		getFunction : function() { 
 			"use strict";
 			var zone = new Zone([]);
+			if (typeof(vehicle)!=="undefined") {
 			   vehicle.tyrePressureRRMS.get(zone).then(function(tirePressure) 
-			 {
-				 // TODO: add != 0 conditional, or a try/catch.
-				 GlobalSelf._mappingTable["TyrePressureRRMS"].curValue = tirePressure.tyrePressureRRMS;
-			     console.log("AMB: TyrePressureRRMS  get sees value as: " + tirePressure.tyrePressureRRMS);
-			 },
-			 function(error) {
-			  console.log("AMB: There was an error on the TyrePressureRRMS get.");
-			 });	
+				 {
+					 // TODO: add != 0 conditional, or a try/catch.
+					 GlobalSelf._mappingTable["TyrePressureRRMS"].curValue = tirePressure.tyrePressureRRMS;
+					 console.log("AMB: TyrePressureRRMS  get sees value as: " + tirePressure.tyrePressureRRMS);
+				 },
+				 function(error) {
+				  console.log("AMB: There was an error on the TyrePressureRRMS get.");
+				 });
+			 }
 		},
 		subscribeFunction : function() { 
 			"use strict";
@@ -519,15 +535,17 @@ CarIndicator.prototype._mappingTable = {
 		getFunction : function() { 
 			"use strict";
 			var zone = new Zone([]);
+			if (typeof(vehicle)!=="undefined") {
 			   vehicle.ambientTemp.get(zone).then(function(temp) 
-			 {
-				 // TODO: add != 0 conditional, or a try/catch.
-				 GlobalSelf._mappingTable["AmbientTemp"].curValue = temp.ambientTemp;
-			     console.log("AMB: AmbientTemp  get sees value as: " + temp.ambientTemp);
-			 },
-			 function(error) {
-			  console.log("AMB: There was an error on the AmbientTemp get.");
-			 });	
+				 {
+					 // TODO: add != 0 conditional, or a try/catch.
+					 GlobalSelf._mappingTable["AmbientTemp"].curValue = temp.ambientTemp;
+					 console.log("AMB: AmbientTemp  get sees value as: " + temp.ambientTemp);
+				 },
+				 function(error) {
+				  console.log("AMB: There was an error on the AmbientTemp get.");
+				 });
+			 }
 		},
 		subscribeFunction : function() { 
 			"use strict";
@@ -550,15 +568,17 @@ CarIndicator.prototype._mappingTable = {
 		getFunction : function() { 
 			"use strict";
 			var zone = new Zone([]);
+			if (typeof(vehicle)!=="undefined") {
 			   vehicle.inCarTemp.get(zone).then(function(temp) 
-			 {
-				 // TODO: add != 0 conditional, or a try/catch.
-				 GlobalSelf._mappingTable["InCarTemp"].curValue = temp.inCarTemp;
-			     console.log("AMB: InCarTemp  get sees value as: " + temp.inCarTemp);
-			 },
-			 function(error) {
-			  console.log("AMB: There was an error on the InCarTemp get.");
-			 });	
+				 {
+					 // TODO: add != 0 conditional, or a try/catch.
+					 GlobalSelf._mappingTable["InCarTemp"].curValue = temp.inCarTemp;
+					 console.log("AMB: InCarTemp  get sees value as: " + temp.inCarTemp);
+				 },
+				 function(error) {
+				  console.log("AMB: There was an error on the InCarTemp get.");
+				 });
+			 }
 		},
 		subscribeFunction : function() { 
 			"use strict";
@@ -580,15 +600,17 @@ CarIndicator.prototype._mappingTable = {
 		getFunction : function() { 
 			"use strict";
 			var zone = new Zone([]);
+			if (typeof(vehicle)!=="undefined") {
 			   vehicle.fuelLevelIndicatedMS.get(zone).then(function(level) 
-			 {
-				 // TODO: add != 0 conditional, or a try/catch.
-				 GlobalSelf._mappingTable["FuelLevelIndicatedMS"].curValue = level.fuelLevelIndicatedMS;
-			     console.log("AMB: FuelLevelIndicatedMS  get sees value as: " + level.fuelLevelIndicatedMS);
-			 },
-			 function(error) {
-			  console.log("AMB: There was an error on the FuelLevelIndicatedMS get.");
-			 });	
+				 {
+					 // TODO: add != 0 conditional, or a try/catch.
+					 GlobalSelf._mappingTable["FuelLevelIndicatedMS"].curValue = level.fuelLevelIndicatedMS;
+					 console.log("AMB: FuelLevelIndicatedMS  get sees value as: " + level.fuelLevelIndicatedMS);
+				 },
+				 function(error) {
+				  console.log("AMB: There was an error on the FuelLevelIndicatedMS get.");
+				 });	
+			 }
 		},
 		subscribeFunction : function() { 
 			"use strict";
@@ -610,16 +632,18 @@ CarIndicator.prototype._mappingTable = {
 		getFunction : function() { 
 			"use strict";
 			var zone = new Zone([]);
+			if (typeof(vehicle)!=="undefined") {
 			   vehicle.distanceToEmpty.get(zone).then(function(dist) 
-			 {
-				 // TODO: add != 0 conditional, or a try/catch.
-				 GlobalSelf._mappingTable["DistanceToEmpty"].curValue = dist.distanceToEmpty;
-			//	 speedCurVal = dist.value;
-			     console.log("AMB: DistanceToEmpty  get sees value as: " + dist.distanceToEmpty);
-			 },
-			 function(error) {
-			  console.log("AMB: There was an error on the DistanceToEmpty get.");
-			 });	
+				 {
+					 // TODO: add != 0 conditional, or a try/catch.
+					 GlobalSelf._mappingTable["DistanceToEmpty"].curValue = dist.distanceToEmpty;
+				//	 speedCurVal = dist.value;
+					 console.log("AMB: DistanceToEmpty  get sees value as: " + dist.distanceToEmpty);
+				 },
+				 function(error) {
+				  console.log("AMB: There was an error on the DistanceToEmpty get.");
+				 });
+			 }
 		},
 		subscribeFunction : function() { 
 			"use strict";
@@ -641,15 +665,17 @@ CarIndicator.prototype._mappingTable = {
 		getFunction : function() { 
 			"use strict";
 			var zone = new Zone([]);
-			   vehicle.oDORollingCount2101.get(zone).then(function(dist) 
-			 {
-				 // TODO: add != 0 conditional, or a try/catch.
-				 GlobalSelf._mappingTable["ODORollingCount2101"].curValue = dist.oDORollingCount2101;
-			     console.log("AMB: ODORollingCount2101  get sees value as: " + dist.oDORollingCount2101);
-			 },
-			 function(error) {
-			  console.log("AMB: There was an error on the ODORollingCount2101 get.");
-			 });	
+			if (typeof(vehicle)!=="undefined") {
+		   vehicle.oDORollingCount2101.get(zone).then(function(dist) 
+				 {
+					 // TODO: add != 0 conditional, or a try/catch.
+					 GlobalSelf._mappingTable["ODORollingCount2101"].curValue = dist.oDORollingCount2101;
+					 console.log("AMB: ODORollingCount2101  get sees value as: " + dist.oDORollingCount2101);
+				 },
+				 function(error) {
+				  console.log("AMB: There was an error on the ODORollingCount2101 get.");
+				 });
+			 }
 		},
 		subscribeFunction : function() { 
 			"use strict";
@@ -693,17 +719,19 @@ CarIndicator.prototype._mappingTable = {
 		getFunction : function() { 
 			"use strict";
 			var zone = new Zone([]);
-			   vehicle.vehicleSpeed.get(zone).then(function(vehicleSpeed) 
-			 {
-				 var value2 = vehicleSpeed.speed;
-				 // TODO: add != 0 conditional, or a try/catch.
-				 GlobalSelf._mappingTable["VehicleSpeed"].curValue = vehicleSpeed.speed;
-				 speedCurVal += vehicleSpeed.speed;
-			     console.log("AMB: vehicle speed get sees speed as: " + vehicleSpeed.speed);
-			 },
-			 function(error) {
-			  console.log("AMB: There was an error on the speed get.");
-			 });	
+			if (typeof(vehicle)!=="undefined"){
+				   vehicle.vehicleSpeed.get(zone).then(function(vehicleSpeed) 
+				 {
+					 var value2 = vehicleSpeed.speed;
+					 // TODO: add != 0 conditional, or a try/catch.
+					 GlobalSelf._mappingTable["VehicleSpeed"].curValue = vehicleSpeed.speed;
+					 speedCurVal += vehicleSpeed.speed;
+					 console.log("AMB: vehicle speed get sees speed as: " + vehicleSpeed.speed);
+				 },
+				 function(error) {
+				  console.log("AMB: There was an error on the speed get.");
+				 });
+			 }
 		},
 		subscribeFunction : function() { 
 			"use strict";
@@ -1161,9 +1189,19 @@ CarIndicator.prototype.setStatus = function(indicator, newValue, callback, zone)
             this.status[mappingElement.callBackPropertyName] = newValue;
 
             var callbackName = "on" + mappingElement.callBackPropertyName[0].toUpperCase() + mappingElement.callBackPropertyName.substring(1) + "Changed";
+            
+            for(var l in this._listenerIDs){
+            	var listener=this._listeners[this._listenerIDs[l]];
+
+				if (typeof (listener[callbackName]) === 'function')
+                	listener[callbackName](newValue);
+            }
+
+            /*
             var listener=this._listeners[this._listenerIDs[0]];
             if (typeof (listener[callbackName]) === 'function') 
                 listener[callbackName](newValue);
+            */
         }
         // TODO: remove up to here
 
@@ -1186,71 +1224,72 @@ uiUpdateFunc = function() {
 	var o;
 	
 //	console.info("AMB: uiUpdateFunc called.");
+	if (typeof(vehicle)!=="undefined") {
 
-	GlobalSelf._mappingTable["VehicleSpeed"].getFunction();
-	if(logit) { console.log("AMB: testFunc VehicleSpeed, get rets: " + GlobalSelf._mappingTable["VehicleSpeed"].curValue); }
-	o = {zone: '000000', signalAndValue: { signalName: "VehicleSpeed", signalVal: GlobalSelf._mappingTable["VehicleSpeed"].curValue }  };
-	GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);
-	
-	GlobalSelf._mappingTable["TyrePressureFLMS"].getFunction();
-	if(logit) {console.log("AMB: testFunc TyrePressureFLMS, get rets: " + GlobalSelf._mappingTable["TyrePressureFLMS"].curValue); }
-	o = {zone: '000000', signalAndValue: { signalName: "TyrePressureFLMS", signalVal: GlobalSelf._mappingTable["TyrePressureFLMS"].curValue }  };
-	GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);
-	
-	GlobalSelf._mappingTable["TyrePressureFRMS"].getFunction();
-	if(logit) { console.log("AMB: testFunc TyrePressureFRMS, get rets: " + GlobalSelf._mappingTable["TyrePressureFRMS"].curValue); }
-	o = {zone: '000000', signalAndValue: { signalName: "TyrePressureFRMS", signalVal: GlobalSelf._mappingTable["TyrePressureFRMS"].curValue }  };
-	GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);
-	
-	GlobalSelf._mappingTable["TyrePressureRLMS"].getFunction();
-	if(logit) {console.log("AMB: testFunc TyrePressureRLMS, get rets: " + GlobalSelf._mappingTable["TyrePressureRLMS"].curValue); }
-	o = {zone: '000000', signalAndValue: { signalName: "TyrePressureRLMS", signalVal: GlobalSelf._mappingTable["TyrePressureRLMS"].curValue }  };
-	GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);
-	
-	GlobalSelf._mappingTable["TyrePressureRRMS"].getFunction();
-	if(logit) {console.log("AMB: testFunc TyrePressureRRMS, get rets: " + GlobalSelf._mappingTable["TyrePressureRRMS"].curValue); }
-	o = {zone: '000000', signalAndValue: { signalName: "TyrePressureRRMS", signalVal: GlobalSelf._mappingTable["TyrePressureRRMS"].curValue }  };
-	GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);
-	
-	GlobalSelf._mappingTable["ODORollingCount2101"].getFunction();
-	if(logit) {console.log("AMB: testFunc ODORollingCount2101, get rets: " + GlobalSelf._mappingTable["ODORollingCount2101"].curValue); }
-	o = {zone: '000000', signalAndValue: { signalName: "ODORollingCount2101", signalVal: GlobalSelf._mappingTable["ODORollingCount2101"].curValue }  };
-	GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);
-	
-	GlobalSelf._mappingTable["FuelLevelIndicatedMS"].getFunction();
-	if(logit) {console.log("AMB: testFunc FuelLevelIndicatedMS, get rets: " + GlobalSelf._mappingTable["FuelLevelIndicatedMS"].curValue); }
-	o = {zone: '000000', signalAndValue: { signalName: "FuelLevelIndicatedMS", signalVal: GlobalSelf._mappingTable["FuelLevelIndicatedMS"].curValue }  };
-	GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);
-	
-	GlobalSelf._mappingTable["AmbientTemp"].getFunction();
-	if(logit) {console.log("AMB: testFunc AmbientTemp, get rets: " + GlobalSelf._mappingTable["AmbientTemp"].curValue); }
-	o = {zone: '000000', signalAndValue: { signalName: "AmbientTemp", signalVal: GlobalSelf._mappingTable["AmbientTemp"].curValue }  };
-	GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);
-	
-	GlobalSelf._mappingTable["DistanceToEmpty"].getFunction();
-	if(logit) {console.log("AMB: testFunc DistanceToEmpty, get rets: " + GlobalSelf._mappingTable["DistanceToEmpty"].curValue); }
-	o = {zone: '000000', signalAndValue: { signalName: "DistanceToEmpty", signalVal: GlobalSelf._mappingTable["DistanceToEmpty"].curValue }  };
-	GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);	
-	
-	GlobalSelf._mappingTable["InCarTemp"].getFunction();
-	if(logit) {console.log("AMB: testFunc InCarTemp, get rets: " + GlobalSelf._mappingTable["InCarTemp"].curValue); }
-	o = {zone: '000000', signalAndValue: { signalName: "InCarTemp", signalVal: GlobalSelf._mappingTable["InCarTemp"].curValue }  };
-	GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);
+		GlobalSelf._mappingTable["VehicleSpeed"].getFunction();
+		if(logit) { console.log("AMB: testFunc VehicleSpeed, get rets: " + GlobalSelf._mappingTable["VehicleSpeed"].curValue); }
+		o = {zone: '000000', signalAndValue: { signalName: "VehicleSpeed", signalVal: GlobalSelf._mappingTable["VehicleSpeed"].curValue }  };
+		GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);
+		
+		GlobalSelf._mappingTable["TyrePressureFLMS"].getFunction();
+		if(logit) {console.log("AMB: testFunc TyrePressureFLMS, get rets: " + GlobalSelf._mappingTable["TyrePressureFLMS"].curValue); }
+		o = {zone: '000000', signalAndValue: { signalName: "TyrePressureFLMS", signalVal: GlobalSelf._mappingTable["TyrePressureFLMS"].curValue }  };
+		GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);
+		
+		GlobalSelf._mappingTable["TyrePressureFRMS"].getFunction();
+		if(logit) { console.log("AMB: testFunc TyrePressureFRMS, get rets: " + GlobalSelf._mappingTable["TyrePressureFRMS"].curValue); }
+		o = {zone: '000000', signalAndValue: { signalName: "TyrePressureFRMS", signalVal: GlobalSelf._mappingTable["TyrePressureFRMS"].curValue }  };
+		GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);
+		
+		GlobalSelf._mappingTable["TyrePressureRLMS"].getFunction();
+		if(logit) {console.log("AMB: testFunc TyrePressureRLMS, get rets: " + GlobalSelf._mappingTable["TyrePressureRLMS"].curValue); }
+		o = {zone: '000000', signalAndValue: { signalName: "TyrePressureRLMS", signalVal: GlobalSelf._mappingTable["TyrePressureRLMS"].curValue }  };
+		GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);
+		
+		GlobalSelf._mappingTable["TyrePressureRRMS"].getFunction();
+		if(logit) {console.log("AMB: testFunc TyrePressureRRMS, get rets: " + GlobalSelf._mappingTable["TyrePressureRRMS"].curValue); }
+		o = {zone: '000000', signalAndValue: { signalName: "TyrePressureRRMS", signalVal: GlobalSelf._mappingTable["TyrePressureRRMS"].curValue }  };
+		GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);
+		
+		GlobalSelf._mappingTable["ODORollingCount2101"].getFunction();
+		if(logit) {console.log("AMB: testFunc ODORollingCount2101, get rets: " + GlobalSelf._mappingTable["ODORollingCount2101"].curValue); }
+		o = {zone: '000000', signalAndValue: { signalName: "ODORollingCount2101", signalVal: GlobalSelf._mappingTable["ODORollingCount2101"].curValue }  };
+		GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);
+		
+		GlobalSelf._mappingTable["FuelLevelIndicatedMS"].getFunction();
+		if(logit) {console.log("AMB: testFunc FuelLevelIndicatedMS, get rets: " + GlobalSelf._mappingTable["FuelLevelIndicatedMS"].curValue); }
+		o = {zone: '000000', signalAndValue: { signalName: "FuelLevelIndicatedMS", signalVal: GlobalSelf._mappingTable["FuelLevelIndicatedMS"].curValue }  };
+		GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);
+		
+		GlobalSelf._mappingTable["AmbientTemp"].getFunction();
+		if(logit) {console.log("AMB: testFunc AmbientTemp, get rets: " + GlobalSelf._mappingTable["AmbientTemp"].curValue); }
+		o = {zone: '000000', signalAndValue: { signalName: "AmbientTemp", signalVal: GlobalSelf._mappingTable["AmbientTemp"].curValue }  };
+		GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);
+		
+		GlobalSelf._mappingTable["DistanceToEmpty"].getFunction();
+		if(logit) {console.log("AMB: testFunc DistanceToEmpty, get rets: " + GlobalSelf._mappingTable["DistanceToEmpty"].curValue); }
+		o = {zone: '000000', signalAndValue: { signalName: "DistanceToEmpty", signalVal: GlobalSelf._mappingTable["DistanceToEmpty"].curValue }  };
+		GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);	
+		
+		GlobalSelf._mappingTable["InCarTemp"].getFunction();
+		if(logit) {console.log("AMB: testFunc InCarTemp, get rets: " + GlobalSelf._mappingTable["InCarTemp"].curValue); }
+		o = {zone: '000000', signalAndValue: { signalName: "InCarTemp", signalVal: GlobalSelf._mappingTable["InCarTemp"].curValue }  };
+		GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);
 
-//	GlobalSelf._mappingTable["VehicleSpeed"].getFunction();
-//	console.log("AMB: testFunc VehicleSpeed, get2 rets: " + GlobalSelf._mappingTable["VehicleSpeed"].curValue);
-//	GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);	
-/*	
-	o = {zone: '000000', TyrePressureRRMS: GlobalSelf._mappingTable["TyrePressureRRMS"].curValue};
-	GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);	
-	o = {zone: '000000', TyrePressureFLMS: GlobalSelf._mappingTable["TyrePressureFLMS"].curValue};
-	GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);	
-	o = {zone: '000000', TyrePressureRLMS: GlobalSelf._mappingTable["TyrePressureRLMS"].curValue};
-	GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);	
-	o = {zone: '000000', TyrePressureFRMS: GlobalSelf._mappingTable["TyrePressureFRMS"].curValue};
-	GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);
-	*/	
-	
+	//	GlobalSelf._mappingTable["VehicleSpeed"].getFunction();
+	//	console.log("AMB: testFunc VehicleSpeed, get2 rets: " + GlobalSelf._mappingTable["VehicleSpeed"].curValue);
+	//	GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);	
+	/*	
+		o = {zone: '000000', TyrePressureRRMS: GlobalSelf._mappingTable["TyrePressureRRMS"].curValue};
+		GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);	
+		o = {zone: '000000', TyrePressureFLMS: GlobalSelf._mappingTable["TyrePressureFLMS"].curValue};
+		GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);	
+		o = {zone: '000000', TyrePressureRLMS: GlobalSelf._mappingTable["TyrePressureRLMS"].curValue};
+		GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);	
+		o = {zone: '000000', TyrePressureFRMS: GlobalSelf._mappingTable["TyrePressureFRMS"].curValue};
+		GlobalSelf.onDataUpdate(o, GlobalSelf, cbID);
+		*/	
+	}
 	
 }
 

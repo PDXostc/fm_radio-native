@@ -19,8 +19,8 @@ In an Ubuntu shell:
   * Make sure your FM radio dongle is up and running
         * For example, when using the R820T SDR&DVB-T from NooElec, do :
 
-        $ sudo cp blacklist-rtlsdr.conf /etc/modprobe.d
-        $ sudo cp 99-librtlsdr.rules /etc/udev/rules.d
+    scp blacklist-rtlsdr.conf root@$TIZEN_IP:/etc/modprobe.d
+    scp 99-librtlsdr.rules root@$TIZEN_IP:/etc/udev/rules.d
 
   * Make sure your tizen setup supports touch events
 
