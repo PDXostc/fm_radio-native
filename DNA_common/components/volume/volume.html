@@ -24,10 +24,12 @@
 
 	<div class="component-content">
 		<div class="volume-content">
-			<div id="settingsVolumeSliderMinus" class="volume-minus"></div>
-			<input id="settingsVolumeSlider" type="range" class="settings-volume-slider">
+			<!-- Horizontal Slider with Buttons -->
+			<div class="horizontal-slider">
+			  <div id="settingsVolumeSliderMinus" class="slider-button less-button"></div>
+			  <input  id="settingsVolumeSlider" class="slider-input" type="range" value="50" />
+			  <div id="settingsVolumeSliderPlus" class="slider-button more-button"></div>
 			</div>
-			<div id="settingsVolumeSliderPlus" class="volume-plus"></div>
 		</div>
 	</div>
 

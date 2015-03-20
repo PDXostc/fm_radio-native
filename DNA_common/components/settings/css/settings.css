@@ -50,6 +50,12 @@ sorted when there is time to organize all the components and make decisions*/
 	background-color: #222;
 	margin: 0 40px;
 }
+.component_content .active {
+  background-image: -webkit-linear-gradient(#915a00, #db9604);
+  background-image: linear-gradient(#915a00, #db9604);
+  text-shadow: 0 0 21px rgba(242, 216, 175, 0.5), 0 0 10px rgba(242, 216, 175, 0.4), 0 0 2px #2a153c;
+  color: #f6efe4; 
+}
 .component-title {
 	font-size: 75px;
 	color: #fff;
@@ -337,10 +343,10 @@ ul#settingsPageList > :last-child {
 
 /************spinner styles**************/
 .spinner {
-	width: 80px;
-	height: 80px;
+/*	width: 80px;
+	height: 80px;*/
 	margin: auto;
-	background-image: url(../images/spinner_icon_white_lg.png);
+/*	background-image: url(../images/spinner_icon_white_lg.png);*/
 }
 
 .spinner.on {
@@ -365,4 +371,11 @@ ul#settingsPageList > :last-child {
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+/*font-awesome components*/
+.fa {
+	color: rgba(255, 255, 255, .4);
+}
+.modal .fa {
+  color: rgba(254, 156, 0, 1);
 }

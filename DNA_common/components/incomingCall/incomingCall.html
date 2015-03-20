@@ -1,0 +1,19 @@
+<!--settings template file. -->
+<div id="incomingCall" class="incomingCall incomingCallHide">
+	<div class="pageBgColorNormalTransparent" style="width:100%; height: 100%"></div>
+	<div id="incomingCallTopPanel" class="tabsTopPanel"></div>
+	<div id="incomingCallTabs" class="tabsTab"></div>
+	<div id="incomingCallTitle" class="TopPanelTitle">
+		<div class="boxIconRectangle bgColorTheme"></div>
+		<div class="boxIconCaption fontSizeXSmall fontWeightBold fontColorLight">INCOMING CALL</div>
+	</div>
+	<div class="callInfoBox">
+		<div class="callPhotoBox noContactPhoto">
+			<img id="incomingCallPhoto" class="callPhoto">
+		</div>
+	</div>
+	<div id="incomingCallName" class="callName fontSizeXLarge fontWeightBold fontColorNormal">unknown</div>
+	<div id="incomingCallNumber" class="callNumber fontSizeXLarge fontWeightBold fontColorTheme"></div>
+	<div id="incomingCallAccept" class="incomingCallAccept button callButton callingFalse boxShadow4Active" onclick="AnswerIncomingCall.acceptIncommingCall()"></div>
+	<div id="incomingCallDeny" class="incomingCallDeny button callButton callingTrue boxShadow4Active" onclick="AnswerIncomingCall.denyCall()"></div>
+</div>

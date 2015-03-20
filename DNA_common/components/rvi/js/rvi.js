@@ -2,9 +2,17 @@
 /*
  * Copyright (c) 2013, Intel Corporation, Jaguar Land Rover
  *
- * This program is licensed under the terms and conditions of the
- * Apache License, version 2.0.  The full text of the Apache License is at
- * http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
  */
 
@@ -65,7 +73,9 @@ rviSettingsPage.pageUpdate = function() {
 		rvi = new rviSettings();
 		rviSettingsPage.initialize();
 		rvi.loaded.done(function(){
+			console.log("RVI Object loaded");
 			rviSettingsPage.displayValues();
+			rvi.wsConnect();
 		});
 	}
 };
@@ -133,15 +143,30 @@ rviSettingsPage.saveSettings = function(){
 	//rviSettingsPage.displayValues();
 }
 
-/*
 var rviSettings = function(){
 
 	self = this;
 	this.loaded = new $.Deferred();
+	this.comm = new RVI();
+
+	//Load setting when they're available.
+	
 
 	this.getRviSettings = function(){
+		
 		Configuration.reload(function(){
-			self.settings = Configuration.get("Settings.rvi");
+
+			var saved = Configuration.get("Settings.rvi");
+			if(saved != undefined){
+				self.settings = saved;
+			}else{
+				self.settings = {};
+			}
+			
+
+
+			//Make sure this is defined if it hasn't been previously.
+			if(self.settings.services == undefined) self.settings.services = [];
 
 			//resolve the promise for initial setup.
 			if(self.loaded.state() != "resolved"){
@@ -154,31 +179,51 @@ var rviSettings = function(){
 	this.setRviSettings = function(settings){
 		console.log("Saving entered values");
 
+		if(settings == undefined){
+			console.log("Not settings provided");
+			return false;
+		} 
+
 		Configuration.set("Settings.rvi",settings);
 		Configuration.save();
 		
-
-		tihs.getRviSettings();
+		this.getRviSettings();
 	}
 	
-	//get the settings on 
+   	this.rviError = function(message){
+    	console.log(message);
+    }
+
+
+    this.wsConnect = function(){
+    	self.comm.connect("ws://127.0.0.1:8818/websession",self.rviError);
+		depenancyMet("rvi.loaded");
+   	}
+
+	this.rviRegisterServices = function(serviceList){
+		console.log("Registering RVI services");
+		for(service in serviceList){
+			// If this is not in settings and we want it to be
+			if(self.settings.services.indexOf(serviceList[service]) == -1){
+				self.comm.register_service(serviceList[service].name,serviceList[service].callback);
+				console.log("Registering "+ serviceList[service].name);
+			}
+		}
+
+		Configuration.save("Settings.rvi",self.settings);
+	}
+
 	this.getRviSettings();
 }
-*/
+
 
 // Singleton
 function RVI() {
-	/*
-    if (typeof RVI.instance === 'object') {
-	console.log("Returning existing instance");
-	return RVI.instance
-    }
-    */
-	
 
     console.log("Starting up service RVI 1");
     RVI.instance = this
     this.service_map = {};
+
     this.connect = function(address, err_cb) {
 	try {
 	    if (Wse.open(address))
@@ -215,27 +260,29 @@ function RVI() {
     }
 
     this.rvi_message = function()  {
-    	console.log("RVI message called, callback should execute");
+		if (this.service_map[args['service_name']]) {
+		    window[this.service_map[args['service_name']]](args);
+		}else{
+		    console.warn("Service: " + args['service_name'] + " not mapped to any callback. Ignore");
+	    }
 
-	if (this.service_map[arguments[0]]) {
-	    this.service_map[arguments[0]].apply(null, arguments);
+		console.log("RVI Message completed");
 	}
-	else
-	    console.warn("Service: " + arguments[0] + " not mapped to any callback. Ignore");
-    }
-
 }
-
-// "ws://10.0.0.36:1234/websession"
 
 function message() {
-    for (var i = 0; i < arguments.length; ++i) 
-	console.log("message arguments[" + i + "]: " + arguments[i]);
-	
-    //return RVI().rvi_message.apply(RVI(),arguments);
-    return r.rvi_message.apply(r,arguments);
-}
+	args = {};
 
+    for (var i = 0; i < arguments.length; ++i) {
+    	if(i%2 == 0){
+    		args[arguments[i]] = arguments[i+1];
+    	}
+    }
+    console.log("RVI message Arguments ");
+    console.log(args);
+
+    return rvi.comm.rvi_message.apply(rvi.comm,args);
+}
 
 // display or hide the contents of the tabbed sections when tapped, 
 // and let the tab display a selected state.

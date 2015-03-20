@@ -57,7 +57,9 @@
 	background-repeat: no-repeat;
 	background-size: 100% 100%;
 }
-
+.noContactPhoto {
+	background: url("contact_picture_blue.png") no-repeat;
+}
 .incomingCall .callPhoto {
 	position: inherit;
 	width: 100%;
@@ -80,12 +82,14 @@
 	top:500px;
 	left:20px;
 	text-transform: uppercase;
+	background-image: url("icon_call_blue.png");
 }
 .incomingCall .incomingCallDeny{
 	position: inherit;
 	top:500px;
 	left:370px;
 	text-transform: uppercase;
+	background-image: url("icon_endcall_blue.png");
 }
 .incomingCall .callButton {
 	width: 330px;

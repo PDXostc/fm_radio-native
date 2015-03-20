@@ -41,6 +41,11 @@ ifndef OBS
 	ssh app@$(TIZEN_IP) "pkgcmd -i -t wgt -p /home/app/DNA_FMRADIO.wgt -q"
 endif
 
+install_obs:
+	@echo "Installing $(PROJECT), stand by..."
+	mkdir -p $(DESTDIR)/opt/usr/apps/.preinstallWidgets
+	cp DNA_FMRADIO.wgt $(DESTDIR)/opt/usr/apps/.preinstallWidgets
+
 debug: install
 	ssh app@$(TIZEN_IP) "export DBUS_SESSION_BUS_ADDRESS='unix:path=/run/user/5000/dbus/user_bus_socket' && xwalkctl -d 9888"
 	ssh app@$(TIZEN_IP) "export DBUS_SESSION_BUS_ADDRESS='unix:path=/run/user/5000/dbus/user_bus_socket' && xwalkctl | egrep -e 'FMRADIO' | awk '{print $1}' | xargs --no-run-if-empty xwalk-launcher -d"

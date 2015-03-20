@@ -85,6 +85,7 @@ the following style will center the image but not size or stretch it*/
 	display:none;
 	bottom:250px;
 	right:25px;
+	z-index:6;
 	background-image:url('../images/VolSlideBckgrnd.png')
 }
 #VolLabel{

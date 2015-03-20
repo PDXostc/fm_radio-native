@@ -92,12 +92,18 @@ BluetoothSettingsPage.updatePoweredSwitch = function(){
 }
 
 BluetoothSettingsPage.listBluetoothDevice = function(template,device){
-
+			console.log("listBluetoothDevice ",device);
 			template.querySelector(".networkElement").setAttribute("data-address",device.address);
 			template.querySelector(".networkElementTitle").innerHTML = device.name;
 			template.querySelector(".networkElementSubtitle").innerHTML = device.address;
 
-			if(device.isBonded == true){
+			if(device.isConnected == true){
+				template.querySelector(".networkElementMore").innerHTML = "CONNECTED";
+				
+				$(template.querySelector(".pairButton")).addClass("hidden");
+				$(template.querySelector(".unpairButton")).removeClass("hidden");
+
+			} else if(device.isBonded == true){
 				template.querySelector(".networkElementMore").innerHTML = "PAIRED";
 				
 				$(template.querySelector(".pairButton")).addClass("hidden");
@@ -122,7 +128,6 @@ BluetoothSettingsPage.listBluetoothDevice = function(template,device){
 				console.log("address to unpair "+address);
 				Bluetooth.unpairDevice(address);	
 			});
-
 
 			document.querySelector("#BluetoothNetworksList").appendChild(clone);
 			console.log("added "+device.name);

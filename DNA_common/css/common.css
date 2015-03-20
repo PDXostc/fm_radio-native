@@ -80,9 +80,9 @@ body {
   justify-content:space-between;
 }
 
-input, textarea {
-  user-select: auto;
-  -webkit-user-select: auto;
+*:not(input):not(textarea) {
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /*Typography **********************************************/
@@ -602,6 +602,141 @@ textarea,
   color: white;
   font-size: 5rem;
   cursor: pointer;
+}
+
+/* Sliders ************************************************/
+
+/* Resets */
+
+.slider-input {
+  -webkit-appearance: none; /* Hides the slider so that custom slider can be made */
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Hides the slider thumb so that custom thumb can be made */
+}
+
+.slider-input:focus {
+  outline: none; /* Removes the blue accessibility border. */
+}
+
+/* Slider Styles */
+
+.slider-input{
+  height:2em;
+  font-size: 4em; /* Base size for scalability */
+  line-height: 0;
+  flex-basis: 82.5%;
+  overflow:hidden;
+  cursor: pointer;
+  padding: .25em 0;
+  position: relative;
+  -webkit-appearance:none;
+  background: transparent;
+}
+
+.slider-input::-webkit-slider-thumb {
+  height: 1em;
+  width: .85em;
+  font-size: 2em;
+  margin: -.25em 0;
+  overflow: visible;
+  position:relative;
+  background-size: .85em;
+  -webkit-appearance:none;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-image: url(../images/hex_thumb_white_vert.png);
+  -webkit-filter: drop-shadow(.05em .05em .05em rgba(0,0,0,.25));
+}
+
+/* Style the level bar */
+.slider-input::-webkit-slider-thumb:after{
+  content:" ";
+  width:100vw;
+  right: 100%;
+  height: .5em;
+  margin: .25em 0;
+  position:absolute;
+  background: rgba(178, 240, 255, 0.8);
+  box-shadow: inset .125em .125em .5em rgba(255,255,255,.6),
+              inset -1em -1em .125em -1em rgba(0,0,0,.5);
+}
+
+/* Styles the track */
+.slider-input::-webkit-slider-runnable-track {
+  height: 1em;
+  background-color: transparent;
+  box-shadow: inset 0 0 0 .125em rgba(126,126,126,.25),
+              inset 0 0 .5em .125em rgba(0,0,0,.5);
+              
+}
+
+.vertical-slider,
+.horizontal-slider {
+  font-size: 1rem;
+  display: flex;
+  position: relative;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.thin-slider .slider-input {
+  flex-basis: 90%;
+}
+
+.thick-slider .slider-input {
+  flex-basis: 75%;
+}
+
+.thin-slider {
+  font-size: .5rem;
+}
+
+.thick-slider {
+  font-size: 1.5rem;
+}
+
+.slider-button {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  font-size: 4em;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  text-shadow: 1px 1px 3px #444;
+  border: 1px solid rgba(255, 255, 255, .4);
+  box-shadow: inset 0px 0px 2px 1px #5a3800;
+  background: linear-gradient(#db9604, #915a00);
+  animation: bounceInDown 900ms 200ms ease-in-out both;
+}
+
+.thin-slider .slider-button {
+  width: 20px;
+  height: 20px;
+}
+
+.thick-slider .slider-button {
+  width: 60px;
+  height: 60px;
+}
+
+.less-button::after {
+  content: "\02212";
+}
+
+.more-button::after {
+  content: "\0002b";
+}
+
+.less-button::after,
+.more-button::after {
+  color: white;
+  font-size: 1em;
 }
 
 /* Modifiers **********************************************/ 

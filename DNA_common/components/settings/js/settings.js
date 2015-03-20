@@ -37,8 +37,15 @@ Settings.pageUpdate = function() {
 		$('#settingsIcon').replaceWith(Settings.settingsIconHTML.valueOf());
 		$("body").append(Settings.import.getElementById('settingsPage'));
 		depenancyMet("Settings.settingsPage");
-		document.getElementById('settingsIcon').onclick=function(){$('#settingsPage').toggleClass('hidden');};
-		document.getElementById('SettingsTabsCloseButton').onclick=function(){$('#settingsPage').toggleClass('hidden');};
+		document.getElementById('settingsIcon').onclick=function(){$("#volumeSlider").hide();$("#hexGridView").hide();$('#settingsPage').toggleClass('hidden');};
+		document.getElementById('SettingsTabsCloseButton').onclick=function(){
+			volumeSettingsPage.HidePage();
+			BluetoothSettingsPage.HidePage();
+			WifiSettingsPage.HidePage();
+			rviSettingsPage.HidePage();
+			hotspotSettingsPage.HidePage();
+			$('#settingsPage').toggleClass('hidden');
+		};
 		console.log("icon update ");
 	}
 };

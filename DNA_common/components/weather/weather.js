@@ -45,6 +45,7 @@ function checkSevereWeather(){
 			if(alertResponse.length != 0 && $("#weather_alert").length == 0){
 				var block = generateSevereWeatherAlert(alertResponse[0]);
 				$("#app").append(block);
+				$('input').blur();
 			}
 		})
 	});
