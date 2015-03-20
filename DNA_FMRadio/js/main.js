@@ -596,6 +596,9 @@ function addSignalListeners() {
  * @static
  */
 var init = function () {
+$(document).on("click", ".switch-plate", function() {
+  $(this).closest(".switch").toggleClass("on off");
+})
 
     $(".bar").each(function(i) {
         fluctuate($(this));
@@ -1064,7 +1067,7 @@ function onScanUpBtnClick(e) {
  * @static
  */
 function onStationIdTouchStart(e) {
-
+	$('#spectAnalyzer').toggle();
     var keypad = document.getElementById("keypad-container");
     var preset = document.getElementById("presets-container");
 
@@ -1093,6 +1096,7 @@ function onStationIdTouchStart(e) {
                     scanWaitTimeout = null;
             }
             setStationIdFrequency(fmradio.frequency(), 1);
+            	$('#spectAnalyzer').toggle();
             break;
 
         default:
@@ -1124,6 +1128,8 @@ function onClassClickableKeyClick(e) {
 function onKeyDELClick(e) {
 
     updateStationIdDigit(false);
+    	$('#spectAnalyzer').toggle();
+
 }
 
 /**
@@ -1144,6 +1150,7 @@ function onKeyOKClick(e) {
             goBackToNormal();
         }
     }
+    	$('#spectAnalyzer').toggle();
 }
 
 /**
@@ -1159,6 +1166,8 @@ function onKeyESCClick(e) {
         goBackToNormal();
         setStationIdFrequency(fmradio.frequency());
     }
+    	$('#spectAnalyzer').toggle();
+
 }
 
 /**
@@ -1295,6 +1304,7 @@ function onSmartCancelBtnClick(e) {
 function onEnableBtnClick(e) {
     if (state == "STATE_DISABLED") {
         callEnable();
+			$('#spectAnalyzer').css('visibility','visible');
         // STATE_DISABLED will be set by onEnabled Listener
     }
 }
@@ -1306,9 +1316,13 @@ function onDisableBtnClick(e) {
         resetRDSLabel();
 
         if (state == "STATE_ENABLED") {
+			$('#spectAnalyzer').css('visibility','hidden');
             callDisable();
             // STATE_DISABLED will be set by onDisabled Listener
         }
     }
 }
-
+$(".switch-plate").click(function() {
+  var el = this;
+  return (el.t = !el.t) ? onDisableBtnClick(el) : onEnableBtnClick(el);
+});
