@@ -19,7 +19,7 @@
  *  Author : Frederic Plourde <frederic.plourde@collabora.co.uk>
  */
 
-#define FM_RADIO_SERVICE_MIN_FREQ  88000000
+#define FM_RADIO_SERVICE_MIN_FREQ  87500000
 #define FM_RADIO_SERVICE_MAX_FREQ 108000000
 #define FM_RADIO_SERVICE_DEF_FREQ  88100000
 

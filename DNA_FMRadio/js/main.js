@@ -77,7 +77,7 @@ var preScanFrequency;
 var constants = {
     'NUM_OF_PRESETS'          : 6,                        // Number of presets
     'FREQ_MAX_LIMIT'          : 108000000,                // Higher end of freq.
-    'FREQ_MIN_LIMIT'          : 88000000,                 // Lower end of freq.
+    'FREQ_MIN_LIMIT'          : 87500000,                 // Lower end of freq.
     'FLASH_TIME'              : 500,                      // flashing timeout
     'MOUSE_HOLD_TIMEOUT_TIME' : 2000,                     // Time for mousehold
     'SCAN_WAIT_TIMEOUT_TIME'  : 5000,                     // Time when scanning
