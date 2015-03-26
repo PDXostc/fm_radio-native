@@ -46,5 +46,5 @@ su app -c "pkgcmd -u -n JLRPOCX004.DNA_FMRadio -q"
 
 %files
 %defattr(-,root,root,-)
-/opt/usr/apps/.preinstallWidgets/DNA_FMRadio.wgt
+/opt/usr/apps/.preinstallWidgets/DNA_FMRADIO.wgt
 
