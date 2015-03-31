@@ -162,9 +162,6 @@ for folder in %{install_list}; do
     make -C ${folder} install DESTDIR=%{buildroot} PREFIX=%{_prefix}
 done
 
-%post
-mkdir -p /tmp/pulseaudio
-
 %post -n fm-radio-plugins-rtl-sdr -p /sbin/ldconfig
 %post -n fm-radio-plugins-fftw3 -p /sbin/ldconfig
 %post -n fm-radio-plugins-samplerate -p /sbin/ldconfig
@@ -178,6 +175,7 @@ mkdir -p /tmp/pulseaudio
 %{_prefix}/lib/tizen-extensions-crosswalk/lib_fmradio.so
 /etc/modprobe.d/blacklist-rtlsdr.conf
 /etc/udev/rules.d/99-librtlsdr.rules
+/tmp/pulseaudio
 
 %files rtl-sdr
 %{_prefix}/bin/rtl_adsb
