@@ -1,4 +1,4 @@
-Name:       agl-plugins
+Name:       fm-radio-plugins
 Summary:    A collection of IVI software
 Version:    0.0.1
 Release:    1
@@ -36,6 +36,7 @@ Requires:       ibus
 Requires:       ibus-hangul
 Requires:       ibus-libpinyin
 Requires:       systemd
+Requires:		bluez
 Requires:       gstreamer
 Requires:       dbus-glib
 Requires:       dbus
@@ -149,23 +150,34 @@ done
 # Manually add those paths that we are going to install
 mkdir -p %{buildroot}/usr/lib/systemd/user
 mkdir -p %{buildroot}/usr/share/dbus-1/services
+mkdir -p %{buildroot}/tmp/pulseaudio
+mkdir -p %{buildroot}/etc/modprobe.d
+mkdir -p %{buildroot}/etc/udev/rules.d
+cp blacklist-rtlsdr.conf %{buildroot}/etc/modprobe.d/
+cp 99-librtlsdr.rules %{buildroot}/etc/udev/rules.d/
+
 
 # Install everything
 for folder in %{install_list}; do
     make -C ${folder} install DESTDIR=%{buildroot} PREFIX=%{_prefix}
 done
 
-%post -n agl-plugins-rtl-sdr -p /sbin/ldconfig
-%post -n agl-plugins-fftw3 -p /sbin/ldconfig
-%post -n agl-plugins-samplerate -p /sbin/ldconfig
+%post
+mkdir -p /tmp/pulseaudio
 
-%postun -n agl-plugins-rtl-sdr -p /sbin/ldconfig
-%postun -n agl-plugins-fftw3 -p /sbin/ldconfig
-%postun -n agl-plugins-samplerate -p /sbin/ldconfig
+%post -n fm-radio-plugins-rtl-sdr -p /sbin/ldconfig
+%post -n fm-radio-plugins-fftw3 -p /sbin/ldconfig
+%post -n fm-radio-plugins-samplerate -p /sbin/ldconfig
+
+%postun -n fm-radio-plugins-rtl-sdr -p /sbin/ldconfig
+%postun -n fm-radio-plugins-fftw3 -p /sbin/ldconfig
+%postun -n fm-radio-plugins-samplerate -p /sbin/ldconfig
 
 %files
 %{_prefix}/lib/tizen-extensions-crosswalk/libbp.so
 %{_prefix}/lib/tizen-extensions-crosswalk/lib_fmradio.so
+/etc/modprobe.d/blacklist-rtlsdr.conf
+/etc/udev/rules.d/99-librtlsdr.rules
 
 %files rtl-sdr
 %{_prefix}/bin/rtl_adsb
@@ -177,22 +189,7 @@ done
 %{_prefix}/bin/rtl_test
 %{_prefix}/include/rtl-sdr.h
 %{_prefix}/include/rtl-sdr_export.h
-%{_prefix}/lib/debug/.build-id/0a/96ed9a2a6058c074c195e12b081b2c050ed034
-%{_prefix}/lib/debug/.build-id/0a/96ed9a2a6058c074c195e12b081b2c050ed034.debug
-%{_prefix}/lib/debug/.build-id/1f/ecec84e92a1633eab8dce11c190ed2e6c93485
-%{_prefix}/lib/debug/.build-id/1f/ecec84e92a1633eab8dce11c190ed2e6c93485.debug
-%{_prefix}/lib/debug/.build-id/4e/4c15afb3ac93a7893244eaa84327f91cc2235e
-%{_prefix}/lib/debug/.build-id/4e/4c15afb3ac93a7893244eaa84327f91cc2235e.debug
-%{_prefix}/lib/debug/.build-id/72/6f3bd4ce62a49fcd00af43f4b3235f113b4432
-%{_prefix}/lib/debug/.build-id/72/6f3bd4ce62a49fcd00af43f4b3235f113b4432.debug
-%{_prefix}/lib/debug/.build-id/8c/3bb4529f53212dffdb3e90cfdd4d7d6903a6dc
-%{_prefix}/lib/debug/.build-id/8c/3bb4529f53212dffdb3e90cfdd4d7d6903a6dc.debug
-%{_prefix}/lib/debug/.build-id/ab/1472becf4e26bfd4e0c062350fc29a4df3f6e3
-%{_prefix}/lib/debug/.build-id/ab/1472becf4e26bfd4e0c062350fc29a4df3f6e3.debug
-%{_prefix}/lib/debug/.build-id/ed/9c55dded246cb96f28917ce15df995d71eabf8
-%{_prefix}/lib/debug/.build-id/ed/9c55dded246cb96f28917ce15df995d71eabf8.debug
-%{_prefix}/lib/debug/.build-id/f9/6791b3a5b678b1c4274cdcfa598631317ad776
-%{_prefix}/lib/debug/.build-id/f9/6791b3a5b678b1c4274cdcfa598631317ad776.debug
+%{_prefix}/lib/debug/.build-id/*
 %{_prefix}/lib/debug/usr/bin/rtl_adsb.debug
 %{_prefix}/lib/debug/usr/bin/rtl_eeprom.debug
 %{_prefix}/lib/debug/usr/bin/rtl_fm.debug
