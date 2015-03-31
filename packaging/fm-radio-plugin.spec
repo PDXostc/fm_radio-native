@@ -175,7 +175,7 @@ done
 %{_prefix}/lib/tizen-extensions-crosswalk/lib_fmradio.so
 /etc/modprobe.d/blacklist-rtlsdr.conf
 /etc/udev/rules.d/99-librtlsdr.rules
-/tmp/pulseaudio
+%dir /tmp/pulseaudio
 
 %files rtl-sdr
 %{_prefix}/bin/rtl_adsb
