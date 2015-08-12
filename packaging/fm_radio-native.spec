@@ -155,13 +155,13 @@ for folder in %{install_list}; do
     make -C ${folder} install DESTDIR=%{buildroot} PREFIX=%{_prefix}
 done
 
-%post -n agl-plugins-rtl-sdr -p /sbin/ldconfig
-%post -n agl-plugins-fftw3 -p /sbin/ldconfig
-%post -n agl-plugins-samplerate -p /sbin/ldconfig
+%post -n fm_radio-native-rtl-sdr -p /sbin/ldconfig
+%post -n fm_radio-native-fftw3 -p /sbin/ldconfig
+%post -n fm_radio-native-samplerate -p /sbin/ldconfig
 
-%postun -n agl-plugins-rtl-sdr -p /sbin/ldconfig
-%postun -n agl-plugins-fftw3 -p /sbin/ldconfig
-%postun -n agl-plugins-samplerate -p /sbin/ldconfig
+%postun -n fm_radio-native-rtl-sdr -p /sbin/ldconfig
+%postun -n fm_radio-native-fftw3 -p /sbin/ldconfig
+%postun -n fm_radio-native-samplerate -p /sbin/ldconfig
 
 %files
 %{_prefix}/lib/tizen-extensions-crosswalk/libbp.so
