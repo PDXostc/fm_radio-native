@@ -1,8 +1,8 @@
-Name:       agl-plugins
-Summary:    A collection of IVI software
+Name:       fm_radio-native
+Summary:    Supporting packages for fm_radio
 Version:    0.0.1
 Release:    1
-Group:      Applications/Web Applications
+Group:      Applications/System
 License:    ASL 2.0
 URL:        http://www.tizen.org2
 Source0:    %{name}-%{version}.tar.bz2
@@ -149,97 +149,96 @@ done
 # Manually add those paths that we are going to install
 mkdir -p %{buildroot}/usr/lib/systemd/user
 mkdir -p %{buildroot}/usr/share/dbus-1/services
+mkdir -p %{buildroot}/etc/modprobe.d/
+mkdir -p %{buildroot}/etc/udev/rules.d/
 
 # Install everything
 for folder in %{install_list}; do
     make -C ${folder} install DESTDIR=%{buildroot} PREFIX=%{_prefix}
 done
+install -m 0644 blacklist-rtlsdr.conf %{buildroot}/etc/modprobe.d/
+install -m 0644 99-touchscreen.rules %{buildroot}/etc/udev/rules.d/
+install -m 0644 99-librtlsdr.rules %{buildroot}/etc/udev/rules.d/
 
-%post -n agl-plugins-rtl-sdr -p /sbin/ldconfig
-%post -n agl-plugins-fftw3 -p /sbin/ldconfig
-%post -n agl-plugins-samplerate -p /sbin/ldconfig
+%post -n fm_radio-native-rtl-sdr -p /sbin/ldconfig
+%post -n fm_radio-native-fftw3 -p /sbin/ldconfig
+%post -n fm_radio-native-samplerate -p /sbin/ldconfig
 
-%postun -n agl-plugins-rtl-sdr -p /sbin/ldconfig
-%postun -n agl-plugins-fftw3 -p /sbin/ldconfig
-%postun -n agl-plugins-samplerate -p /sbin/ldconfig
+%postun -n fm_radio-native-rtl-sdr -p /sbin/ldconfig
+%postun -n fm_radio-native-fftw3 -p /sbin/ldconfig
+%postun -n fm_radio-native-samplerate -p /sbin/ldconfig
 
 %files
-%{_prefix}/lib/tizen-extensions-crosswalk/libbp.so
-%{_prefix}/lib/tizen-extensions-crosswalk/lib_fmradio.so
+%defattr(-,root,root)
+%{_libdir}/tizen-extensions-crosswalk/libbp.so
+%{_libdir}/tizen-extensions-crosswalk/lib_fmradio.so
 
 %files rtl-sdr
-%{_prefix}/bin/rtl_adsb
-%{_prefix}/bin/rtl_eeprom
-%{_prefix}/bin/rtl_fm
-%{_prefix}/bin/rtl_power
-%{_prefix}/bin/rtl_sdr
-%{_prefix}/bin/rtl_tcp
-%{_prefix}/bin/rtl_test
-%{_prefix}/include/rtl-sdr.h
-%{_prefix}/include/rtl-sdr_export.h
-%{_prefix}/lib/debug/.build-id/0a/96ed9a2a6058c074c195e12b081b2c050ed034
-%{_prefix}/lib/debug/.build-id/0a/96ed9a2a6058c074c195e12b081b2c050ed034.debug
-%{_prefix}/lib/debug/.build-id/1f/ecec84e92a1633eab8dce11c190ed2e6c93485
-%{_prefix}/lib/debug/.build-id/1f/ecec84e92a1633eab8dce11c190ed2e6c93485.debug
-%{_prefix}/lib/debug/.build-id/4e/4c15afb3ac93a7893244eaa84327f91cc2235e
-%{_prefix}/lib/debug/.build-id/4e/4c15afb3ac93a7893244eaa84327f91cc2235e.debug
-%{_prefix}/lib/debug/.build-id/72/6f3bd4ce62a49fcd00af43f4b3235f113b4432
-%{_prefix}/lib/debug/.build-id/72/6f3bd4ce62a49fcd00af43f4b3235f113b4432.debug
-%{_prefix}/lib/debug/.build-id/8c/3bb4529f53212dffdb3e90cfdd4d7d6903a6dc
-%{_prefix}/lib/debug/.build-id/8c/3bb4529f53212dffdb3e90cfdd4d7d6903a6dc.debug
-%{_prefix}/lib/debug/.build-id/ab/1472becf4e26bfd4e0c062350fc29a4df3f6e3
-%{_prefix}/lib/debug/.build-id/ab/1472becf4e26bfd4e0c062350fc29a4df3f6e3.debug
-%{_prefix}/lib/debug/.build-id/ed/9c55dded246cb96f28917ce15df995d71eabf8
-%{_prefix}/lib/debug/.build-id/ed/9c55dded246cb96f28917ce15df995d71eabf8.debug
-%{_prefix}/lib/debug/.build-id/f9/6791b3a5b678b1c4274cdcfa598631317ad776
-%{_prefix}/lib/debug/.build-id/f9/6791b3a5b678b1c4274cdcfa598631317ad776.debug
-%{_prefix}/lib/debug/usr/bin/rtl_adsb.debug
-%{_prefix}/lib/debug/usr/bin/rtl_eeprom.debug
-%{_prefix}/lib/debug/usr/bin/rtl_fm.debug
-%{_prefix}/lib/debug/usr/bin/rtl_power.debug
-%{_prefix}/lib/debug/usr/bin/rtl_sdr.debug
-%{_prefix}/lib/debug/usr/bin/rtl_tcp.debug
-%{_prefix}/lib/debug/usr/bin/rtl_test.debug
-%{_prefix}/lib/debug/usr/lib/librtlsdr.so.0.5.3.debug
-%{_prefix}/lib/librtlsdr.a
-%{_prefix}/lib/librtlsdr.so
-%{_prefix}/lib/librtlsdr.so.0
-%{_prefix}/lib/librtlsdr.so.0.5.3
-%{_prefix}/lib/pkgconfig/librtlsdr.pc
+%defattr(-,root,root)
+%dir %{_sysconfdir}/udev
+%dir %{_sysconfdir}/udev/rules.d
+%config %{_sysconfdir}/modprobe.d/blacklist-rtlsdr.conf
+%config %{_sysconfdir}/udev/rules.d/99-touchscreen.rules
+%config %{_sysconfdir}/udev/rules.d/99-librtlsdr.rules
+%{_bindir}/rtl_adsb
+%{_bindir}/rtl_eeprom
+%{_bindir}/rtl_fm
+%{_bindir}/rtl_power
+%{_bindir}/rtl_sdr
+%{_bindir}/rtl_tcp
+%{_bindir}/rtl_test
+%{_includedir}/rtl-sdr.h
+%{_includedir}/rtl-sdr_export.h
+%{_libdir}/debug/.build-id/*/*
+%{_libdir}/debug/usr/bin/rtl_adsb.debug
+%{_libdir}/debug/usr/bin/rtl_eeprom.debug
+%{_libdir}/debug/usr/bin/rtl_fm.debug
+%{_libdir}/debug/usr/bin/rtl_power.debug
+%{_libdir}/debug/usr/bin/rtl_sdr.debug
+%{_libdir}/debug/usr/bin/rtl_tcp.debug
+%{_libdir}/debug/usr/bin/rtl_test.debug
+%{_libdir}/debug/usr/lib/librtlsdr.so.0.5.3.debug
+%{_libdir}/librtlsdr.a
+%{_libdir}/librtlsdr.so
+%{_libdir}/librtlsdr.so.0
+%{_libdir}/librtlsdr.so.0.5.3
+%{_libdir}/pkgconfig/librtlsdr.pc
 
 %files fftw3
-%{_prefix}/bin/fftw-wisdom-to-conf
-%{_prefix}/bin/fftwf-wisdom
-%{_prefix}/include/fftw3.f
-%{_prefix}/include/fftw3.f03
-%{_prefix}/include/fftw3.h
-%{_prefix}/include/fftw3l.f03
-%{_prefix}/include/fftw3q.f03
-%{_prefix}/lib/debug/usr/bin/fftwf-wisdom.debug
-%{_prefix}/lib/debug/usr/lib/libfftw3f.so.3.4.4.debug
-%{_prefix}/lib/libfftw3f.a
-%{_prefix}/lib/libfftw3f.la
-%{_prefix}/lib/libfftw3f.so
-%{_prefix}/lib/libfftw3f.so.3
-%{_prefix}/lib/libfftw3f.so.3.4.4
-%{_prefix}/lib/pkgconfig/fftw3f.pc
-%{_prefix}/share/info/fftw3.info-1.gz
-%{_prefix}/share/info/fftw3.info-2.gz
-%{_prefix}/share/info/fftw3.info.gz
-%{_prefix}/share/man/man1/fftw-wisdom-to-conf.1.gz
-%{_prefix}/share/man/man1/fftwf-wisdom.1.gz
+%defattr(-,root,root)
+%{_bindir}/fftw-wisdom-to-conf
+%{_bindir}/fftwf-wisdom
+%{_includedir}/fftw3.f
+%{_includedir}/fftw3.f03
+%{_includedir}/fftw3.h
+%{_includedir}/fftw3l.f03
+%{_includedir}/fftw3q.f03
+%{_libdir}/debug/usr/bin/fftwf-wisdom.debug
+%{_libdir}/debug/usr/lib/libfftw3f.so.3.4.4.debug
+%{_libdir}/libfftw3f.a
+%{_libdir}/libfftw3f.la
+%{_libdir}/libfftw3f.so
+%{_libdir}/libfftw3f.so.3
+%{_libdir}/libfftw3f.so.3.4.4
+%{_libdir}/pkgconfig/fftw3f.pc
+%{_infodir}/fftw3.info-1.gz
+%{_infodir}/fftw3.info-2.gz
+%{_infodir}/fftw3.info.gz
+%{_mandir}/man1/fftw-wisdom-to-conf.1.gz
+%{_mandir}/man1/fftwf-wisdom.1.gz
 
 %files samplerate
-%{_prefix}/include/samplerate.h
-%{_prefix}/bin/sndfile-resample
-%{_prefix}/lib/debug/usr/bin/sndfile-resample.debug
-%{_prefix}/lib/debug/usr/lib/libsamplerate.so.0.1.8.debug
-%{_prefix}/lib/libsamplerate.a
-%{_prefix}/lib/libsamplerate.la
-%{_prefix}/lib/libsamplerate.so
-%{_prefix}/lib/libsamplerate.so.0
-%{_prefix}/lib/libsamplerate.so.0.1.8
-%{_prefix}/lib/pkgconfig/samplerate.pc
+%defattr(-,root,root)
+%{_includedir}/samplerate.h
+%{_bindir}/sndfile-resample
+%{_libdir}/debug/usr/bin/sndfile-resample.debug
+%{_libdir}/debug/usr/lib/libsamplerate.so.0.1.8.debug
+%{_libdir}/libsamplerate.a
+%{_libdir}/libsamplerate.la
+%{_libdir}/libsamplerate.so
+%{_libdir}/libsamplerate.so.0
+%{_libdir}/libsamplerate.so.0.1.8
+%{_libdir}/pkgconfig/samplerate.pc
 %{_prefix}/share/doc/libsamplerate0-dev/html/SRC.css
 %{_prefix}/share/doc/libsamplerate0-dev/html/SRC.png
 %{_prefix}/share/doc/libsamplerate0-dev/html/api.html
@@ -257,13 +256,15 @@ done
 %{_prefix}/share/doc/libsamplerate0-dev/html/win32.html
 
 %files gstsdrjfm
-%{_prefix}/lib/debug/usr/lib/gstreamer-1.0/libgstsdrjfm.so.debug
-%{_prefix}/lib/gstreamer-1.0/libgstsdrjfm.a
-%{_prefix}/lib/gstreamer-1.0/libgstsdrjfm.la
-%{_prefix}/lib/gstreamer-1.0/libgstsdrjfm.so
+%defattr(-,root,root)
+%{_libdir}/debug/usr/lib/gstreamer-1.0/libgstsdrjfm.so.debug
+%{_libdir}/gstreamer-1.0/libgstsdrjfm.a
+%{_libdir}/gstreamer-1.0/libgstsdrjfm.la
+%{_libdir}/gstreamer-1.0/libgstsdrjfm.so
 
 %files service
-%{_prefix}/lib/systemd/user/fmradioservice.service
-%{_prefix}/share/dbus-1/services/com.jlr.fmradioservice.service
-%{_prefix}/bin/fmradioservice
+%defattr(-,root,root)
+%{_libdir}/systemd/user/fmradioservice.service
+%{_datadir}/dbus-1/services/com.jlr.fmradioservice.service
+%{_bindir}/fmradioservice
 
