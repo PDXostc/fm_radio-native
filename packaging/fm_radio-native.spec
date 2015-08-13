@@ -157,8 +157,8 @@ for folder in %{install_list}; do
     make -C ${folder} install DESTDIR=%{buildroot} PREFIX=%{_prefix}
 done
 install -m 0644 blacklist-rtlsdr.conf %{buildroot}/etc/modprobe.d/
-install -m 0644 99-touchscreen.rules %{buildroot}/etc/udev/rules/
-install -m 0644 99-librtlsdr.rules %{buildroot}/etc/udev/rules/
+install -m 0644 99-touchscreen.rules %{buildroot}/etc/udev/rules.d/
+install -m 0644 99-librtlsdr.rules %{buildroot}/etc/udev/rules.d/
 
 %post -n fm_radio-native-rtl-sdr -p /sbin/ldconfig
 %post -n fm_radio-native-fftw3 -p /sbin/ldconfig
