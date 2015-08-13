@@ -149,11 +149,16 @@ done
 # Manually add those paths that we are going to install
 mkdir -p %{buildroot}/usr/lib/systemd/user
 mkdir -p %{buildroot}/usr/share/dbus-1/services
+mkdir -p %{buildroot}/etc/modprobe.d/
+mkdir -p %{buildroot}/etc/udev/rules.d/
 
 # Install everything
 for folder in %{install_list}; do
     make -C ${folder} install DESTDIR=%{buildroot} PREFIX=%{_prefix}
 done
+install -m 0644 blacklist-rtlsdr.conf /etc/modprobe.d/
+install -m 0644 99-touchscreen.rules /etc/udev/rules/
+install -m 0644 99-librtlsdr.rules /etc/udev/rules/
 
 %post -n fm_radio-native-rtl-sdr -p /sbin/ldconfig
 %post -n fm_radio-native-fftw3 -p /sbin/ldconfig
@@ -164,10 +169,17 @@ done
 %postun -n fm_radio-native-samplerate -p /sbin/ldconfig
 
 %files
+%defattr(-,root,root)
 %{_prefix}/lib/tizen-extensions-crosswalk/libbp.so
 %{_prefix}/lib/tizen-extensions-crosswalk/lib_fmradio.so
 
 %files rtl-sdr
+%defattr(-,root,root)
+%dir /etc/udev
+%dir /etc/udev/rules.d
+%config /etc/modprobe.d/blacklist-rtlsdr.conf
+%config /etc/udev/rules/99-touchscreen.rules
+%config /etc/udev/rules/99-librtlsdr.rules
 %{_prefix}/bin/rtl_adsb
 %{_prefix}/bin/rtl_eeprom
 %{_prefix}/bin/rtl_fm
@@ -193,6 +205,7 @@ done
 %{_prefix}/lib/pkgconfig/librtlsdr.pc
 
 %files fftw3
+%defattr(-,root,root)
 %{_prefix}/bin/fftw-wisdom-to-conf
 %{_prefix}/bin/fftwf-wisdom
 %{_prefix}/include/fftw3.f
@@ -215,6 +228,7 @@ done
 %{_prefix}/share/man/man1/fftwf-wisdom.1.gz
 
 %files samplerate
+%defattr(-,root,root)
 %{_prefix}/include/samplerate.h
 %{_prefix}/bin/sndfile-resample
 %{_prefix}/lib/debug/usr/bin/sndfile-resample.debug
@@ -242,12 +256,14 @@ done
 %{_prefix}/share/doc/libsamplerate0-dev/html/win32.html
 
 %files gstsdrjfm
+%defattr(-,root,root)
 %{_prefix}/lib/debug/usr/lib/gstreamer-1.0/libgstsdrjfm.so.debug
 %{_prefix}/lib/gstreamer-1.0/libgstsdrjfm.a
 %{_prefix}/lib/gstreamer-1.0/libgstsdrjfm.la
 %{_prefix}/lib/gstreamer-1.0/libgstsdrjfm.so
 
 %files service
+%defattr(-,root,root)
 %{_prefix}/lib/systemd/user/fmradioservice.service
 %{_prefix}/share/dbus-1/services/com.jlr.fmradioservice.service
 %{_prefix}/bin/fmradioservice
