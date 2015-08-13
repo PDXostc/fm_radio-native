@@ -178,8 +178,8 @@ install -m 0644 99-librtlsdr.rules %{buildroot}/etc/udev/rules.d/
 %dir %{_sysconfdir}/udev
 %dir %{_sysconfdir}/udev/rules.d
 %config %{_sysconfdir}/modprobe.d/blacklist-rtlsdr.conf
-%config %{_sysconfdir}/udev/rules/99-touchscreen.rules
-%config %{_sysconfdir}/udev/rules/99-librtlsdr.rules
+%config %{_sysconfdir}/udev/rules.d/99-touchscreen.rules
+%config %{_sysconfdir}/udev/rules.d/99-librtlsdr.rules
 %{_bindir}/rtl_adsb
 %{_bindir}/rtl_eeprom
 %{_bindir}/rtl_fm
