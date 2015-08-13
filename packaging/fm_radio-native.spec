@@ -239,21 +239,21 @@ install -m 0644 99-librtlsdr.rules %{buildroot}/etc/udev/rules.d/
 %{_libdir}/libsamplerate.so.0
 %{_libdir}/libsamplerate.so.0.1.8
 %{_libdir}/pkgconfig/samplerate.pc
-%{_defaultdocdir}/libsamplerate0-dev/html/SRC.css
-%{_defaultdocdir}/libsamplerate0-dev/html/SRC.png
-%{_defaultdocdir}/libsamplerate0-dev/html/api.html
-%{_defaultdocdir}/libsamplerate0-dev/html/api_callback.html
-%{_defaultdocdir}/libsamplerate0-dev/html/api_full.html
-%{_defaultdocdir}/libsamplerate0-dev/html/api_misc.html
-%{_defaultdocdir}/libsamplerate0-dev/html/api_simple.html
-%{_defaultdocdir}/libsamplerate0-dev/html/download.html
-%{_defaultdocdir}/libsamplerate0-dev/html/faq.html
-%{_defaultdocdir}/libsamplerate0-dev/html/history.html
-%{_defaultdocdir}/libsamplerate0-dev/html/index.html
-%{_defaultdocdir}/libsamplerate0-dev/html/license.html
-%{_defaultdocdir}/libsamplerate0-dev/html/lists.html
-%{_defaultdocdir}/libsamplerate0-dev/html/quality.html
-%{_defaultdocdir}/libsamplerate0-dev/html/win32.html
+%{_prefix}/share/doc/libsamplerate0-dev/html/SRC.css
+%{_prefix}/share/doc/libsamplerate0-dev/html/SRC.png
+%{_prefix}/share/doc/libsamplerate0-dev/html/api.html
+%{_prefix}/share/doc/libsamplerate0-dev/html/api_callback.html
+%{_prefix}/share/doc/libsamplerate0-dev/html/api_full.html
+%{_prefix}/share/doc/libsamplerate0-dev/html/api_misc.html
+%{_prefix}/share/doc/libsamplerate0-dev/html/api_simple.html
+%{_prefix}/share/doc/libsamplerate0-dev/html/download.html
+%{_prefix}/share/doc/libsamplerate0-dev/html/faq.html
+%{_prefix}/share/doc/libsamplerate0-dev/html/history.html
+%{_prefix}/share/doc/libsamplerate0-dev/html/index.html
+%{_prefix}/share/doc/libsamplerate0-dev/html/license.html
+%{_prefix}/share/doc/libsamplerate0-dev/html/lists.html
+%{_prefix}/share/doc/libsamplerate0-dev/html/quality.html
+%{_prefix}/share/doc/libsamplerate0-dev/html/win32.html
 
 %files gstsdrjfm
 %defattr(-,root,root)
